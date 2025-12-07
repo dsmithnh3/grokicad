@@ -9,6 +9,7 @@ pub use sqlx::PgPool;
 
 pub mod messages;
 pub mod utilities;
+pub mod xai_client;
 
 pub const DB_URL: &str = "postgres://kicad:password@localhost:5432/kicad";
 

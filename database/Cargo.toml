@@ -11,6 +11,7 @@ uuid = { version = "1.10", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 serde_json = "1.0"
 dotenv = "0.15"
+reqwest = { version = "0.11", features = ["json"] }  # Add this line
 
 [dev-dependencies]
 tokio = { version = "1", features = ["macros"] }

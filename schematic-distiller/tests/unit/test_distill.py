@@ -204,10 +204,9 @@ def test_distill_hierarchical_multisheet():
 
     # Components include child-sheet parts with sheet_path metadata
     components = data["components"]
-    refs = {comp["reference"] for comp in components}
-    assert "R2" in refs, "Child-sheet component R2 should be included"
+    assert "R2" in components, "Child-sheet component R2 should be included"
 
-    r2 = next(comp for comp in components if comp["reference"] == "R2")
+    r2 = components["R2"]
     assert "sheet_path" in r2 and r2["sheet_path"], "Components should include sheet_path when hierarchical"
 
     # Nets are fully connected across sheet boundaries

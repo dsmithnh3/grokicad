@@ -1,7 +1,6 @@
 {
-  "components": [
-    {
-      "reference": "C3",
+  "components": {
+    "C3": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -35,8 +34,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C2",
+    "C2": {
       "lib_id": "Device:C_Small",
       "value": "10uF",
       "position": {
@@ -70,8 +68,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U2",
+    "U2": {
       "lib_id": "Analog_ADC:ADS1115IDGS",
       "value": "ADS1115IDGS",
       "position": {
@@ -145,8 +142,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U6",
+    "U6": {
       "lib_id": "uBMS-Parts:TSC2012IDT",
       "value": "TSC2012IDT",
       "position": {
@@ -210,8 +206,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R8",
+    "R8": {
       "lib_id": "Device:R",
       "value": "470R",
       "position": {
@@ -245,8 +240,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R7",
+    "R7": {
       "lib_id": "Device:R",
       "value": "1m Ohm",
       "position": {
@@ -280,8 +274,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "Q3",
+    "Q3": {
       "lib_id": "uBMS-Parts:NTD5865NL",
       "value": "NTD5865NL",
       "position": {
@@ -320,8 +313,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R10",
+    "R10": {
       "lib_id": "Device:R",
       "value": "330R",
       "position": {
@@ -355,8 +347,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U4",
+    "U4": {
       "lib_id": "Reference_Voltage:TL431DBZ",
       "value": "TL431DBZ",
       "position": {
@@ -395,8 +386,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R29",
+    "R29": {
       "lib_id": "Device:R_Small",
       "value": "4.7k",
       "position": {
@@ -430,8 +420,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U9",
+    "U9": {
       "lib_id": "uBMS-Parts:VDMG10C0",
       "value": "VDMG10C0",
       "position": {
@@ -470,12 +459,12 @@
         {
           "number": "2",
           "name": "D",
-          "net": "Net-(R14-Pad2)"
+          "net": "Net-(U9-Pad2)"
         },
         {
           "number": "1",
           "name": "E",
-          "net": "Net-(R15-Pad2)"
+          "net": "Net-(U9-Pad1)"
         },
         {
           "number": "9",
@@ -490,7 +479,7 @@
         {
           "number": "5",
           "name": "DP",
-          "net": "Net-(R18-Pad2)"
+          "net": "Net-(U9-Pad5)"
         },
         {
           "number": "3",
@@ -505,8 +494,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D7",
+    "D7": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -540,8 +528,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D6",
+    "D6": {
       "lib_id": "Device:LED",
       "value": "YELLOW_LED",
       "position": {
@@ -575,8 +562,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D5",
+    "D5": {
       "lib_id": "Device:LED",
       "value": "RED_LED",
       "position": {
@@ -610,8 +596,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R20",
+    "R20": {
       "lib_id": "Device:R_Small",
       "value": "4.7k",
       "position": {
@@ -645,8 +630,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D4",
+    "D4": {
       "lib_id": "Device:D_Zener",
       "value": "TPD1E10B06QDPYRQ1",
       "position": {
@@ -680,8 +664,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C4",
+    "C4": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -715,8 +698,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C9",
+    "C9": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -750,8 +732,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C10",
+    "C10": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -785,8 +766,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "J2",
+    "J2": {
       "lib_id": "Connector_Generic:Conn_01x02",
       "value": "XT60PW-M20",
       "position": {
@@ -816,8 +796,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U13",
+    "U13": {
       "lib_id": "ClementsSymbols:SN74HC595BRWNR",
       "value": "SN74HC595BRWNR",
       "position": {
@@ -933,8 +912,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "J1",
+    "J1": {
       "lib_id": "ClementsSymbols:DX07S016JA1R1500",
       "value": "DX07S016JA1R1500",
       "position": {
@@ -1002,12 +980,12 @@
         {
           "number": "11",
           "name": "VBUS",
-          "net": "Net-(J1-Pad11)"
+          "net": "Net-(J1-Pad2)"
         },
         {
           "number": "2",
           "name": "VBUS",
-          "net": "Net-(J1-Pad11)"
+          "net": "Net-(J1-Pad2)"
         },
         {
           "number": "S1",
@@ -1052,8 +1030,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "J3",
+    "J3": {
       "lib_id": "Connector_Generic:Conn_01x02",
       "value": "XT60PW-M20",
       "position": {
@@ -1083,8 +1060,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D8",
+    "D8": {
       "lib_id": "Device:D_Zener",
       "value": "TPD1E10B06QDPYRQ1",
       "position": {
@@ -1118,8 +1094,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D21",
+    "D21": {
       "lib_id": "Device:D_Zener",
       "value": "TPD1E10B06QDPYRQ1",
       "position": {
@@ -1153,8 +1128,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "SW1",
+    "SW1": {
       "lib_id": "ClementsSymbols:PTS815_SJK_250_SMTR_LFS",
       "value": "PTS815_SJK_250_SMTR_LFS",
       "position": {
@@ -1198,8 +1172,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C40",
+    "C40": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -1233,8 +1206,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "SW2",
+    "SW2": {
       "lib_id": "ClementsSymbols:PTS815_SJK_250_SMTR_LFS",
       "value": "PTS815_SJK_250_SMTR_LFS",
       "position": {
@@ -1278,8 +1250,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "SW3",
+    "SW3": {
       "lib_id": "ClementsSymbols:PTS815_SJK_250_SMTR_LFS",
       "value": "PTS815_SJK_250_SMTR_LFS",
       "position": {
@@ -1323,8 +1294,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C38",
+    "C38": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -1358,8 +1328,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C39",
+    "C39": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -1393,8 +1362,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R22",
+    "R22": {
       "lib_id": "Device:R",
       "value": "47k",
       "position": {
@@ -1428,8 +1396,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R106",
+    "R106": {
       "lib_id": "Device:R",
       "value": "91k",
       "position": {
@@ -1463,8 +1430,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D22",
+    "D22": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -1498,8 +1464,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R88",
+    "R88": {
       "lib_id": "Device:R",
       "value": "5.1k",
       "position": {
@@ -1533,8 +1498,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R30",
+    "R30": {
       "lib_id": "Device:R",
       "value": "5.1k",
       "position": {
@@ -1568,8 +1532,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D1",
+    "D1": {
       "lib_id": "Device:D_Schottky",
       "value": "RB162VAM-20TR",
       "position": {
@@ -1603,8 +1566,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U7",
+    "U7": {
       "lib_id": "ClementsSymbols:SN74HC595BRWNR",
       "value": "SN74HC595BRWNR",
       "position": {
@@ -1716,8 +1678,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C1",
+    "C1": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -1751,8 +1712,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U8",
+    "U8": {
       "lib_id": "ClementsSymbols:SN74HC595BRWNR",
       "value": "SN74HC595BRWNR",
       "position": {
@@ -1864,8 +1824,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C11",
+    "C11": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -1899,8 +1858,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D23",
+    "D23": {
       "lib_id": "Device:LED",
       "value": "YELLOW_LED",
       "position": {
@@ -1934,8 +1892,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D24",
+    "D24": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -1969,8 +1926,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D25",
+    "D25": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -2004,8 +1960,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C50",
+    "C50": {
       "lib_id": "Device:C_Small",
       "value": "1uF",
       "position": {
@@ -2039,8 +1994,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R16",
+    "R16": {
       "lib_id": "Device:R",
       "value": "330R",
       "position": {
@@ -2074,8 +2028,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP8",
+    "TP8": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2100,8 +2053,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R1",
+    "R1": {
       "lib_id": "Device:R",
       "value": "10k",
       "position": {
@@ -2135,8 +2087,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "D2",
+    "D2": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -2170,8 +2121,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP13",
+    "TP13": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2196,8 +2146,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R13",
+    "R13": {
       "lib_id": "Device:R",
       "value": "330R",
       "position": {
@@ -2231,8 +2180,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP20",
+    "TP20": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2257,8 +2205,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP21",
+    "TP21": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2283,8 +2230,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R11",
+    "R11": {
       "lib_id": "Device:R",
       "value": "330R",
       "position": {
@@ -2318,8 +2264,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP26",
+    "TP26": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2344,8 +2289,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R12",
+    "R12": {
       "lib_id": "Device:R",
       "value": "330R",
       "position": {
@@ -2379,8 +2323,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R19",
+    "R19": {
       "lib_id": "Device:R",
       "value": "1k",
       "position": {
@@ -2414,8 +2357,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP23",
+    "TP23": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2440,8 +2382,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP4",
+    "TP4": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2466,8 +2407,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R18",
+    "R18": {
       "lib_id": "Device:R",
       "value": "330R",
       "position": {
@@ -2496,13 +2436,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(R18-Pad2)"
+          "net": "Net-(U9-Pad5)"
         }
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R27",
+    "R27": {
       "lib_id": "Device:R",
       "value": "1k",
       "position": {
@@ -2536,8 +2475,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP9",
+    "TP9": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2562,8 +2500,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP19",
+    "TP19": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2588,8 +2525,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP11",
+    "TP11": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -2614,8 +2550,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "H1",
+    "H1": {
       "lib_id": "Mechanical:MountingHole_Pad",
       "value": "MountingHole_Pad",
       "position": {
@@ -2640,8 +2575,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C8",
+    "C8": {
       "lib_id": "Device:C",
       "value": "22pF",
       "position": {
@@ -2675,1261 +2609,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "U1",
-      "lib_id": "ClementsSymbols:ESP32-S2-MINI-1",
-      "value": "ESP32-S2-MINI-1",
-      "position": {
-        "x": 83.82,
-        "y": 59.055
-      },
-      "footprint": "ClementsFootprints:ESP32-S2-MINI-1",
-      "properties": {
-        "Reference": "U1",
-        "Value": "ESP32-S2-MINI-1",
-        "Footprint": "ClementsFootprints:ESP32-S2-MINI-1",
-        "Datasheet": "https://www.espressif.com/sites/default/files/documentation/esp32-s2-mini-1_esp32-s2-mini-1u_datasheet_en.pdf",
-        "Description": ""
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "3",
-          "name": "3V3",
-          "net": null
-        },
-        {
-          "number": "45",
-          "name": "EN",
-          "net": null
-        },
-        {
-          "number": "4",
-          "name": "IO0",
-          "net": null
-        },
-        {
-          "number": "5",
-          "name": "IO1",
-          "net": null
-        },
-        {
-          "number": "6",
-          "name": "IO2",
-          "net": null
-        },
-        {
-          "number": "7",
-          "name": "IO3",
-          "net": null
-        },
-        {
-          "number": "8",
-          "name": "IO4",
-          "net": null
-        },
-        {
-          "number": "9",
-          "name": "IO5",
-          "net": null
-        },
-        {
-          "number": "10",
-          "name": "IO6",
-          "net": null
-        },
-        {
-          "number": "11",
-          "name": "IO7",
-          "net": null
-        },
-        {
-          "number": "12",
-          "name": "IO8",
-          "net": null
-        },
-        {
-          "number": "13",
-          "name": "IO9",
-          "net": null
-        },
-        {
-          "number": "14",
-          "name": "IO10",
-          "net": null
-        },
-        {
-          "number": "15",
-          "name": "IO11",
-          "net": null
-        },
-        {
-          "number": "16",
-          "name": "IO12",
-          "net": null
-        },
-        {
-          "number": "17",
-          "name": "IO13",
-          "net": null
-        },
-        {
-          "number": "18",
-          "name": "IO14",
-          "net": null
-        },
-        {
-          "number": "19",
-          "name": "IO15",
-          "net": null
-        },
-        {
-          "number": "20",
-          "name": "IO16",
-          "net": null
-        },
-        {
-          "number": "21",
-          "name": "IO17",
-          "net": null
-        },
-        {
-          "number": "22",
-          "name": "IO18",
-          "net": null
-        },
-        {
-          "number": "23",
-          "name": "IO19",
-          "net": null
-        },
-        {
-          "number": "24",
-          "name": "IO20",
-          "net": null
-        },
-        {
-          "number": "25",
-          "name": "IO21",
-          "net": null
-        },
-        {
-          "number": "26",
-          "name": "IO26",
-          "net": null
-        },
-        {
-          "number": "27",
-          "name": "NC",
-          "net": null
-        },
-        {
-          "number": "28",
-          "name": "IO33",
-          "net": null
-        },
-        {
-          "number": "29",
-          "name": "IO34",
-          "net": null
-        },
-        {
-          "number": "31",
-          "name": "IO35",
-          "net": null
-        },
-        {
-          "number": "32",
-          "name": "IO36",
-          "net": null
-        },
-        {
-          "number": "33",
-          "name": "IO37",
-          "net": null
-        },
-        {
-          "number": "34",
-          "name": "IO38",
-          "net": null
-        },
-        {
-          "number": "35",
-          "name": "IO39",
-          "net": null
-        },
-        {
-          "number": "36",
-          "name": "IO40",
-          "net": null
-        },
-        {
-          "number": "37",
-          "name": "IO41",
-          "net": null
-        },
-        {
-          "number": "38",
-          "name": "IO42",
-          "net": null
-        },
-        {
-          "number": "39",
-          "name": "TXD0",
-          "net": null
-        },
-        {
-          "number": "40",
-          "name": "RXD0",
-          "net": null
-        },
-        {
-          "number": "41",
-          "name": "IO45",
-          "net": null
-        },
-        {
-          "number": "44",
-          "name": "IO46",
-          "net": null
-        },
-        {
-          "number": "57",
-          "name": "GND",
-          "net": "Net-(U1-Pad57)"
-        },
-        {
-          "number": "56",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "55",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "54",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "53",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "52",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "51",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "50",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "49",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "48",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "47",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "46",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "43",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "42",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "30",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "2",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "1",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "58",
-          "name": "GND",
-          "net": "Net-(U1-Pad58)"
-        },
-        {
-          "number": "59",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "60",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "61",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "62",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "62",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "63",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "64",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "65",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "66",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "67",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "68",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "69",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "70",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "71",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "72",
-          "name": "GND",
-          "net": "GND"
-        },
-        {
-          "number": "73",
-          "name": "GND",
-          "net": "GND"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R15",
-      "lib_id": "Device:R",
-      "value": "330R",
-      "position": {
-        "x": 360.045,
-        "y": 125.095
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R15",
-        "Value": "330R",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "330 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-330LRCT-ND",
-        "Part Number": "RC0402FR-07330RL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "7E"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": "Net-(R15-Pad2)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP7",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 180.34,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP7",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP12",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 212.09,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP12",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "H3",
-      "lib_id": "Mechanical:MountingHole_Pad",
-      "value": "MountingHole_Pad",
-      "position": {
-        "x": 49.53,
-        "y": 225.425
-      },
-      "footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
-      "properties": {
-        "Reference": "H3",
-        "Value": "MountingHole_Pad",
-        "Footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "H2",
-      "lib_id": "Mechanical:MountingHole_Pad",
-      "value": "MountingHole_Pad",
-      "position": {
-        "x": 23.495,
-        "y": 238.76
-      },
-      "footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
-      "properties": {
-        "Reference": "H2",
-        "Value": "MountingHole_Pad",
-        "Footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R14",
-      "lib_id": "Device:R",
-      "value": "330R",
-      "position": {
-        "x": 360.045,
-        "y": 122.555
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R14",
-        "Value": "330R",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "330 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-330LRCT-ND",
-        "Part Number": "RC0402FR-07330RL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "7D"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": "Net-(R14-Pad2)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R3",
-      "lib_id": "Device:R",
-      "value": "27R",
-      "position": {
-        "x": 200.66,
-        "y": 41.91
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R3",
-        "Value": "27R",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "27 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "YAG3086CT-ND",
-        "Part Number": "RC0402FR-0727RL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "Net-(J1-Pad7)"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": "USB_D+"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP14",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 224.79,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP14",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R25",
-      "lib_id": "Device:R",
-      "value": "1k",
-      "position": {
-        "x": 297.18,
-        "y": 120.015
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R25",
-        "Value": "1k",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-1.00KLRCT-ND",
-        "Part Number": "RC0402FR-071KL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": null
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP18",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 243.84,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP18",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP16",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 237.49,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP16",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP1",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 135.89,
-        "y": 61.595
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP1",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": "Net-(TP1-Pad1)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP25",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 262.89,
-        "y": 185.42
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP25",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP2",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 138.43,
-        "y": 64.135
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP2",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": "Net-(TP2-Pad1)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP15",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 231.14,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP15",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP24",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 262.89,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP24",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R89",
-      "lib_id": "Device:R",
-      "value": "1k",
-      "position": {
-        "x": 332.74,
-        "y": 120.015
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R89",
-        "Value": "1k",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-1.00KLRCT-ND",
-        "Part Number": "RC0402FR-071KL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": null
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R26",
-      "lib_id": "Device:R",
-      "value": "1k",
-      "position": {
-        "x": 306.07,
-        "y": 120.015
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R26",
-        "Value": "1k",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-1.00KLRCT-ND",
-        "Part Number": "RC0402FR-071KL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": null
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "H4",
-      "lib_id": "Mechanical:MountingHole_Pad",
-      "value": "MountingHole_Pad",
-      "position": {
-        "x": 49.53,
-        "y": 238.76
-      },
-      "footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
-      "properties": {
-        "Reference": "H4",
-        "Value": "MountingHole_Pad",
-        "Footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R90",
-      "lib_id": "Device:R",
-      "value": "1k",
-      "position": {
-        "x": 341.63,
-        "y": 120.015
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R90",
-        "Value": "1k",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-1.00KLRCT-ND",
-        "Part Number": "RC0402FR-071KL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": null
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R28",
-      "lib_id": "Device:R",
-      "value": "1k",
-      "position": {
-        "x": 323.85,
-        "y": 120.015
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R28",
-        "Value": "1k",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-1.00KLRCT-ND",
-        "Part Number": "RC0402FR-071KL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": null
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP6",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 173.99,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP6",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP3",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 118.745,
-        "y": 73.66
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP3",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": "Net-(TP3-Pad1)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP10",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 199.39,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP10",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "TP22",
-      "lib_id": "Connector:TestPoint",
-      "value": "TestPoint",
-      "position": {
-        "x": 256.54,
-        "y": 165.1
-      },
-      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-      "properties": {
-        "Reference": "TP22",
-        "Value": "TestPoint",
-        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
-        "Datasheet": "~",
-        "Description": ""
-      },
-      "category": "other",
-      "pins": [
-        {
-          "number": "1",
-          "name": "1",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R101",
-      "lib_id": "Device:R",
-      "value": "1k",
-      "position": {
-        "x": 215.9,
-        "y": 66.675
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R101",
-        "Value": "1k",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-1.00KLRCT-ND",
-        "Part Number": "RC0402FR-071KL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "VBUS"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": null
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "R17",
-      "lib_id": "Device:R",
-      "value": "330R",
-      "position": {
-        "x": 360.045,
-        "y": 130.175
-      },
-      "footprint": "Resistor_SMD:R_0402_1005Metric",
-      "properties": {
-        "Reference": "R17",
-        "Value": "330R",
-        "Footprint": "Resistor_SMD:R_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
-        "Description": "",
-        "Comment": "330 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
-        "Digikey Number": "311-330LRCT-ND",
-        "Part Number": "RC0402FR-07330RL",
-        "Price ($)": "0.1"
-      },
-      "category": "ic",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "7G"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": "Net-(U9-Pad10)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "C6",
-      "lib_id": "Device:C_Small",
-      "value": "0.1uF",
-      "position": {
-        "x": 169.545,
-        "y": 33.02
-      },
-      "footprint": "Capacitor_SMD:C_0402_1005Metric",
-      "properties": {
-        "Reference": "C6",
-        "Value": "0.1uF",
-        "Footprint": "Capacitor_SMD:C_0402_1005Metric",
-        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GPHC_X7R_6.3V-to-250V_22.pdf",
-        "Description": "",
-        "Part Number": "CC0402KRX7R7BB104",
-        "Digikey Number": "311-1338-1-ND",
-        "Price ($)": "0.1",
-        "Comment": "0.1 \u00b5F \u00b110% 16V Ceramic Capacitor X7R 0402 (1005 Metric)"
-      },
-      "category": "capacitor",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "Net-(C6-Pad1)"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": "Net-(C6-Pad2)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "C5",
-      "lib_id": "Device:C_Small",
-      "value": "10nF",
-      "position": {
-        "x": 36.195,
-        "y": 41.275
-      },
-      "footprint": "Capacitor_SMD:C_0402_1005Metric",
-      "properties": {
-        "Reference": "C5",
-        "Value": "10nF",
-        "Footprint": "Capacitor_SMD:C_0402_1005Metric",
-        "Datasheet": "https://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GCM155R71H103KA55-01.pdf",
-        "Description": "",
-        "Comment": "10000 pF \u00b110% 50V Ceramic Capacitor X7R 0402 (1005 Metric)",
-        "Digikey Number": "490-4762-1-ND",
-        "Part Number": "GCM155R71H103KA55D",
-        "Price ($)": "0.1"
-      },
-      "category": "capacitor",
-      "pins": [
-        {
-          "number": "1",
-          "name": "~",
-          "net": "+3V3"
-        },
-        {
-          "number": "2",
-          "name": "~",
-          "net": "Net-(C5-Pad2)"
-        }
-      ],
-      "sheet_path": "/"
-    },
-    {
-      "reference": "U1",
+    "U1": {
       "lib_id": "ClementsSymbols:ESP32-S2-MINI-1",
       "value": "ESP32-S2-MINI-1",
       "position": {
@@ -4319,8 +2999,840 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP17",
+    "R15": {
+      "lib_id": "Device:R",
+      "value": "330R",
+      "position": {
+        "x": 360.045,
+        "y": 125.095
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R15",
+        "Value": "330R",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "330 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-330LRCT-ND",
+        "Part Number": "RC0402FR-07330RL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "7E"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": "Net-(U9-Pad1)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP7": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 180.34,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP7",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP12": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 212.09,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP12",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "H3": {
+      "lib_id": "Mechanical:MountingHole_Pad",
+      "value": "MountingHole_Pad",
+      "position": {
+        "x": 49.53,
+        "y": 225.425
+      },
+      "footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
+      "properties": {
+        "Reference": "H3",
+        "Value": "MountingHole_Pad",
+        "Footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "H2": {
+      "lib_id": "Mechanical:MountingHole_Pad",
+      "value": "MountingHole_Pad",
+      "position": {
+        "x": 23.495,
+        "y": 238.76
+      },
+      "footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
+      "properties": {
+        "Reference": "H2",
+        "Value": "MountingHole_Pad",
+        "Footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R14": {
+      "lib_id": "Device:R",
+      "value": "330R",
+      "position": {
+        "x": 360.045,
+        "y": 122.555
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R14",
+        "Value": "330R",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "330 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-330LRCT-ND",
+        "Part Number": "RC0402FR-07330RL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "7D"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": "Net-(U9-Pad2)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R3": {
+      "lib_id": "Device:R",
+      "value": "27R",
+      "position": {
+        "x": 200.66,
+        "y": 41.91
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R3",
+        "Value": "27R",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "27 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "YAG3086CT-ND",
+        "Part Number": "RC0402FR-0727RL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "Net-(J1-Pad7)"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": "USB_D+"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP14": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 224.79,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP14",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R25": {
+      "lib_id": "Device:R",
+      "value": "1k",
+      "position": {
+        "x": 297.18,
+        "y": 120.015
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R25",
+        "Value": "1k",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-1.00KLRCT-ND",
+        "Part Number": "RC0402FR-071KL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": null
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP18": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 243.84,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP18",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP16": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 237.49,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP16",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP1": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 135.89,
+        "y": 61.595
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP1",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": "Net-(TP1-Pad1)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP25": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 262.89,
+        "y": 185.42
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP25",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP2": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 138.43,
+        "y": 64.135
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP2",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": "Net-(TP2-Pad1)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP15": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 231.14,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP15",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP24": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 262.89,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP24",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R89": {
+      "lib_id": "Device:R",
+      "value": "1k",
+      "position": {
+        "x": 332.74,
+        "y": 120.015
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R89",
+        "Value": "1k",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-1.00KLRCT-ND",
+        "Part Number": "RC0402FR-071KL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": null
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R26": {
+      "lib_id": "Device:R",
+      "value": "1k",
+      "position": {
+        "x": 306.07,
+        "y": 120.015
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R26",
+        "Value": "1k",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-1.00KLRCT-ND",
+        "Part Number": "RC0402FR-071KL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": null
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "H4": {
+      "lib_id": "Mechanical:MountingHole_Pad",
+      "value": "MountingHole_Pad",
+      "position": {
+        "x": 49.53,
+        "y": 238.76
+      },
+      "footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
+      "properties": {
+        "Reference": "H4",
+        "Value": "MountingHole_Pad",
+        "Footprint": "MountingHole:MountingHole_2.5mm_Pad_TopBottom",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R90": {
+      "lib_id": "Device:R",
+      "value": "1k",
+      "position": {
+        "x": 341.63,
+        "y": 120.015
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R90",
+        "Value": "1k",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-1.00KLRCT-ND",
+        "Part Number": "RC0402FR-071KL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": null
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R28": {
+      "lib_id": "Device:R",
+      "value": "1k",
+      "position": {
+        "x": 323.85,
+        "y": 120.015
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R28",
+        "Value": "1k",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-1.00KLRCT-ND",
+        "Part Number": "RC0402FR-071KL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": null
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP6": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 173.99,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP6",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP3": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 118.745,
+        "y": 73.66
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP3",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": "Net-(TP3-Pad1)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP10": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 199.39,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP10",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP22": {
+      "lib_id": "Connector:TestPoint",
+      "value": "TestPoint",
+      "position": {
+        "x": 256.54,
+        "y": 165.1
+      },
+      "footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+      "properties": {
+        "Reference": "TP22",
+        "Value": "TestPoint",
+        "Footprint": "TestPoint:TestPoint_Pad_D1.0mm",
+        "Datasheet": "~",
+        "Description": ""
+      },
+      "category": "other",
+      "pins": [
+        {
+          "number": "1",
+          "name": "1",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R101": {
+      "lib_id": "Device:R",
+      "value": "1k",
+      "position": {
+        "x": 215.9,
+        "y": 66.675
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R101",
+        "Value": "1k",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "1 kOhms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-1.00KLRCT-ND",
+        "Part Number": "RC0402FR-071KL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "VBUS"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": null
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "R17": {
+      "lib_id": "Device:R",
+      "value": "330R",
+      "position": {
+        "x": 360.045,
+        "y": 130.175
+      },
+      "footprint": "Resistor_SMD:R_0402_1005Metric",
+      "properties": {
+        "Reference": "R17",
+        "Value": "330R",
+        "Footprint": "Resistor_SMD:R_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf",
+        "Description": "",
+        "Comment": "330 Ohms \u00b11% 0.063W, 1/16W Chip Resistor 0402 (1005 Metric) Moisture Resistant Thick Film",
+        "Digikey Number": "311-330LRCT-ND",
+        "Part Number": "RC0402FR-07330RL",
+        "Price ($)": "0.1"
+      },
+      "category": "ic",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "7G"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": "Net-(U9-Pad10)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "C6": {
+      "lib_id": "Device:C_Small",
+      "value": "0.1uF",
+      "position": {
+        "x": 169.545,
+        "y": 33.02
+      },
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "properties": {
+        "Reference": "C6",
+        "Value": "0.1uF",
+        "Footprint": "Capacitor_SMD:C_0402_1005Metric",
+        "Datasheet": "https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GPHC_X7R_6.3V-to-250V_22.pdf",
+        "Description": "",
+        "Part Number": "CC0402KRX7R7BB104",
+        "Digikey Number": "311-1338-1-ND",
+        "Price ($)": "0.1",
+        "Comment": "0.1 \u00b5F \u00b110% 16V Ceramic Capacitor X7R 0402 (1005 Metric)"
+      },
+      "category": "capacitor",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "Net-(C6-Pad1)"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": "Net-(C6-Pad2)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "C5": {
+      "lib_id": "Device:C_Small",
+      "value": "10nF",
+      "position": {
+        "x": 36.195,
+        "y": 41.275
+      },
+      "footprint": "Capacitor_SMD:C_0402_1005Metric",
+      "properties": {
+        "Reference": "C5",
+        "Value": "10nF",
+        "Footprint": "Capacitor_SMD:C_0402_1005Metric",
+        "Datasheet": "https://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GCM155R71H103KA55-01.pdf",
+        "Description": "",
+        "Comment": "10000 pF \u00b110% 50V Ceramic Capacitor X7R 0402 (1005 Metric)",
+        "Digikey Number": "490-4762-1-ND",
+        "Part Number": "GCM155R71H103KA55D",
+        "Price ($)": "0.1"
+      },
+      "category": "capacitor",
+      "pins": [
+        {
+          "number": "1",
+          "name": "~",
+          "net": "+3V3"
+        },
+        {
+          "number": "2",
+          "name": "~",
+          "net": "Net-(C5-Pad2)"
+        }
+      ],
+      "sheet_path": "/"
+    },
+    "TP17": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -4345,8 +3857,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "R2",
+    "R2": {
       "lib_id": "Device:R",
       "value": "27R",
       "position": {
@@ -4380,8 +3891,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "TP5",
+    "TP5": {
       "lib_id": "Connector:TestPoint",
       "value": "TestPoint",
       "position": {
@@ -4406,8 +3916,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "C7",
+    "C7": {
       "lib_id": "Device:C",
       "value": "22pF",
       "position": {
@@ -4441,8 +3950,7 @@
       ],
       "sheet_path": "/"
     },
-    {
-      "reference": "J5",
+    "J5": {
       "lib_id": "Connector_Generic:Conn_02x07_Odd_Even",
       "value": "Conn_02x07_Odd_Even",
       "position": {
@@ -4536,8 +4044,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "U10",
+    "U10": {
       "lib_id": "74xx:CD74HC4067SM",
       "value": "CD74HC4067SM",
       "position": {
@@ -4681,8 +4188,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R31",
+    "R31": {
       "lib_id": "Device:R",
       "value": "360k",
       "position": {
@@ -4716,8 +4222,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R37",
+    "R37": {
       "lib_id": "Device:R",
       "value": "360k",
       "position": {
@@ -4751,8 +4256,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R32",
+    "R32": {
       "lib_id": "Device:R",
       "value": "200k",
       "position": {
@@ -4786,8 +4290,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R38",
+    "R38": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -4821,8 +4324,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R33",
+    "R33": {
       "lib_id": "Device:R",
       "value": "330k",
       "position": {
@@ -4856,8 +4358,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R39",
+    "R39": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -4891,8 +4392,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R34",
+    "R34": {
       "lib_id": "Device:R",
       "value": "499k",
       "position": {
@@ -4926,8 +4426,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R40",
+    "R40": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -4961,8 +4460,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R35",
+    "R35": {
       "lib_id": "Device:R",
       "value": "499k",
       "position": {
@@ -4996,8 +4494,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R41",
+    "R41": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -5031,8 +4528,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R36",
+    "R36": {
       "lib_id": "Device:R",
       "value": "560k",
       "position": {
@@ -5066,8 +4562,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R42",
+    "R42": {
       "lib_id": "Device:R",
       "value": "47k",
       "position": {
@@ -5101,8 +4596,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R45",
+    "R45": {
       "lib_id": "Device:R",
       "value": "560k",
       "position": {
@@ -5136,8 +4630,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R51",
+    "R51": {
       "lib_id": "Device:R",
       "value": "39.2k",
       "position": {
@@ -5171,8 +4664,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R46",
+    "R46": {
       "lib_id": "Device:R",
       "value": "499k",
       "position": {
@@ -5206,8 +4698,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R52",
+    "R52": {
       "lib_id": "Device:R",
       "value": "30k",
       "position": {
@@ -5241,8 +4732,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R47",
+    "R47": {
       "lib_id": "Device:R",
       "value": "560k",
       "position": {
@@ -5276,8 +4766,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R53",
+    "R53": {
       "lib_id": "Device:R",
       "value": "30k",
       "position": {
@@ -5311,8 +4800,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R48",
+    "R48": {
       "lib_id": "Device:R",
       "value": "330k",
       "position": {
@@ -5346,8 +4834,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R59",
+    "R59": {
       "lib_id": "Device:R",
       "value": "47.5k",
       "position": {
@@ -5381,8 +4868,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R49",
+    "R49": {
       "lib_id": "Device:R",
       "value": "499k",
       "position": {
@@ -5416,8 +4902,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R54",
+    "R54": {
       "lib_id": "Device:R",
       "value": "30k",
       "position": {
@@ -5451,8 +4936,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R43",
+    "R43": {
       "lib_id": "Device:R",
       "value": "24.9k",
       "position": {
@@ -5486,8 +4970,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R44",
+    "R44": {
       "lib_id": "Device:R",
       "value": "47k",
       "position": {
@@ -5521,8 +5004,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R55",
+    "R55": {
       "lib_id": "Device:R",
       "value": "39.2k",
       "position": {
@@ -5556,8 +5038,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R56",
+    "R56": {
       "lib_id": "Device:R",
       "value": "33.2k",
       "position": {
@@ -5591,8 +5072,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R57",
+    "R57": {
       "lib_id": "Device:R",
       "value": "33.2k",
       "position": {
@@ -5626,8 +5106,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R50",
+    "R50": {
       "lib_id": "Device:R",
       "value": "147k",
       "position": {
@@ -5661,8 +5140,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R58",
+    "R58": {
       "lib_id": "Device:R",
       "value": "16.2k",
       "position": {
@@ -5696,8 +5174,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "C13",
+    "C13": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -5731,8 +5208,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "R107",
+    "R107": {
       "lib_id": "Device:R",
       "value": "30k",
       "position": {
@@ -5766,8 +5242,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70a721/"
     },
-    {
-      "reference": "TH1",
+    "TH1": {
       "lib_id": "Device:Thermistor_NTC",
       "value": "10k",
       "position": {
@@ -5801,8 +5276,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R72",
+    "R72": {
       "lib_id": "Device:R",
       "value": "4.7k",
       "position": {
@@ -5836,8 +5310,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "TH2",
+    "TH2": {
       "lib_id": "Device:Thermistor_NTC",
       "value": "10k",
       "position": {
@@ -5871,8 +5344,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R73",
+    "R73": {
       "lib_id": "Device:R",
       "value": "4.7k",
       "position": {
@@ -5906,8 +5378,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "TH3",
+    "TH3": {
       "lib_id": "Device:Thermistor_NTC",
       "value": "10k",
       "position": {
@@ -5941,8 +5412,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R74",
+    "R74": {
       "lib_id": "Device:R",
       "value": "4.7k",
       "position": {
@@ -5976,8 +5446,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "TH4",
+    "TH4": {
       "lib_id": "Device:Thermistor_NTC",
       "value": "10k",
       "position": {
@@ -6011,8 +5480,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R75",
+    "R75": {
       "lib_id": "Device:R",
       "value": "4.7k",
       "position": {
@@ -6046,8 +5514,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "J6",
+    "J6": {
       "lib_id": "Connector_Generic:Conn_02x07_Odd_Even",
       "value": "Conn_02x07_Odd_Even",
       "position": {
@@ -6141,8 +5608,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "U11",
+    "U11": {
       "lib_id": "74xx:CD74HC4067SM",
       "value": "CD74HC4067SM",
       "position": {
@@ -6286,8 +5752,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R60",
+    "R60": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6321,8 +5786,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R61",
+    "R61": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6356,8 +5820,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R62",
+    "R62": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6391,8 +5854,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R63",
+    "R63": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6426,8 +5888,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R64",
+    "R64": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6461,8 +5922,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R65",
+    "R65": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6496,8 +5956,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R66",
+    "R66": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6531,8 +5990,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R67",
+    "R67": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6566,8 +6024,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R68",
+    "R68": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6601,8 +6058,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R69",
+    "R69": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6636,8 +6092,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R70",
+    "R70": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6671,8 +6126,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "R71",
+    "R71": {
       "lib_id": "Device:R",
       "value": "22k",
       "position": {
@@ -6706,8 +6160,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "C14",
+    "C14": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -6741,8 +6194,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f70b1a3/"
     },
-    {
-      "reference": "J7",
+    "J7": {
       "lib_id": "Connector_Generic:Conn_02x07_Odd_Even",
       "value": "Conn_02x07_Odd_Even",
       "position": {
@@ -6836,8 +6288,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C15",
+    "C15": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -6871,8 +6322,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q4",
+    "Q4": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -6911,8 +6361,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R76",
+    "R76": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -6946,8 +6395,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D9",
+    "D9": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -6981,8 +6429,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q5",
+    "Q5": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7006,7 +6453,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(Q5-Pad1)"
+          "net": "Net-(D10-Pad2)"
         },
         {
           "number": "2",
@@ -7021,8 +6468,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R77",
+    "R77": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7046,7 +6492,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(Q5-Pad1)"
+          "net": "Net-(D10-Pad2)"
         },
         {
           "number": "2",
@@ -7056,8 +6502,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D10",
+    "D10": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7086,13 +6531,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(Q5-Pad1)"
+          "net": "Net-(D10-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q6",
+    "Q6": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7116,7 +6560,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(Q6-Pad1)"
+          "net": "Net-(R78-Pad1)"
         },
         {
           "number": "2",
@@ -7131,8 +6575,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R78",
+    "R78": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7156,7 +6599,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(Q6-Pad1)"
+          "net": "Net-(R78-Pad1)"
         },
         {
           "number": "2",
@@ -7166,8 +6609,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D11",
+    "D11": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7196,13 +6638,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(Q6-Pad1)"
+          "net": "Net-(R78-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q7",
+    "Q7": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7226,7 +6667,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(Q7-Pad1)"
+          "net": "Net-(C32-Pad2)"
         },
         {
           "number": "2",
@@ -7241,8 +6682,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R79",
+    "R79": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7266,7 +6706,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(Q7-Pad1)"
+          "net": "Net-(C32-Pad2)"
         },
         {
           "number": "2",
@@ -7276,8 +6716,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D12",
+    "D12": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7306,13 +6745,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(Q7-Pad1)"
+          "net": "Net-(C32-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q8",
+    "Q8": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7351,8 +6789,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R80",
+    "R80": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7386,8 +6823,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D13",
+    "D13": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7421,8 +6857,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q9",
+    "Q9": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7461,8 +6896,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R81",
+    "R81": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7496,8 +6930,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D14",
+    "D14": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7531,8 +6964,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q10",
+    "Q10": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7556,7 +6988,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(R82-Pad1)"
+          "net": "Net-(Q10-Pad1)"
         },
         {
           "number": "2",
@@ -7571,8 +7003,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R82",
+    "R82": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7596,7 +7027,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(R82-Pad1)"
+          "net": "Net-(Q10-Pad1)"
         },
         {
           "number": "2",
@@ -7606,8 +7037,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D15",
+    "D15": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7636,13 +7066,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(R82-Pad1)"
+          "net": "Net-(Q10-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q11",
+    "Q11": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7666,7 +7095,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(R83-Pad1)"
+          "net": "Net-(D16-Pad2)"
         },
         {
           "number": "2",
@@ -7681,8 +7110,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R83",
+    "R83": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7706,7 +7134,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(R83-Pad1)"
+          "net": "Net-(D16-Pad2)"
         },
         {
           "number": "2",
@@ -7716,8 +7144,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D16",
+    "D16": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7746,13 +7173,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(R83-Pad1)"
+          "net": "Net-(D16-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q12",
+    "Q12": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7776,7 +7202,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(C17-Pad2)"
+          "net": "Net-(Q12-Pad1)"
         },
         {
           "number": "2",
@@ -7791,8 +7217,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R84",
+    "R84": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7816,7 +7241,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(C17-Pad2)"
+          "net": "Net-(Q12-Pad1)"
         },
         {
           "number": "2",
@@ -7826,8 +7251,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D17",
+    "D17": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7856,13 +7280,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(C17-Pad2)"
+          "net": "Net-(Q12-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q13",
+    "Q13": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7886,7 +7309,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(Q13-Pad1)"
+          "net": "Net-(R85-Pad1)"
         },
         {
           "number": "2",
@@ -7901,8 +7324,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R85",
+    "R85": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -7926,7 +7348,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(Q13-Pad1)"
+          "net": "Net-(R85-Pad1)"
         },
         {
           "number": "2",
@@ -7936,8 +7358,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D18",
+    "D18": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -7966,13 +7387,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(Q13-Pad1)"
+          "net": "Net-(R85-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q14",
+    "Q14": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -7996,7 +7416,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(C28-Pad2)"
+          "net": "Net-(R86-Pad1)"
         },
         {
           "number": "2",
@@ -8011,8 +7431,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R86",
+    "R86": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -8036,7 +7455,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(C28-Pad2)"
+          "net": "Net-(R86-Pad1)"
         },
         {
           "number": "2",
@@ -8046,8 +7465,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D19",
+    "D19": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -8076,13 +7494,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(C28-Pad2)"
+          "net": "Net-(R86-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "Q15",
+    "Q15": {
       "lib_id": "uBMS-Parts:FQD5N20L",
       "value": "FQD5N20L",
       "position": {
@@ -8106,7 +7523,7 @@
         {
           "number": "1",
           "name": "G",
-          "net": "Net-(Q15-Pad1)"
+          "net": "Net-(C34-Pad2)"
         },
         {
           "number": "2",
@@ -8121,8 +7538,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R87",
+    "R87": {
       "lib_id": "Device:R",
       "value": "100k",
       "position": {
@@ -8146,7 +7562,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(Q15-Pad1)"
+          "net": "Net-(C34-Pad2)"
         },
         {
           "number": "2",
@@ -8156,8 +7572,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "D20",
+    "D20": {
       "lib_id": "Device:D_Schottky",
       "value": "D",
       "position": {
@@ -8186,13 +7601,12 @@
         {
           "number": "2",
           "name": "A",
-          "net": "Net-(Q15-Pad1)"
+          "net": "Net-(C34-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C20",
+    "C20": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8221,13 +7635,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(Q5-Pad1)"
+          "net": "Net-(D10-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C26",
+    "C26": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8256,13 +7669,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(Q6-Pad1)"
+          "net": "Net-(R78-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C32",
+    "C32": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8291,13 +7703,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(Q7-Pad1)"
+          "net": "Net-(C32-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C16",
+    "C16": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8331,8 +7742,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C21",
+    "C21": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8366,8 +7776,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C27",
+    "C27": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8396,13 +7805,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(R82-Pad1)"
+          "net": "Net-(Q10-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C33",
+    "C33": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8431,13 +7839,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(R83-Pad1)"
+          "net": "Net-(D16-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C17",
+    "C17": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8466,13 +7873,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(C17-Pad2)"
+          "net": "Net-(Q12-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C22",
+    "C22": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8501,13 +7907,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(Q13-Pad1)"
+          "net": "Net-(R85-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C28",
+    "C28": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8536,13 +7941,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(C28-Pad2)"
+          "net": "Net-(R86-Pad1)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C34",
+    "C34": {
       "lib_id": "Device:C",
       "value": "10nF",
       "position": {
@@ -8571,13 +7975,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(Q15-Pad1)"
+          "net": "Net-(C34-Pad2)"
         }
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C23",
+    "C23": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8611,8 +8014,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C29",
+    "C29": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8646,8 +8048,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C35",
+    "C35": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8681,8 +8082,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C18",
+    "C18": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8716,8 +8116,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C24",
+    "C24": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8751,8 +8150,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C30",
+    "C30": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8786,8 +8184,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C36",
+    "C36": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8821,8 +8218,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C19",
+    "C19": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8856,8 +8252,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C25",
+    "C25": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8891,8 +8286,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C31",
+    "C31": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8926,8 +8320,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C37",
+    "C37": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8961,8 +8354,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "C12",
+    "C12": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -8996,8 +8388,7 @@
       ],
       "sheet_path": "/00000000-0000-0000-0000-00005f7870b7/"
     },
-    {
-      "reference": "R91",
+    "R91": {
       "lib_id": "Device:R_Small",
       "value": "4.7k",
       "position": {
@@ -9031,8 +8422,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "R23",
+    "R23": {
       "lib_id": "Device:R_Small",
       "value": "4.7k",
       "position": {
@@ -9066,8 +8456,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "R24",
+    "R24": {
       "lib_id": "Device:R_Small",
       "value": "4.7k",
       "position": {
@@ -9101,8 +8490,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "R9",
+    "R9": {
       "lib_id": "Device:R",
       "value": "10k",
       "position": {
@@ -9126,7 +8514,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(R9-Pad1)"
+          "net": "Net-(U12-Pad10)"
         },
         {
           "number": "2",
@@ -9136,8 +8524,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "C51",
+    "C51": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -9171,8 +8558,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "R21",
+    "R21": {
       "lib_id": "Device:R_Small",
       "value": "4.7k",
       "position": {
@@ -9206,8 +8592,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "U12",
+    "U12": {
       "lib_id": "Logic_LevelTranslator:TXS0108EPW",
       "value": "TXS0108EPW",
       "position": {
@@ -9227,7 +8612,7 @@
         {
           "number": "10",
           "name": "OE",
-          "net": "Net-(R9-Pad1)"
+          "net": "Net-(U12-Pad10)"
         },
         {
           "number": "1",
@@ -9327,8 +8712,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "C52",
+    "C52": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -9362,8 +8746,7 @@
       ],
       "sheet_path": "/bf265d7e-0486-4ac9-8f4e-fe1a0d7ceaa3/"
     },
-    {
-      "reference": "C41",
+    "C41": {
       "lib_id": "Device:C_Small",
       "value": "2.2uF",
       "position": {
@@ -9397,8 +8780,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "R5",
+    "R5": {
       "lib_id": "Device:R",
       "value": "71.5k",
       "position": {
@@ -9427,13 +8809,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(U3-Pad5)"
+          "net": "Net-(R5-Pad2)"
         }
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C44",
+    "C44": {
       "lib_id": "Device:C_Small",
       "value": "2.2uF",
       "position": {
@@ -9467,8 +8848,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "R102",
+    "R102": {
       "lib_id": "Device:R",
       "value": "1k",
       "position": {
@@ -9497,13 +8877,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(D3-Pad1)"
+          "net": "Net-(R102-Pad2)"
         }
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "U3",
+    "U3": {
       "lib_id": "Regulator_Switching:LM5166X",
       "value": "LM5166X",
       "position": {
@@ -9546,7 +8925,7 @@
         {
           "number": "5",
           "name": "RT",
-          "net": "Net-(U3-Pad5)"
+          "net": "Net-(R5-Pad2)"
         },
         {
           "number": "10",
@@ -9576,13 +8955,12 @@
         {
           "number": "3",
           "name": "ILIM",
-          "net": "Net-(U3-Pad3)"
+          "net": "Net-(R6-Pad2)"
         }
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "U5",
+    "U5": {
       "lib_id": "Regulator_Linear:TLV1117-33",
       "value": "TLV1117-33",
       "position": {
@@ -9606,7 +8984,7 @@
         {
           "number": "3",
           "name": "VI",
-          "net": "Net-(U5-Pad3)"
+          "net": "Net-(C46-Pad1)"
         },
         {
           "number": "1",
@@ -9621,8 +8999,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "D3",
+    "D3": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -9646,7 +9023,7 @@
         {
           "number": "1",
           "name": "K",
-          "net": "Net-(D3-Pad1)"
+          "net": "Net-(R102-Pad2)"
         },
         {
           "number": "2",
@@ -9656,8 +9033,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "F1",
+    "F1": {
       "lib_id": "Device:Polyfuse",
       "value": "500mA PTC",
       "position": {
@@ -9691,8 +9067,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "R4",
+    "R4": {
       "lib_id": "Device:R",
       "value": "10k",
       "position": {
@@ -9726,8 +9101,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C43",
+    "C43": {
       "lib_id": "Device:C_Small",
       "value": "47uF",
       "position": {
@@ -9761,8 +9135,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C48",
+    "C48": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -9796,8 +9169,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C42",
+    "C42": {
       "lib_id": "Device:C_Small",
       "value": "33nF",
       "position": {
@@ -9831,8 +9203,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C45",
+    "C45": {
       "lib_id": "Device:C_Small",
       "value": "0.1uF",
       "position": {
@@ -9866,8 +9237,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "D26",
+    "D26": {
       "lib_id": "Device:LED",
       "value": "GREEN_LED",
       "position": {
@@ -9901,8 +9271,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C46",
+    "C46": {
       "lib_id": "Device:C_Small",
       "value": "1uF",
       "position": {
@@ -9926,7 +9295,7 @@
         {
           "number": "1",
           "name": "~",
-          "net": "Net-(U5-Pad3)"
+          "net": "Net-(C46-Pad1)"
         },
         {
           "number": "2",
@@ -9936,8 +9305,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "L1",
+    "L1": {
       "lib_id": "Device:L",
       "value": "100uH",
       "position": {
@@ -9972,8 +9340,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "R103",
+    "R103": {
       "lib_id": "Device:R",
       "value": "1k",
       "position": {
@@ -10007,8 +9374,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "R6",
+    "R6": {
       "lib_id": "Device:R",
       "value": "105k",
       "position": {
@@ -10037,13 +9403,12 @@
         {
           "number": "2",
           "name": "~",
-          "net": "Net-(U3-Pad3)"
+          "net": "Net-(R6-Pad2)"
         }
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C49",
+    "C49": {
       "lib_id": "Device:C_Small",
       "value": "10nF",
       "position": {
@@ -10077,8 +9442,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     },
-    {
-      "reference": "C47",
+    "C47": {
       "lib_id": "Device:C_Small",
       "value": "1uF",
       "position": {
@@ -10112,7 +9476,7 @@
       ],
       "sheet_path": "/cf4d0062-cec1-4260-9e9c-3d7fd16e9dcc/"
     }
-  ],
+  },
   "nets": {
     "LED_BAT_R": {
       "U8": [
@@ -10122,14 +9486,14 @@
       ]
     },
     "ESP_EN": {
-      "C39": [
-        {
-          "Pin": "1"
-        }
-      ],
       "R1": [
         {
           "Pin": "2"
+        }
+      ],
+      "C39": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -10146,14 +9510,9 @@
       ]
     },
     "VBUS": {
-      "R22": [
+      "D21": [
         {
-          "Pin": "1"
-        }
-      ],
-      "C50": [
-        {
-          "Pin": "1"
+          "Pin": "2"
         }
       ],
       "D1": [
@@ -10161,14 +9520,19 @@
           "Pin": "2"
         }
       ],
+      "R22": [
+        {
+          "Pin": "1"
+        }
+      ],
       "R101": [
         {
           "Pin": "1"
         }
       ],
-      "D21": [
+      "C50": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ]
     },
@@ -10250,14 +9614,14 @@
       ]
     },
     "S2_V": {
-      "U13": [
-        {
-          "Pin": "4"
-        }
-      ],
       "U10": [
         {
           "Pin": "14"
+        }
+      ],
+      "U13": [
+        {
+          "Pin": "4"
         }
       ]
     },
@@ -10280,15 +9644,15 @@
         }
       ]
     },
-    "Net-(R15-Pad2)": {
-      "R15": [
-        {
-          "Pin": "2"
-        }
-      ],
+    "Net-(U9-Pad1)": {
       "U9": [
         {
           "Pin": "1"
+        }
+      ],
+      "R15": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -10305,11 +9669,6 @@
       ]
     },
     "+5V": {
-      "#PWR031": [
-        {
-          "Pin": "1"
-        }
-      ],
       "C44": [
         {
           "Pin": "1"
@@ -10320,17 +9679,7 @@
           "Pin": "1"
         }
       ],
-      "R102": [
-        {
-          "Pin": "1"
-        }
-      ],
-      "C45": [
-        {
-          "Pin": "1"
-        }
-      ],
-      "#PWR029": [
+      "#PWR031": [
         {
           "Pin": "1"
         }
@@ -10340,7 +9689,22 @@
           "Pin": "1"
         }
       ],
+      "#PWR029": [
+        {
+          "Pin": "1"
+        }
+      ],
       "L1": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "R102": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "C45": [
         {
           "Pin": "1"
         }
@@ -10379,17 +9743,22 @@
       ]
     },
     "GND": {
-      "C47": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "D3": [
-        {
-          "Pin": "2"
-        }
-      ],
       "R6": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "C48": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "C44": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "#PWR0110": [
         {
           "Pin": "1"
         }
@@ -10402,17 +9771,7 @@
           "Pin": "11"
         }
       ],
-      "#PWR0112": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U5": [
-        {
-          "Pin": "1"
-        }
-      ],
-      "#PWR0110": [
         {
           "Pin": "1"
         }
@@ -10422,27 +9781,32 @@
           "Pin": "2"
         }
       ],
-      "C44": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "C48": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "#PWR035": [
-        {
-          "Pin": "1"
-        }
-      ],
       "#PWR017": [
         {
           "Pin": "1"
         }
       ],
+      "D3": [
+        {
+          "Pin": "2"
+        }
+      ],
       "#PWR020": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "C47": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "#PWR0112": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "#PWR035": [
         {
           "Pin": "1"
         }
@@ -10484,22 +9848,22 @@
       ]
     },
     "~{SRCLR_5V}": {
-      "U12": [
-        {
-          "Pin": "12"
-        }
-      ],
-      "U7": [
-        {
-          "Pin": "10"
-        }
-      ],
       "U8": [
         {
           "Pin": "10"
         }
       ],
       "U13": [
+        {
+          "Pin": "10"
+        }
+      ],
+      "U12": [
+        {
+          "Pin": "12"
+        }
+      ],
+      "U7": [
         {
           "Pin": "10"
         }
@@ -10567,11 +9931,6 @@
     },
     "Net-(unnamed-4)": {},
     "SDA_5V": {
-      "R24": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U2": [
         {
           "Pin": "9"
@@ -10580,6 +9939,11 @@
       "U12": [
         {
           "Pin": "18"
+        }
+      ],
+      "R24": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -10612,9 +9976,9 @@
       ]
     },
     "UBER_EN": {
-      "R65": [
+      "J6": [
         {
-          "Pin": "1"
+          "Pin": "6"
         }
       ],
       "U11": [
@@ -10622,24 +9986,24 @@
           "Pin": "7"
         }
       ],
-      "J6": [
+      "R65": [
         {
-          "Pin": "6"
+          "Pin": "1"
         }
       ]
     },
     "Batt_Pos": {
-      "F1": [
-        {
-          "Pin": "1"
-        }
-      ],
       "J3": [
         {
           "Pin": "2"
         }
       ],
       "R7": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "F1": [
         {
           "Pin": "1"
         }
@@ -10665,14 +10029,14 @@
       ]
     },
     "7F": {
-      "R16": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U7": [
         {
           "Pin": "6"
+        }
+      ],
+      "R16": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -10782,9 +10146,9 @@
       ]
     },
     "SCL_5V": {
-      "R91": [
+      "U2": [
         {
-          "Pin": "1"
+          "Pin": "10"
         }
       ],
       "U12": [
@@ -10792,9 +10156,9 @@
           "Pin": "20"
         }
       ],
-      "U2": [
+      "R91": [
         {
-          "Pin": "10"
+          "Pin": "1"
         }
       ]
     },
@@ -10842,13 +10206,13 @@
         }
       ]
     },
-    "Net-(J1-Pad11)": {
+    "Net-(J1-Pad2)": {
       "J1": [
         {
-          "Pin": "11"
+          "Pin": "2"
         },
         {
-          "Pin": "2"
+          "Pin": "11"
         }
       ]
     },
@@ -10867,14 +10231,14 @@
       ]
     },
     "7D": {
-      "R14": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U7": [
         {
           "Pin": "3"
+        }
+      ],
+      "R14": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -10894,14 +10258,14 @@
     },
     "Net-(unnamed-6)": {},
     "VoltageSense": {
-      "U10": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U2": [
         {
           "Pin": "4"
+        }
+      ],
+      "U10": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -10913,14 +10277,14 @@
       ]
     },
     "S2_T": {
-      "U13": [
-        {
-          "Pin": "2"
-        }
-      ],
       "U11": [
         {
           "Pin": "14"
+        }
+      ],
+      "U13": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -10937,28 +10301,23 @@
           "Pin": "S1"
         },
         {
-          "Pin": "S4"
-        },
-        {
-          "Pin": "S5"
-        },
-        {
           "Pin": "S2"
         },
         {
           "Pin": "S3"
         },
         {
+          "Pin": "S4"
+        },
+        {
           "Pin": "S6"
+        },
+        {
+          "Pin": "S5"
         }
       ]
     },
     "RCLK_5V": {
-      "U12": [
-        {
-          "Pin": "15"
-        }
-      ],
       "U8": [
         {
           "Pin": "12"
@@ -10972,6 +10331,11 @@
       "U7": [
         {
           "Pin": "12"
+        }
+      ],
+      "U12": [
+        {
+          "Pin": "15"
         }
       ]
     },
@@ -10995,6 +10359,11 @@
       ]
     },
     "SRCLK_5V": {
+      "U7": [
+        {
+          "Pin": "11"
+        }
+      ],
       "U8": [
         {
           "Pin": "11"
@@ -11008,11 +10377,6 @@
       "U12": [
         {
           "Pin": "13"
-        }
-      ],
-      "U7": [
-        {
-          "Pin": "11"
         }
       ]
     },
@@ -11067,15 +10431,15 @@
         }
       ]
     },
-    "Net-(R18-Pad2)": {
-      "R18": [
-        {
-          "Pin": "2"
-        }
-      ],
+    "Net-(U9-Pad5)": {
       "U9": [
         {
           "Pin": "5"
+        }
+      ],
+      "R18": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -11101,14 +10465,14 @@
       ]
     },
     "ADC_RDY_5V": {
-      "U12": [
-        {
-          "Pin": "17"
-        }
-      ],
       "U2": [
         {
           "Pin": "2"
+        }
+      ],
+      "U12": [
+        {
+          "Pin": "17"
         }
       ]
     },
@@ -11120,24 +10484,24 @@
       ]
     },
     "TempSense": {
-      "U2": [
-        {
-          "Pin": "5"
-        }
-      ],
       "U11": [
         {
           "Pin": "1"
         }
+      ],
+      "U2": [
+        {
+          "Pin": "5"
+        }
       ]
     },
     "SYS_Pos": {
-      "J2": [
+      "R7": [
         {
           "Pin": "2"
         }
       ],
-      "R7": [
+      "J2": [
         {
           "Pin": "2"
         }
@@ -11177,24 +10541,24 @@
       ]
     },
     "SCL_3V3": {
-      "R21": [
+      "U12": [
         {
           "Pin": "1"
         }
       ],
-      "U12": [
+      "R21": [
         {
           "Pin": "1"
         }
       ]
     },
-    "Net-(R14-Pad2)": {
-      "R14": [
+    "Net-(U9-Pad2)": {
+      "U9": [
         {
           "Pin": "2"
         }
       ],
-      "U9": [
+      "R14": [
         {
           "Pin": "2"
         }
@@ -11223,12 +10587,12 @@
           "Pin": "6"
         }
       ],
-      "C8": [
+      "R3": [
         {
           "Pin": "1"
         }
       ],
-      "R3": [
+      "C8": [
         {
           "Pin": "1"
         }
@@ -11263,17 +10627,12 @@
       ]
     },
     "+3V3": {
-      "C47": [
+      "C48": [
         {
           "Pin": "1"
         }
       ],
-      "#PWR036": [
-        {
-          "Pin": "1"
-        }
-      ],
-      "C49": [
+      "R103": [
         {
           "Pin": "1"
         }
@@ -11283,17 +10642,22 @@
           "Pin": "2"
         }
       ],
+      "C47": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "C49": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "#PWR036": [
+        {
+          "Pin": "1"
+        }
+      ],
       "#PWR0111": [
-        {
-          "Pin": "1"
-        }
-      ],
-      "C48": [
-        {
-          "Pin": "1"
-        }
-      ],
-      "R103": [
         {
           "Pin": "1"
         }
@@ -11369,6 +10733,11 @@
           "Pin": "13"
         }
       ],
+      "U12": [
+        {
+          "Pin": "16"
+        }
+      ],
       "U8": [
         {
           "Pin": "13"
@@ -11377,11 +10746,6 @@
       "U13": [
         {
           "Pin": "13"
-        }
-      ],
-      "U12": [
-        {
-          "Pin": "16"
         }
       ]
     },
@@ -11486,9 +10850,9 @@
       ]
     },
     "Cell7_Sense": {
-      "R36": [
+      "U10": [
         {
-          "Pin": "2"
+          "Pin": "4"
         }
       ],
       "R42": [
@@ -11496,21 +10860,21 @@
           "Pin": "1"
         }
       ],
-      "U10": [
+      "R36": [
         {
-          "Pin": "4"
+          "Pin": "2"
         }
       ]
     },
     "Cell6_Sense": {
-      "R35": [
-        {
-          "Pin": "2"
-        }
-      ],
       "U10": [
         {
           "Pin": "20"
+        }
+      ],
+      "R35": [
+        {
+          "Pin": "2"
         }
       ],
       "R41": [
@@ -11534,14 +10898,9 @@
       ]
     },
     "Cell8_P": {
-      "J7": [
+      "Q12": [
         {
-          "Pin": "9"
-        }
-      ],
-      "Q11": [
-        {
-          "Pin": "2"
+          "Pin": "3"
         }
       ],
       "R84": [
@@ -11554,18 +10913,28 @@
           "Pin": "9"
         }
       ],
-      "Q12": [
-        {
-          "Pin": "3"
-        }
-      ],
       "D17": [
         {
           "Pin": "1"
         }
+      ],
+      "Q11": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "J7": [
+        {
+          "Pin": "9"
+        }
       ]
     },
     "Cell2_Sense": {
+      "R37": [
+        {
+          "Pin": "1"
+        }
+      ],
       "U10": [
         {
           "Pin": "8"
@@ -11575,32 +10944,17 @@
         {
           "Pin": "2"
         }
-      ],
-      "R37": [
-        {
-          "Pin": "1"
-        }
       ]
     },
     "Cell10_P": {
-      "J5": [
-        {
-          "Pin": "11"
-        }
-      ],
-      "J7": [
-        {
-          "Pin": "12"
-        }
-      ],
-      "R86": [
-        {
-          "Pin": "2"
-        }
-      ],
       "Q14": [
         {
           "Pin": "3"
+        }
+      ],
+      "J5": [
+        {
+          "Pin": "11"
         }
       ],
       "Q13": [
@@ -11608,9 +10962,19 @@
           "Pin": "2"
         }
       ],
+      "J7": [
+        {
+          "Pin": "12"
+        }
+      ],
       "D19": [
         {
           "Pin": "1"
+        }
+      ],
+      "R86": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -11620,21 +10984,21 @@
           "Pin": "2"
         }
       ],
-      "U10": [
-        {
-          "Pin": "23"
-        }
-      ],
       "R54": [
         {
           "Pin": "1"
         }
+      ],
+      "U10": [
+        {
+          "Pin": "23"
+        }
       ]
     },
     "Cell4_P": {
-      "Q7": [
+      "J5": [
         {
-          "Pin": "2"
+          "Pin": "5"
         }
       ],
       "Q8": [
@@ -11642,9 +11006,14 @@
           "Pin": "3"
         }
       ],
-      "J5": [
+      "R80": [
         {
-          "Pin": "5"
+          "Pin": "2"
+        }
+      ],
+      "Q7": [
+        {
+          "Pin": "2"
         }
       ],
       "D13": [
@@ -11656,11 +11025,6 @@
         {
           "Pin": "5"
         }
-      ],
-      "R80": [
-        {
-          "Pin": "2"
-        }
       ]
     },
     "Net-(R48-Pad1)": {
@@ -11671,12 +11035,7 @@
       ]
     },
     "Cell2_P": {
-      "J5": [
-        {
-          "Pin": "3"
-        }
-      ],
-      "J7": [
+      "Q5": [
         {
           "Pin": "2"
         }
@@ -11686,19 +11045,24 @@
           "Pin": "2"
         }
       ],
-      "Q5": [
+      "J7": [
         {
           "Pin": "2"
         }
       ],
-      "D11": [
+      "J5": [
         {
-          "Pin": "1"
+          "Pin": "3"
         }
       ],
       "Q6": [
         {
           "Pin": "3"
+        }
+      ],
+      "D11": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -11710,24 +11074,14 @@
       ]
     },
     "Cell11_P": {
-      "Q14": [
+      "J5": [
         {
-          "Pin": "2"
+          "Pin": "12"
         }
       ],
       "D20": [
         {
           "Pin": "1"
-        }
-      ],
-      "Q15": [
-        {
-          "Pin": "3"
-        }
-      ],
-      "J5": [
-        {
-          "Pin": "12"
         }
       ],
       "J7": [
@@ -11736,6 +11090,16 @@
         }
       ],
       "R87": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "Q15": [
+        {
+          "Pin": "3"
+        }
+      ],
+      "Q14": [
         {
           "Pin": "2"
         }
@@ -11783,9 +11147,9 @@
       ]
     },
     "Cell1_P": {
-      "J5": [
+      "Q5": [
         {
-          "Pin": "2"
+          "Pin": "3"
         }
       ],
       "R77": [
@@ -11793,9 +11157,14 @@
           "Pin": "2"
         }
       ],
-      "U10": [
+      "Q4": [
         {
-          "Pin": "7"
+          "Pin": "2"
+        }
+      ],
+      "J5": [
+        {
+          "Pin": "2"
         }
       ],
       "J7": [
@@ -11803,36 +11172,31 @@
           "Pin": "1"
         }
       ],
+      "U10": [
+        {
+          "Pin": "7"
+        }
+      ],
       "D10": [
         {
           "Pin": "1"
         }
-      ],
-      "Q5": [
-        {
-          "Pin": "3"
-        }
-      ],
-      "Q4": [
-        {
-          "Pin": "2"
-        }
       ]
     },
     "Cell3_P": {
-      "J5": [
+      "J7": [
         {
           "Pin": "4"
-        }
-      ],
-      "Q7": [
-        {
-          "Pin": "3"
         }
       ],
       "R79": [
         {
           "Pin": "2"
+        }
+      ],
+      "J5": [
+        {
+          "Pin": "4"
         }
       ],
       "D12": [
@@ -11845,9 +11209,9 @@
           "Pin": "2"
         }
       ],
-      "J7": [
+      "Q7": [
         {
-          "Pin": "4"
+          "Pin": "3"
         }
       ]
     },
@@ -11859,11 +11223,6 @@
       ]
     },
     "Cell9_Sense": {
-      "R46": [
-        {
-          "Pin": "2"
-        }
-      ],
       "U10": [
         {
           "Pin": "3"
@@ -11872,6 +11231,11 @@
       "R52": [
         {
           "Pin": "1"
+        }
+      ],
+      "R46": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -11883,7 +11247,12 @@
       ]
     },
     "Cell9_P": {
-      "J7": [
+      "R85": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "J5": [
         {
           "Pin": "10"
         }
@@ -11893,24 +11262,19 @@
           "Pin": "1"
         }
       ],
-      "R85": [
+      "Q12": [
         {
           "Pin": "2"
+        }
+      ],
+      "J7": [
+        {
+          "Pin": "10"
         }
       ],
       "Q13": [
         {
           "Pin": "3"
-        }
-      ],
-      "J5": [
-        {
-          "Pin": "10"
-        }
-      ],
-      "Q12": [
-        {
-          "Pin": "2"
         }
       ]
     },
@@ -11920,10 +11284,10 @@
           "Pin": "16"
         },
         {
-          "Pin": "17"
+          "Pin": "18"
         },
         {
-          "Pin": "18"
+          "Pin": "17"
         }
       ],
       "R107": [
@@ -11940,9 +11304,9 @@
       ]
     },
     "Cell10_Sense": {
-      "R47": [
+      "R53": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ],
       "U10": [
@@ -11950,26 +11314,21 @@
           "Pin": "22"
         }
       ],
-      "R53": [
+      "R47": [
         {
-          "Pin": "1"
+          "Pin": "2"
         }
       ]
     },
     "Cell7_P": {
+      "J5": [
+        {
+          "Pin": "8"
+        }
+      ],
       "D16": [
         {
           "Pin": "1"
-        }
-      ],
-      "R83": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "Q10": [
-        {
-          "Pin": "2"
         }
       ],
       "Q11": [
@@ -11977,35 +11336,45 @@
           "Pin": "3"
         }
       ],
-      "J5": [
-        {
-          "Pin": "8"
-        }
-      ],
       "J7": [
         {
           "Pin": "8"
         }
-      ]
-    },
-    "Cell12_P": {
-      "Q15": [
+      ],
+      "Q10": [
         {
           "Pin": "2"
         }
       ],
+      "R83": [
+        {
+          "Pin": "2"
+        }
+      ]
+    },
+    "Cell12_P": {
+      "J7": [
+        {
+          "Pin": "13"
+        }
+      ],
       "J5": [
         {
           "Pin": "13"
         }
       ],
-      "J7": [
+      "Q15": [
         {
-          "Pin": "13"
+          "Pin": "2"
         }
       ]
     },
     "Cell4_Sense": {
+      "U10": [
+        {
+          "Pin": "9"
+        }
+      ],
       "R33": [
         {
           "Pin": "2"
@@ -12015,19 +11384,9 @@
         {
           "Pin": "1"
         }
-      ],
-      "U10": [
-        {
-          "Pin": "9"
-        }
       ]
     },
     "Cell5_Sense": {
-      "R40": [
-        {
-          "Pin": "1"
-        }
-      ],
       "R34": [
         {
           "Pin": "2"
@@ -12036,6 +11395,11 @@
       "U10": [
         {
           "Pin": "5"
+        }
+      ],
+      "R40": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -12047,11 +11411,6 @@
       ]
     },
     "Cell6_P": {
-      "D15": [
-        {
-          "Pin": "1"
-        }
-      ],
       "J5": [
         {
           "Pin": "7"
@@ -12062,14 +11421,19 @@
           "Pin": "3"
         }
       ],
-      "Q9": [
+      "D15": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ],
       "J7": [
         {
           "Pin": "7"
+        }
+      ],
+      "Q9": [
+        {
+          "Pin": "2"
         }
       ],
       "R82": [
@@ -12079,11 +11443,6 @@
       ]
     },
     "Cell8_Sense": {
-      "R51": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U10": [
         {
           "Pin": "21"
@@ -12092,6 +11451,11 @@
       "R45": [
         {
           "Pin": "2"
+        }
+      ],
+      "R51": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -12124,12 +11488,17 @@
       ]
     },
     "Cell5_P": {
-      "J5": [
+      "Q9": [
         {
-          "Pin": "6"
+          "Pin": "3"
         }
       ],
-      "R81": [
+      "D14": [
+        {
+          "Pin": "1"
+        }
+      ],
+      "Q8": [
         {
           "Pin": "2"
         }
@@ -12139,23 +11508,23 @@
           "Pin": "6"
         }
       ],
-      "Q8": [
+      "R81": [
         {
           "Pin": "2"
         }
       ],
-      "D14": [
+      "J5": [
         {
-          "Pin": "1"
-        }
-      ],
-      "Q9": [
-        {
-          "Pin": "3"
+          "Pin": "6"
         }
       ]
     },
     "ESP_Temp": {
+      "TH4": [
+        {
+          "Pin": "2"
+        }
+      ],
       "U11": [
         {
           "Pin": "23"
@@ -12165,17 +11534,12 @@
         {
           "Pin": "1"
         }
-      ],
-      "TH4": [
-        {
-          "Pin": "2"
-        }
       ]
     },
     "CellTemp_8": {
-      "J6": [
+      "U11": [
         {
-          "Pin": "8"
+          "Pin": "6"
         }
       ],
       "R67": [
@@ -12183,16 +11547,16 @@
           "Pin": "1"
         }
       ],
-      "U11": [
+      "J6": [
         {
-          "Pin": "6"
+          "Pin": "8"
         }
       ]
     },
     "Balance_Temp": {
-      "U11": [
+      "R73": [
         {
-          "Pin": "22"
+          "Pin": "1"
         }
       ],
       "TH2": [
@@ -12200,13 +11564,18 @@
           "Pin": "2"
         }
       ],
-      "R73": [
+      "U11": [
         {
-          "Pin": "1"
+          "Pin": "22"
         }
       ]
     },
     "CellTemp_11": {
+      "R70": [
+        {
+          "Pin": "1"
+        }
+      ],
       "J6": [
         {
           "Pin": "11"
@@ -12216,22 +11585,17 @@
         {
           "Pin": "21"
         }
-      ],
-      "R70": [
-        {
-          "Pin": "1"
-        }
       ]
     },
     "CellTemp_3": {
-      "U11": [
-        {
-          "Pin": "17"
-        }
-      ],
       "J6": [
         {
           "Pin": "3"
+        }
+      ],
+      "U11": [
+        {
+          "Pin": "17"
         }
       ],
       "R62": [
@@ -12241,14 +11605,14 @@
       ]
     },
     "Mosfet_Temp": {
-      "R72": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U11": [
         {
           "Pin": "3"
+        }
+      ],
+      "R72": [
+        {
+          "Pin": "1"
         }
       ],
       "TH1": [
@@ -12275,9 +11639,9 @@
       ]
     },
     "CellTemp_4": {
-      "U11": [
+      "R63": [
         {
-          "Pin": "8"
+          "Pin": "1"
         }
       ],
       "J6": [
@@ -12285,16 +11649,16 @@
           "Pin": "4"
         }
       ],
-      "R63": [
+      "U11": [
         {
-          "Pin": "1"
+          "Pin": "8"
         }
       ]
     },
     "Power_Temp": {
-      "R74": [
+      "U11": [
         {
-          "Pin": "1"
+          "Pin": "2"
         }
       ],
       "TH3": [
@@ -12302,13 +11666,18 @@
           "Pin": "2"
         }
       ],
-      "U11": [
+      "R74": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ]
     },
     "CellTemp_7": {
+      "J6": [
+        {
+          "Pin": "7"
+        }
+      ],
       "R66": [
         {
           "Pin": "1"
@@ -12318,11 +11687,6 @@
         {
           "Pin": "19"
         }
-      ],
-      "J6": [
-        {
-          "Pin": "7"
-        }
       ]
     },
     "CellTemp_10": {
@@ -12331,14 +11695,14 @@
           "Pin": "1"
         }
       ],
-      "J6": [
-        {
-          "Pin": "10"
-        }
-      ],
       "U11": [
         {
           "Pin": "5"
+        }
+      ],
+      "J6": [
+        {
+          "Pin": "10"
         }
       ]
     },
@@ -12348,21 +11712,21 @@
           "Pin": "1"
         }
       ],
-      "R60": [
-        {
-          "Pin": "1"
-        }
-      ],
       "U11": [
         {
           "Pin": "16"
         }
+      ],
+      "R60": [
+        {
+          "Pin": "1"
+        }
       ]
     },
     "CellTemp_2": {
-      "R61": [
+      "U11": [
         {
-          "Pin": "1"
+          "Pin": "9"
         }
       ],
       "J6": [
@@ -12370,9 +11734,9 @@
           "Pin": "2"
         }
       ],
-      "U11": [
+      "R61": [
         {
-          "Pin": "9"
+          "Pin": "1"
         }
       ]
     },
@@ -12394,6 +11758,11 @@
       ]
     },
     "CellTemp_9": {
+      "J6": [
+        {
+          "Pin": "9"
+        }
+      ],
       "R68": [
         {
           "Pin": "1"
@@ -12403,32 +11772,27 @@
         {
           "Pin": "20"
         }
-      ],
-      "J6": [
-        {
-          "Pin": "9"
-        }
       ]
     },
-    "Net-(R83-Pad1)": {
-      "R83": [
-        {
-          "Pin": "1"
-        }
-      ],
+    "Net-(D16-Pad2)": {
       "D16": [
         {
           "Pin": "2"
         }
       ],
-      "Q11": [
+      "C33": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "R83": [
         {
           "Pin": "1"
         }
       ],
-      "C33": [
+      "Q11": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ]
     },
@@ -12438,14 +11802,14 @@
           "Pin": "1"
         }
       ],
-      "R81": [
-        {
-          "Pin": "1"
-        }
-      ],
       "D14": [
         {
           "Pin": "2"
+        }
+      ],
+      "R81": [
+        {
+          "Pin": "1"
         }
       ],
       "C21": [
@@ -12454,10 +11818,10 @@
         }
       ]
     },
-    "Net-(Q7-Pad1)": {
-      "Q7": [
+    "Net-(C32-Pad2)": {
+      "C32": [
         {
-          "Pin": "1"
+          "Pin": "2"
         }
       ],
       "D12": [
@@ -12470,9 +11834,9 @@
           "Pin": "1"
         }
       ],
-      "C32": [
+      "Q7": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ]
     },
@@ -12490,8 +11854,8 @@
         }
       ]
     },
-    "Net-(Q13-Pad1)": {
-      "Q13": [
+    "Net-(R85-Pad1)": {
+      "R85": [
         {
           "Pin": "1"
         }
@@ -12506,7 +11870,7 @@
           "Pin": "2"
         }
       ],
-      "R85": [
+      "Q13": [
         {
           "Pin": "1"
         }
@@ -12526,7 +11890,12 @@
         }
       ]
     },
-    "Net-(Q6-Pad1)": {
+    "Net-(R78-Pad1)": {
+      "R78": [
+        {
+          "Pin": "1"
+        }
+      ],
       "Q6": [
         {
           "Pin": "1"
@@ -12540,11 +11909,6 @@
       "C26": [
         {
           "Pin": "2"
-        }
-      ],
-      "R78": [
-        {
-          "Pin": "1"
         }
       ]
     },
@@ -12575,9 +11939,9 @@
           "Pin": "2"
         }
       ],
-      "Q8": [
+      "C16": [
         {
-          "Pin": "1"
+          "Pin": "2"
         }
       ],
       "R80": [
@@ -12585,9 +11949,9 @@
           "Pin": "1"
         }
       ],
-      "C16": [
+      "Q8": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ]
     },
@@ -12597,9 +11961,9 @@
           "Pin": "2"
         }
       ],
-      "C15": [
+      "Q4": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ],
       "R76": [
@@ -12607,9 +11971,9 @@
           "Pin": "1"
         }
       ],
-      "Q4": [
+      "C15": [
         {
-          "Pin": "1"
+          "Pin": "2"
         }
       ]
     },
@@ -12627,10 +11991,10 @@
         }
       ]
     },
-    "Net-(Q5-Pad1)": {
-      "Q5": [
+    "Net-(D10-Pad2)": {
+      "D10": [
         {
-          "Pin": "1"
+          "Pin": "2"
         }
       ],
       "R77": [
@@ -12638,12 +12002,12 @@
           "Pin": "1"
         }
       ],
-      "C20": [
+      "Q5": [
         {
-          "Pin": "2"
+          "Pin": "1"
         }
       ],
-      "D10": [
+      "C20": [
         {
           "Pin": "2"
         }
@@ -12663,8 +12027,8 @@
         }
       ]
     },
-    "Net-(R82-Pad1)": {
-      "R82": [
+    "Net-(Q10-Pad1)": {
+      "Q10": [
         {
           "Pin": "1"
         }
@@ -12674,7 +12038,7 @@
           "Pin": "2"
         }
       ],
-      "Q10": [
+      "R82": [
         {
           "Pin": "1"
         }
@@ -12685,17 +12049,7 @@
         }
       ]
     },
-    "Net-(C17-Pad2)": {
-      "C17": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "D17": [
-        {
-          "Pin": "2"
-        }
-      ],
+    "Net-(Q12-Pad1)": {
       "Q12": [
         {
           "Pin": "1"
@@ -12704,6 +12058,16 @@
       "R84": [
         {
           "Pin": "1"
+        }
+      ],
+      "C17": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "D17": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -12763,7 +12127,17 @@
         }
       ]
     },
-    "Net-(Q15-Pad1)": {
+    "Net-(C34-Pad2)": {
+      "C34": [
+        {
+          "Pin": "2"
+        }
+      ],
+      "D20": [
+        {
+          "Pin": "2"
+        }
+      ],
       "Q15": [
         {
           "Pin": "1"
@@ -12772,16 +12146,6 @@
       "R87": [
         {
           "Pin": "1"
-        }
-      ],
-      "D20": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "C34": [
-        {
-          "Pin": "2"
         }
       ]
     },
@@ -12806,13 +12170,8 @@
         }
       ]
     },
-    "Net-(C28-Pad2)": {
-      "C28": [
-        {
-          "Pin": "2"
-        }
-      ],
-      "Q14": [
+    "Net-(R86-Pad1)": {
+      "R86": [
         {
           "Pin": "1"
         }
@@ -12822,9 +12181,14 @@
           "Pin": "2"
         }
       ],
-      "R86": [
+      "Q14": [
         {
           "Pin": "1"
+        }
+      ],
+      "C28": [
+        {
+          "Pin": "2"
         }
       ]
     },
@@ -12877,15 +12241,15 @@
         }
       ]
     },
-    "Net-(R9-Pad1)": {
-      "R9": [
-        {
-          "Pin": "1"
-        }
-      ],
+    "Net-(U12-Pad10)": {
       "U12": [
         {
           "Pin": "10"
+        }
+      ],
+      "R9": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -12910,15 +12274,15 @@
         }
       ]
     },
-    "Net-(D3-Pad1)": {
-      "D3": [
-        {
-          "Pin": "1"
-        }
-      ],
+    "Net-(R102-Pad2)": {
       "R102": [
         {
           "Pin": "2"
+        }
+      ],
+      "D3": [
+        {
+          "Pin": "1"
         }
       ]
     },
@@ -12988,15 +12352,15 @@
         }
       ]
     },
-    "Net-(U5-Pad3)": {
-      "U5": [
-        {
-          "Pin": "3"
-        }
-      ],
+    "Net-(C46-Pad1)": {
       "C46": [
         {
           "Pin": "1"
+        }
+      ],
+      "U5": [
+        {
+          "Pin": "3"
         }
       ]
     },
@@ -13019,27 +12383,27 @@
         }
       ]
     },
-    "Net-(U3-Pad3)": {
-      "U3": [
-        {
-          "Pin": "3"
-        }
-      ],
+    "Net-(R6-Pad2)": {
       "R6": [
         {
           "Pin": "2"
         }
-      ]
-    },
-    "Net-(U3-Pad5)": {
+      ],
       "U3": [
         {
-          "Pin": "5"
+          "Pin": "3"
         }
-      ],
+      ]
+    },
+    "Net-(R5-Pad2)": {
       "R5": [
         {
           "Pin": "2"
+        }
+      ],
+      "U3": [
+        {
+          "Pin": "5"
         }
       ]
     },

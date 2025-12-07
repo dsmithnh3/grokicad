@@ -30,9 +30,8 @@ class DistilledComponent:
     pins: List[DistilledPin] = field(default_factory=list)
     category: str = "other"
 
-    def to_dict(self) -> Dict:
+    def to_dict(self, include_reference: bool = True) -> Dict:
         data = {
-            "reference": self.reference,
             "lib_id": self.lib_id,
             "value": self.value,
             "position": {"x": self.position[0], "y": self.position[1]},
@@ -41,6 +40,9 @@ class DistilledComponent:
             "category": self.category,
             "pins": [pin.to_dict() for pin in self.pins],
         }
+
+        if include_reference:
+            data["reference"] = self.reference
 
         if self.sheet_path is not None:
             data["sheet_path"] = self.sheet_path
@@ -90,7 +92,7 @@ class DistilledSchematic:
 
     def to_dict(self) -> Dict:
         return {
-            "components": [c.to_dict() for c in self.components],
+            "components": {c.reference: c.to_dict(include_reference=False) for c in self.components},
             "nets": {name: net.to_dict() for name, net in self.nets.items()},
             "proximities": [p.to_dict() for p in self.proximities],
         }

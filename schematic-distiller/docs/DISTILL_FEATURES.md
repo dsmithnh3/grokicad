@@ -3,16 +3,15 @@
 This guide explains what the distillation pipeline produces, the knobs you can tune, and how to run it from Python or the demo CLI.
 
 ## What distillation produces
-- Components with `reference`, `lib_id`, `value`, `footprint`, filtered `properties`, `pins`, `position`, optional `sheet_path`, and a coarse `category`.
+- Components as a map keyed by reference designator; each entry includes `lib_id`, `value`, `footprint`, filtered `properties`, `pins`, `position`, optional `sheet_path`, and a coarse `category`.
 - Nets as a map keyed by net name; each reference maps to a list of pin objects (`{ "Pin": "<number>" }`).
 - Proximity edges between nearby real components (power/net labels are excluded) with distance, score, categories, and applied weight.
 
 Example (truncated):
 ```json
 {
-  "components": [
-    {
-      "reference": "U1",
+  "components": {
+    "U1": {
       "lib_id": "MCU:STM32",
       "value": "STM32",
       "footprint": "LQFP-48",
@@ -25,7 +24,7 @@ Example (truncated):
       "position": { "x": 0, "y": 0 },
       "sheet_path": "/mcu"
     }
-  ],
+  },
   "nets": {
     "VCC": { "U1": [{ "Pin": "1" }], "C1": [{ "Pin": "1" }] }
   },

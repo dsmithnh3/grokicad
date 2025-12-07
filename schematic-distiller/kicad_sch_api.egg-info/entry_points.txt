@@ -1,0 +1,8 @@
+[console_scripts]
+kicad-sch-api = kicad_sch_api.cli:main
+kicad-sch-mcp = mcp_server.server:main
+ksa-bom = kicad_sch_api.cli.bom_manage:entry_point
+ksa-claude-setup = kicad_sch_api.cli.setup_claude:entry_point
+ksa-demo = kicad_sch_api.cli.demo:entry_point
+ksa-find-libraries = kicad_sch_api.cli.find_libraries:entry_point
+ksa-kicad-to-python = kicad_sch_api.cli.kicad_to_python:entry_point

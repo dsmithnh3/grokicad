@@ -5,10 +5,7 @@
 
 import { GrokiAPI, type DistilledSchematic, type RepoInitResponse, type RepoClearCacheResponse } from "../../services/api";
 import type { SelectedComponent, GrokContext } from "./types";
-
-// Configure API base URL
-const BACKEND_URL = process.env["BACKEND_URL"];
-const API_BASE_URL = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
+import { API_BASE_URL } from "../../../config";
 
 /** Callback types for streaming events */
 export interface StreamCallbacks {

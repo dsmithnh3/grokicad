@@ -3,11 +3,7 @@
     Handles fetching commit history, schematic files at specific commits, etc.
 */
 
-// Configure API base URL - can be overridden for different environments
-// Uses BACKEND_URL environment variable (set via BACKEND_IP and BACKEND_PORT in .env)
-// Falls back to localhost if not set
-const BACKEND_URL = process.env["BACKEND_URL"];
-const API_BASE_URL = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
+import { API_BASE_URL } from "../../config";
 
 console.log(`[API] Using backend URL: ${API_BASE_URL}`);
 

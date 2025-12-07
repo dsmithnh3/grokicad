@@ -28,11 +28,14 @@ async fn main() -> anyhow::Result<()> {
     let app_state = Arc::new(pool);
 
     // Configure CORS to allow requests from the frontend domain
+    // Note: If you want to restrict to specific origins, use:
+    // .allow_origin("https://grokicad.com".parse::<HeaderValue>().unwrap())
     let cors = CorsLayer::new()
         .allow_origin(Any) // Allow all origins in production (can be restricted to specific domains)
         .allow_methods(Any)
         .allow_headers(Any)
         .expose_headers(Any)
+        .allow_credentials(false) // Set to true if you need to send cookies/auth headers
         .max_age(std::time::Duration::from_secs(3600));
 
     let app = Router::new()
@@ -46,9 +49,15 @@ async fn main() -> anyhow::Result<()> {
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(app_state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:443").await?;
-    info!("Server listening on 0.0.0.0:443");
-    info!("Swagger UI available at http://localhost:443/swagger-ui/");
+    // Listen on HTTP port (Cloudflare will handle HTTPS termination)
+    // Use port 8080 for HTTP, or port 80 if running as root
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse::<u16>().ok())
+        .unwrap_or(8080);
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await?;
+    info!("Server listening on 0.0.0.0:{}", port);
+    info!("Swagger UI available at http://localhost:{}/swagger-ui/", port);
 
     axum::serve(listener, app).await?;
 

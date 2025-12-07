@@ -72,6 +72,14 @@ export class KCGrokChatPanelElement extends KCUIElement {
     // Update batching to prevent flickering
     private _updatePending = false;
     private _isInitialized = false;
+    
+    // Dragging and docking state
+    private _isDocked: boolean = false;
+    private _isDragging: boolean = false;
+    private _dragStartX: number = 0;
+    private _dragStartY: number = 0;
+    private _panelStartX: number = 0;
+    private _panelStartY: number = 0;
 
     // =========================================================================
     // Lifecycle
@@ -394,6 +402,27 @@ export class KCGrokChatPanelElement extends KCUIElement {
         this.addDisposable(
             delegate(root, ".send-button", "click", () => {
                 this._submitQuery();
+            }),
+        );
+        
+        // Dock button
+        this.addDisposable(
+            delegate(root, ".dock-button", "click", () => {
+                this._dock();
+            }),
+        );
+        
+        // Docked tab - click to undock
+        this.addDisposable(
+            delegate(root, ".docked-tab", "click", () => {
+                this._undock();
+            }),
+        );
+        
+        // Draggable header
+        this.addDisposable(
+            delegate(root, ".chat-header.draggable", "mousedown", (e) => {
+                this._startDrag(e as MouseEvent);
             }),
         );
 
@@ -973,12 +1002,17 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
     private _renderHeader() {
         return html`
-            <div class="chat-header">
+            <div class="chat-header draggable">
                 <div class="chat-header-left">
                     <img class="grok-logo" src="${this.logoSrc}" alt="Grok" />
                     <span class="chat-title">Ask Grok</span>
                 </div>
-                <button class="close-button">×</button>
+                <div class="header-actions">
+                    <button class="dock-button" title="Dock to side">
+                        <kc-ui-icon>dock_to_right</kc-ui-icon>
+                    </button>
+                    <button class="close-button">×</button>
+                </div>
             </div>
         `;
     }
@@ -1233,8 +1267,16 @@ export class KCGrokChatPanelElement extends KCUIElement {
     }
 
     override render() {
+        if (this._isDocked) {
+            return html`
+                <div class="docked-tab" title="Click to expand Grok panel">
+                    <img class="docked-logo" src="${this.logoSrc}" alt="Grok" />
+                </div>
+            `;
+        }
+        
         return html`
-            <div class="chat-container">
+            <div class="chat-container ${this._isDragging ? 'dragging' : ''}">
                 ${this._renderHeader()}
                 <div class="chat-body">
                     ${this._renderCollapsibleControls()}
@@ -1242,6 +1284,113 @@ export class KCGrokChatPanelElement extends KCUIElement {
                 </div>
             </div>
         `;
+    }
+    
+    // =========================================================================
+    // Dragging and Docking
+    // =========================================================================
+    
+    private _startDrag(e: MouseEvent) {
+        // Don't start drag if clicking on close button
+        if ((e.target as HTMLElement).closest('.close-button')) return;
+        
+        this._isDragging = true;
+        this._dragStartX = e.clientX;
+        this._dragStartY = e.clientY;
+        
+        const rect = this.getBoundingClientRect();
+        this._panelStartX = rect.left;
+        this._panelStartY = rect.top;
+        
+        // Add temporary styles for dragging
+        this.style.position = 'fixed';
+        this.style.left = `${rect.left}px`;
+        this.style.top = `${rect.top}px`;
+        this.style.right = 'auto';
+        this.style.bottom = 'auto';
+        
+        document.addEventListener('mousemove', this._onDrag);
+        document.addEventListener('mouseup', this._endDrag);
+        
+        this._scheduleUpdate();
+    }
+    
+    private _onDrag = (e: MouseEvent) => {
+        if (!this._isDragging) return;
+        
+        const deltaX = e.clientX - this._dragStartX;
+        const deltaY = e.clientY - this._dragStartY;
+        
+        const newX = this._panelStartX + deltaX;
+        const newY = this._panelStartY + deltaY;
+        
+        this.style.left = `${newX}px`;
+        this.style.top = `${newY}px`;
+        
+        // Check if near right edge for docking hint
+        const viewportWidth = window.innerWidth;
+        if (newX + this.offsetWidth > viewportWidth - 50) {
+            this.classList.add('dock-hint');
+        } else {
+            this.classList.remove('dock-hint');
+        }
+    };
+    
+    private _endDrag = (e: MouseEvent) => {
+        if (!this._isDragging) return;
+        
+        document.removeEventListener('mousemove', this._onDrag);
+        document.removeEventListener('mouseup', this._endDrag);
+        
+        this._isDragging = false;
+        this.classList.remove('dock-hint');
+        
+        // Check if should dock to right edge
+        const viewportWidth = window.innerWidth;
+        const rect = this.getBoundingClientRect();
+        
+        if (rect.right > viewportWidth - 50) {
+            this._animateToDock();
+        } else {
+            // Keep the new position
+            this._scheduleUpdate();
+        }
+    };
+    
+    private _animateToDock() {
+        // Animate panel sliding off to the right before docking
+        const viewportWidth = window.innerWidth;
+        this.style.transition = 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+        this.style.left = `${viewportWidth}px`;
+        this.style.opacity = '0';
+        
+        setTimeout(() => {
+            this._dock();
+        }, 250);
+    }
+    
+    private _dock() {
+        this._isDocked = true;
+        // Reset position and transition styles
+        this.style.transition = '';
+        this.style.position = '';
+        this.style.left = '';
+        this.style.top = '';
+        this.style.right = '';
+        this.style.bottom = '';
+        this.style.opacity = '';
+        this._scheduleUpdate();
+    }
+    
+    private _undock() {
+        this._isDocked = false;
+        // Reset to default position with animation
+        this.style.position = '';
+        this.style.left = '';
+        this.style.top = '';
+        this.style.right = '';
+        this.style.bottom = '';
+        this._scheduleUpdate();
     }
 }
 

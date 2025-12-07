@@ -21,14 +21,20 @@ export const hostStyles = css`
         opacity: 1;
         transform: translateX(0);
         transition:
-            opacity 0.2s ease,
-            transform 0.2s ease;
+            opacity 0.25s ease-out,
+            transform 0.25s ease-out;
     }
 
     :host(:not([visible])) {
         opacity: 0;
         pointer-events: none;
-        transform: translateX(10px);
+        transform: translateX(20px);
+    }
+    
+    /* Dock hint when near edge */
+    :host(.dock-hint) .chat-container {
+        border-color: rgba(255, 206, 84, 0.6);
+        box-shadow: 0 0 30px rgba(255, 206, 84, 0.15), 0 8px 32px rgba(0, 0, 0, 0.5);
     }
 `;
 
@@ -36,18 +42,64 @@ export const containerStyles = css`
     .chat-container {
         width: 380px;
         height: 100%;
-        background: rgba(15, 15, 15, 0.98);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
+        background: #000000;
+        border: 1px solid #333333;
+        border-radius: 8px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .chat-container.dragging {
+        cursor: grabbing;
+        user-select: none;
+        opacity: 0.9;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
     }
 
     /* Allow dropdown to extend beyond container bounds */
     :host([data-search-open]) .chat-container {
         overflow: visible;
+    }
+    
+    /* Docked tab - collapsed state */
+    .docked-tab {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 72px;
+        background: #0a0a0a;
+        border: 1px solid #333333;
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .docked-tab:hover {
+        width: 52px;
+        background: #1a1a1a;
+        border-color: rgba(255, 206, 84, 0.5);
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 206, 84, 0.1);
+    }
+    
+    .docked-logo {
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .docked-tab:hover .docked-logo {
+        transform: scale(1.15);
     }
 `;
 
@@ -60,10 +112,18 @@ export const headerStyles = css`
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
-        background: rgba(25, 25, 25, 0.95);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 10px 14px;
+        background: #0a0a0a;
+        border-bottom: 1px solid #333333;
         flex-shrink: 0;
+    }
+    
+    .chat-header.draggable {
+        cursor: grab;
+    }
+    
+    .chat-header.draggable:active {
+        cursor: grabbing;
     }
 
     .chat-header-left {
@@ -71,11 +131,67 @@ export const headerStyles = css`
         align-items: center;
         gap: 10px;
     }
+    
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
 
     .grok-logo {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         object-fit: contain;
+    }
+    
+    .chat-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: #ffffff;
+    }
+    
+    .dock-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #666666;
+        transition: all 0.15s ease;
+    }
+    
+    .dock-button:hover {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+    
+    .dock-button kc-ui-icon {
+        font-size: 16px;
+    }
+    
+    .close-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #666666;
+        font-size: 18px;
+        font-weight: 300;
+        transition: all 0.15s ease;
+    }
+    
+    .close-button:hover {
+        background: #1a1a1a;
+        color: #ffffff;
     }
 
     .chat-title {
@@ -114,12 +230,13 @@ export const bodyStyles = css`
         flex-direction: column;
         overflow: hidden;
         min-height: 0;
+        background: #000000;
     }
 
     /* Collapsible Controls Section */
     .controls-section {
         flex-shrink: 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid #1a1a1a;
     }
 
     .controls-toggle {
@@ -128,9 +245,9 @@ export const bodyStyles = css`
         gap: 8px;
         width: 100%;
         padding: 10px 14px;
-        background: rgba(255, 206, 84, 0.05);
+        background: #0a0a0a;
         border: none;
-        color: rgba(255, 255, 255, 0.8);
+        color: #ffffff;
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
@@ -141,12 +258,12 @@ export const bodyStyles = css`
     }
 
     .controls-toggle:hover {
-        background: rgba(255, 206, 84, 0.1);
+        background: #1a1a1a;
     }
 
     .toggle-icon {
         font-size: 8px;
-        color: rgba(255, 206, 84, 0.7);
+        color: rgba(255, 206, 84, 0.8);
         transition: transform 0.2s ease;
     }
 
@@ -155,7 +272,7 @@ export const bodyStyles = css`
     }
 
     .selection-badge {
-        background: rgba(255, 206, 84, 0.25);
+        background: rgba(255, 206, 84, 0.2);
         color: rgba(255, 206, 84, 1);
         padding: 2px 6px;
         border-radius: 10px;
@@ -165,6 +282,7 @@ export const bodyStyles = css`
 
     .controls-content {
         overflow-x: hidden;
+        background: #000000;
     }
 
     .controls-section.collapsed .controls-content {
@@ -173,7 +291,7 @@ export const bodyStyles = css`
 
     .section {
         padding: 10px 14px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid #1a1a1a;
     }
 
     .section:last-child {
@@ -183,7 +301,7 @@ export const bodyStyles = css`
     .section-label {
         font-size: 10px;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.45);
+        color: #666666;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 8px;
@@ -496,8 +614,8 @@ export const queryInputStyles = css`
     .chat-input-area {
         flex-shrink: 0;
         padding: 12px 14px;
-        background: rgba(20, 20, 20, 0.8);
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: #0a0a0a;
+        border-top: 1px solid #333333;
     }
 
     /* Thinking mode toggle row */
@@ -576,12 +694,12 @@ export const queryInputStyles = css`
 
     /* Disabled state for input area */
     .chat-input-area.disabled {
-        opacity: 0.7;
+        opacity: 0.6;
     }
 
     .chat-input-container.disabled {
-        background: rgba(255, 255, 255, 0.02);
-        border-color: rgba(255, 255, 255, 0.05);
+        background: #0a0a0a;
+        border-color: #1a1a1a;
     }
 
     .chat-input-container.disabled .query-input {
@@ -592,16 +710,16 @@ export const queryInputStyles = css`
         display: flex;
         gap: 8px;
         align-items: flex-end;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+        background: #0a0a0a;
+        border: 1px solid #333333;
+        border-radius: 8px;
         padding: 8px 8px 8px 12px;
         transition: all 0.15s ease;
     }
 
     .chat-input-container:focus-within {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 206, 84, 0.4);
+        border-color: rgba(255, 206, 84, 0.5);
+        box-shadow: 0 0 0 1px rgba(255, 206, 84, 0.1);
     }
 
     .query-input {
@@ -609,7 +727,7 @@ export const queryInputStyles = css`
         padding: 4px 0;
         background: transparent;
         border: none;
-        color: rgba(255, 255, 255, 0.9);
+        color: #ffffff;
         font-size: 13px;
         font-family: inherit;
         outline: none;
@@ -621,7 +739,7 @@ export const queryInputStyles = css`
     }
 
     .query-input::placeholder {
-        color: rgba(255, 255, 255, 0.35);
+        color: #666666;
         line-height: 1.6;
     }
 
@@ -631,9 +749,9 @@ export const queryInputStyles = css`
         justify-content: center;
         width: 32px;
         height: 32px;
-        background: rgba(255, 206, 84, 0.2);
+        background: rgba(255, 206, 84, 0.15);
         border: none;
-        border-radius: 8px;
+        border-radius: 6px;
         cursor: pointer;
         transition: all 0.15s ease;
         color: rgba(255, 206, 84, 1);

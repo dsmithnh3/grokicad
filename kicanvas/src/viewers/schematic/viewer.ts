@@ -181,152 +181,166 @@ export class SchematicViewer extends DocumentViewer<
             return connections;
         }
 
-        // Get all symbols from the items
-        const symbols = items.filter(
+        // Selected symbols (zone contents) and all symbols in the schematic
+        const selectedSymbols = items.filter(
             (item): item is SchematicSymbol => item instanceof SchematicSymbol,
         );
+        const selectedRefs = new Set(selectedSymbols.map((s) => s.reference));
+        const allSymbols = Array.from(this.schematic.symbols.values());
 
-        // Get all wires from the items
-        const wires = items.filter(
-            (item): item is Wire => item instanceof Wire,
-        );
-
-        // Get all labels from the items
+        // Use ALL wires and labels so we can find connections to components
+        // outside the current selection zone.
+        const wires = this.schematic.wires;
         const labels = [
-            ...items.filter(
-                (item): item is NetLabel => item instanceof NetLabel,
-            ),
-            ...items.filter(
-                (item): item is GlobalLabel => item instanceof GlobalLabel,
-            ),
-            ...items.filter(
-                (item): item is HierarchicalLabel =>
-                    item instanceof HierarchicalLabel,
-            ),
+            ...this.schematic.net_labels,
+            ...this.schematic.global_labels,
+            ...this.schematic.hierarchical_labels,
         ];
 
-        // Build a map of wire endpoints to find connections
-        const wireEndpoints = new Map<string, Wire[]>();
+        // Union-Find for connectivity across wire graph, pins, and labels.
+        const parent = new Map<string, string>();
+        const find = (k: string): string => {
+            let p = parent.get(k);
+            if (p === undefined) {
+                parent.set(k, k);
+                p = k;
+            }
+            if (p !== k) {
+                const root = find(p);
+                parent.set(k, root);
+                return root;
+            }
+            return p;
+        };
+        const union = (a: string, b: string) => {
+            const ra = find(a);
+            const rb = find(b);
+            if (ra !== rb) {
+                parent.set(ra, rb);
+            }
+        };
+
+        const keyFor = (x: number, y: number) => `${x.toFixed(3)},${y.toFixed(3)}`;
+
+        // Add wire endpoints and connect consecutive points in each wire.
         for (const wire of wires) {
-            for (const pt of wire.pts) {
-                const key = `${pt.x.toFixed(3)},${pt.y.toFixed(3)}`;
-                if (!wireEndpoints.has(key)) {
-                    wireEndpoints.set(key, []);
+            for (let i = 0; i < wire.pts.length; i++) {
+                const pt = wire.pts[i]!;
+                const k = keyFor(pt.x, pt.y);
+                find(k);
+                if (i > 0) {
+                    const prev = wire.pts[i - 1]!;
+                    union(k, keyFor(prev.x, prev.y));
                 }
-                wireEndpoints.get(key)!.push(wire);
             }
         }
 
-        // Build a map of label positions
-        const labelsByPosition = new Map<
-            string,
-            NetLabel | GlobalLabel | HierarchicalLabel
-        >();
-        for (const label of labels) {
-            const key = `${label.at.position.x.toFixed(
-                3,
-            )},${label.at.position.y.toFixed(3)}`;
-            labelsByPosition.set(key, label);
-        }
-
-        // Find connections through pins
-        const pinConnections = new Map<
+        // Map pin positions to nodes
+        const pinPositions = new Map<
             string,
             { symbol: SchematicSymbol; pin: PinInstance }[]
         >();
-
-        for (const symbol of symbols) {
+        for (const symbol of allSymbols) {
             for (const pin of symbol.unit_pins) {
-                const pinPos = this.get_pin_position(symbol, pin);
-                const key = `${pinPos.x.toFixed(3)},${pinPos.y.toFixed(3)}`;
-
-                if (!pinConnections.has(key)) {
-                    pinConnections.set(key, []);
+                const pos = this.get_pin_position(symbol, pin);
+                const k = keyFor(pos.x, pos.y);
+                find(k);
+                if (!pinPositions.has(k)) {
+                    pinPositions.set(k, []);
                 }
-                pinConnections.get(key)!.push({ symbol, pin });
+                pinPositions.get(k)!.push({ symbol, pin });
             }
         }
 
-        // Find direct pin-to-pin connections
-        for (const [posKey, pinsAtPos] of pinConnections) {
-            if (pinsAtPos.length >= 2) {
-                // Direct connection between pins
-                for (let i = 0; i < pinsAtPos.length; i++) {
-                    for (let j = i + 1; j < pinsAtPos.length; j++) {
-                        const pin1 = pinsAtPos[i]!;
-                        const pin2 = pinsAtPos[j]!;
+        // Attach pins to wire nodes (union with any existing wire node at same coord)
+        for (const k of pinPositions.keys()) {
+            find(k); // ensure node exists
+        }
 
-                        // Get net name from label if available
-                        const netName = labelsByPosition.get(posKey)?.text;
+        // Attach labels as nodes and union with coincident wire/pin points
+        const labelByKey = new Map<string, NetLabel | GlobalLabel | HierarchicalLabel>();
+        for (const label of labels) {
+            const k = keyFor(label.at.position.x, label.at.position.y);
+            labelByKey.set(k, label);
+            find(k);
+        }
 
-                        connections.push({
-                            from: pin1.symbol.reference,
-                            fromPin: pin1.pin.number,
-                            to: pin2.symbol.reference,
-                            toPin: pin2.pin.number,
-                            netName: netName,
-                        });
-                    }
-                }
+        // If labels or pins share the same coordinate as a wire node, they are already united.
+        // (All nodes share the same key mapping.)
+
+        // Deduplicate connections regardless of ordering
+        const seen = new Set<string>();
+
+        const pushConnection = (
+            a: { symbol: SchematicSymbol; pin: PinInstance },
+            b: { symbol: SchematicSymbol; pin: PinInstance },
+            netName?: string,
+        ) => {
+            const aRef = a.symbol.reference;
+            const bRef = b.symbol.reference;
+
+            if (aRef === bRef) {
+                return;
             }
 
-            // Check for wire connections at this pin position
-            if (wireEndpoints.has(posKey) && pinsAtPos.length === 1) {
-                const pin = pinsAtPos[0]!;
-                const wiresAtPin = wireEndpoints.get(posKey)!;
+            const aSelected = selectedRefs.has(aRef);
+            const bSelected = selectedRefs.has(bRef);
 
-                // Find other pins connected through these wires
-                for (const wire of wiresAtPin) {
-                    for (const pt of wire.pts) {
-                        const otherKey = `${pt.x.toFixed(3)},${pt.y.toFixed(
-                            3,
-                        )}`;
-                        if (otherKey === posKey) continue;
+            if (!aSelected && !bSelected) {
+                return;
+            }
 
-                        const otherPins = pinConnections.get(otherKey);
-                        if (otherPins) {
-                            for (const otherPin of otherPins) {
-                                // Avoid duplicate connections
-                                const existing = connections.find(
-                                    (c) =>
-                                        (c.from === pin.symbol.reference &&
-                                            c.fromPin === pin.pin.number &&
-                                            c.to ===
-                                                otherPin.symbol.reference &&
-                                            c.toPin === otherPin.pin.number) ||
-                                        (c.to === pin.symbol.reference &&
-                                            c.toPin === pin.pin.number &&
-                                            c.from ===
-                                                otherPin.symbol.reference &&
-                                            c.fromPin === otherPin.pin.number),
-                                );
+            // Prefer selected -> other
+            let from = a;
+            let to = b;
+            if (!aSelected && bSelected) {
+                from = b;
+                to = a;
+            }
 
-                                if (!existing) {
-                                    // Try to find net name from labels on the wire
-                                    let netName: string | undefined;
-                                    for (const wpt of wire.pts) {
-                                        const lKey = `${wpt.x.toFixed(
-                                            3,
-                                        )},${wpt.y.toFixed(3)}`;
-                                        const label =
-                                            labelsByPosition.get(lKey);
-                                        if (label) {
-                                            netName = label.text;
-                                            break;
-                                        }
-                                    }
+            const key = `${from.symbol.reference}|${from.pin.number}->${to.symbol.reference}|${to.pin.number}`;
+            if (seen.has(key)) {
+                return;
+            }
+            seen.add(key);
 
-                                    connections.push({
-                                        from: pin.symbol.reference,
-                                        fromPin: pin.pin.number,
-                                        to: otherPin.symbol.reference,
-                                        toPin: otherPin.pin.number,
-                                        netName: netName,
-                                    });
-                                }
-                            }
-                        }
-                    }
+            connections.push({
+                from: from.symbol.reference,
+                fromPin: from.pin.number,
+                to: to.symbol.reference,
+                toPin: to.pin.number,
+                netName,
+            });
+        };
+
+        // Build groups of pins by connectivity root
+        const pinsByRoot = new Map<
+            string,
+            { symbol: SchematicSymbol; pin: PinInstance }[]
+        >();
+        for (const [k, pins] of pinPositions) {
+            const root = find(k);
+            if (!pinsByRoot.has(root)) {
+                pinsByRoot.set(root, []);
+            }
+            pinsByRoot.get(root)!.push(...pins);
+        }
+
+        // Determine net name per root (if any label on that root)
+        const netNameByRoot = new Map<string, string>();
+        for (const [k, label] of labelByKey) {
+            const root = find(k);
+            if (!netNameByRoot.has(root) && label.text) {
+                netNameByRoot.set(root, label.text);
+            }
+        }
+
+        // For each connectivity component, connect pins within it
+        for (const [root, pins] of pinsByRoot) {
+            const netName = netNameByRoot.get(root);
+            for (let i = 0; i < pins.length; i++) {
+                for (let j = i + 1; j < pins.length; j++) {
+                    pushConnection(pins[i]!, pins[j]!, netName);
                 }
             }
         }

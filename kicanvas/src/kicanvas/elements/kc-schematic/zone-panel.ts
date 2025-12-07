@@ -162,6 +162,25 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                 border-radius: 3px;
             }
 
+            .pin-toggle {
+                font-size: 0.75em;
+                padding: 0.15em 0.4em;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 3px;
+                color: rgba(255, 255, 255, 0.85);
+                cursor: pointer;
+                pointer-events: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.2em;
+            }
+
+            .pin-toggle:hover {
+                background: rgba(255, 206, 84, 0.15);
+                border-color: rgba(255, 206, 84, 0.3);
+            }
+
             .pin-number {
                 color: rgb(78, 205, 196);
             }
@@ -268,6 +287,8 @@ export class KCSchematicZonePanelElement extends KCUIElement {
 
     viewer: SchematicViewer;
     zoneData: ZoneSelectionData | null = null;
+    /** Tracks which symbols have their full pin list expanded */
+    expandedPinSymbols: Set<string> = new Set();
 
     override connectedCallback() {
         (async () => {
@@ -296,10 +317,32 @@ export class KCSchematicZonePanelElement extends KCUIElement {
 
         // Handle clicks via event delegation
         this.addEventListener("click", (e) => {
-            const target = e.target as HTMLElement;
-            
+            const path = e.composedPath() as HTMLElement[];
+
+            // Handle pin list expand/collapse
+            const pinToggle = path.find(
+                (n): n is HTMLElement =>
+                    n instanceof HTMLElement &&
+                    n.dataset !== undefined &&
+                    n.dataset["pinToggle"] !== undefined,
+            );
+            if (pinToggle) {
+                const uuid = pinToggle.dataset["pinToggle"];
+                if (uuid) {
+                    this.toggle_symbol_pins(uuid);
+                    e.stopPropagation();
+                    e.preventDefault();
+                    return;
+                }
+            }
+
             // Handle symbol clicks
-            const symbolItem = target.closest("[data-symbol-uuid]") as HTMLElement;
+            const symbolItem = path.find(
+                (n): n is HTMLElement =>
+                    n instanceof HTMLElement &&
+                    n.dataset !== undefined &&
+                    n.dataset["symbolUuid"] !== undefined,
+            );
             if (symbolItem) {
                 const uuid = symbolItem.dataset["symbolUuid"];
                 if (uuid) {
@@ -318,6 +361,9 @@ export class KCSchematicZonePanelElement extends KCUIElement {
             this.update();
             return;
         }
+
+        // Reset expanded pin state on new selection
+        this.expandedPinSymbols.clear();
 
         // Filter and process symbols
         const symbols: ZoneSymbolData[] = items
@@ -369,6 +415,15 @@ export class KCSchematicZonePanelElement extends KCUIElement {
         );
     }
 
+    private toggle_symbol_pins(uuid: string) {
+        if (this.expandedPinSymbols.has(uuid)) {
+            this.expandedPinSymbols.delete(uuid);
+        } else {
+            this.expandedPinSymbols.add(uuid);
+        }
+        this.update();
+    }
+
     override render() {
         if (!this.zoneData) {
             return html`
@@ -390,8 +445,15 @@ export class KCSchematicZonePanelElement extends KCUIElement {
 
         const { symbols, connections, wireCount, labelCount } = this.zoneData;
 
-        const symbolItems = symbols.map(
-            (s) => html`
+        const symbolItems = symbols.map((s) => {
+            const isExpanded = this.expandedPinSymbols.has(s.symbol.uuid);
+            const hasOverflow = s.pins.length > MAX_VISIBLE_PINS;
+            const visiblePins = isExpanded
+                ? s.pins
+                : s.pins.slice(0, MAX_VISIBLE_PINS);
+            const remaining = Math.max(0, s.pins.length - MAX_VISIBLE_PINS);
+
+            return html`
                 <div
                     class="symbol-item"
                     data-symbol-uuid="${s.symbol.uuid}">
@@ -405,7 +467,7 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                               <div class="symbol-pins">
                                   <div class="symbol-pins-label">Pins:</div>
                                   <div class="pin-list">
-                                      ${s.pins.slice(0, MAX_VISIBLE_PINS).map(
+                                      ${visiblePins.map(
                                           (pin) => html`
                                               <span class="pin-item">
                                                   <span class="pin-number"
@@ -420,19 +482,25 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                                               </span>
                                           `,
                                       )}
-                                      ${s.pins.length > MAX_VISIBLE_PINS
-                                          ? html`<span class="pin-item"
-                                                >+${s.pins.length - MAX_VISIBLE_PINS}
-                                                more</span
-                                            >`
+                                      ${hasOverflow
+                                          ? html`
+                                                <button
+                                                    type="button"
+                                                    class="pin-toggle"
+                                                    data-pin-toggle="${s.symbol.uuid}">
+                                                    ${isExpanded
+                                                        ? "Show less"
+                                                        : `+${remaining} more`}
+                                                </button>
+                                            `
                                           : null}
                                   </div>
                               </div>
                           `
                         : null}
                 </div>
-            `,
-        );
+            `;
+        });
 
         const connectionItems = connections.map(
             (c) => html`

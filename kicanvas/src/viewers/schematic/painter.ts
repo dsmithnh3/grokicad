@@ -377,8 +377,12 @@ class PropertyPainter extends SchematicItemPainter {
             color = this.dim_if_needed(font_color);
         }
 
-        const parent = p.parent as schematic_items.SchematicSymbol;
-        const transform = this.view_painter.current_symbol_transform;
+        const parent = p.parent;
+        const parent_is_symbol =
+            parent instanceof schematic_items.SchematicSymbol;
+        const transform = parent_is_symbol
+            ? this.view_painter.current_symbol_transform
+            : undefined;
         const matrix = transform?.matrix ?? Matrix3.identity();
 
         let text = p.shown_text;

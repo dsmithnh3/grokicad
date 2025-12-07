@@ -172,13 +172,19 @@ export class GrokAPIService {
 
         // Abort any existing request
         this.abort();
-        this._abortController = new AbortController();
+        const abortController = new AbortController();
+        this._abortController = abortController;
 
         callbacks.onStart?.();
 
         try {
             // Fetch distilled schematic if needed
             const distilled = await this.getDistilledSchematic(repo, commit);
+
+            // Check if we were aborted during the async operation
+            if (abortController.signal.aborted) {
+                return;
+            }
 
             const componentIds = components.map((c) => c.reference);
 
@@ -197,7 +203,7 @@ export class GrokAPIService {
                         query,
                         distilled,
                     } satisfies GrokStreamRequest),
-                    signal: this._abortController.signal,
+                    signal: abortController.signal,
                 },
             );
 

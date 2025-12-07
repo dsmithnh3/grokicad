@@ -1,3 +1,5 @@
+// USAGE:
+// cargo test load_environment_file -- --nocapture
 use crate::utilities::get_project_path::get_project_path;
 use dotenv;
 use std::error::Error;
@@ -17,6 +19,13 @@ pub fn load_environment_file(env_file_path: Option<PathBuf>) -> Result<(), Box<d
     dotenv::from_filename(&path)
         .map(|_| ())  // Convert Result<PathBuf, Error> to Result<(), Error>
         .map_err(|e| format!("Failed to load environment file from {}: {}", path.display(), e).into())
+}
+
+/// Gets an environment variable by name.
+/// Returns an error if the variable is not found.
+pub fn get_environment_variable(environment_variable_name: &str) -> Result<String, Box<dyn Error>> {
+    std::env::var(environment_variable_name)
+        .map_err(|e| format!("Environment variable '{}' not found: {}", environment_variable_name, e).into())
 }
 
 #[cfg(test)]
@@ -69,5 +78,45 @@ mod tests {
                 println!("✗ Failed to load .env file: {}", e);
             }
         }
+    }
+
+    #[test]
+    fn test_get_environment_variable() {
+        // Load .env file from default location (repo base)
+        println!("Loading .env file from default location...");
+        load_environment_file(None).expect("Should load .env file");
+        
+        // Get and print XAI_API_KEY
+        match get_environment_variable("XAI_API_KEY") {
+            Ok(val) => {
+                println!("✓ Successfully retrieved XAI_API_KEY = {}", val);
+            }
+            Err(e) => {
+                println!("✗ Failed to get XAI_API_KEY: {}", e);
+            }
+        }
+        
+        // Also test with a manually set variable
+        std::env::set_var("TEST_VAR", "test_value_123");
+        
+        match get_environment_variable("TEST_VAR") {
+            Ok(val) => {
+                println!("✓ Successfully retrieved TEST_VAR = {}", val);
+                assert_eq!(val, "test_value_123");
+            }
+            Err(e) => {
+                println!("✗ Failed to get TEST_VAR: {}", e);
+                panic!("Should have found TEST_VAR");
+            }
+        }
+        
+        // Test with non-existent variable
+        match get_environment_variable("NON_EXISTENT_VAR") {
+            Ok(_) => panic!("Should have returned an error"),
+            Err(e) => println!("✓ Correctly returned error for non-existent variable: {}", e),
+        }
+        
+        // Clean up
+        std::env::remove_var("TEST_VAR");
     }
 }

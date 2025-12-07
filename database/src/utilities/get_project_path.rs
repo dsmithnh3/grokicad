@@ -1,3 +1,5 @@
+// USAGE:
+// cargo test get_project_path -- --nocapture
 use std::error::Error;
 use std::path::{Path, PathBuf};
 

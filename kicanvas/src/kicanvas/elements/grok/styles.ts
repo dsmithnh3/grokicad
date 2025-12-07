@@ -346,7 +346,7 @@ export const presetStyles = css`
         transition: all 0.15s ease;
     }
 
-    .preset-card:hover {
+    .preset-card:hover:not(.disabled) {
         background: rgba(255, 255, 255, 0.12);
         border-color: rgba(255, 255, 255, 0.25);
     }
@@ -354,6 +354,16 @@ export const presetStyles = css`
     .preset-card.selected {
         background: rgba(255, 206, 84, 0.15);
         border-color: rgba(255, 206, 84, 0.4);
+    }
+
+    .preset-card.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .preset-card.disabled:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
     }
 
     .preset-icon {
@@ -567,6 +577,46 @@ export const scrollbarStyles = css`
 `;
 
 // =============================================================================
+// Footer Styles
+// =============================================================================
+
+export const footerStyles = css`
+    .chat-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 8px 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(20, 20, 20, 0.95);
+        flex-shrink: 0;
+    }
+
+    .clear-data-button {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .clear-data-button:hover:not(:disabled) {
+        background: rgba(255, 100, 100, 0.1);
+        border-color: rgba(255, 100, 100, 0.3);
+        color: rgba(255, 100, 100, 0.9);
+    }
+
+    .clear-data-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+`;
+
+// =============================================================================
 // Combined Styles (for main panel)
 // =============================================================================
 
@@ -581,4 +631,5 @@ export const grokChatPanelStyles = [
     queryInputStyles,
     responseStyles,
     scrollbarStyles,
+    footerStyles,
 ];

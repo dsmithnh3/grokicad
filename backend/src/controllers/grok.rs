@@ -7,8 +7,8 @@ use axum::{
     },
 };
 use futures_util::{stream::Stream, StreamExt};
-use std::{convert::Infallible, sync::Arc, time::Duration};
-use tracing::{error, info};
+use std::{convert::Infallible, path::PathBuf, sync::Arc, time::Duration};
+use tracing::{error, info, warn};
 
 use crate::services::{distill, git};
 use crate::types::{
@@ -17,13 +17,248 @@ use crate::types::{
     GrokRepoSummaryRequest, GrokRepoSummaryResponse, GrokSelectionStreamRequest,
     GrokSelectionSummaryRequest, GrokSelectionSummaryResponse,
 };
-// use kicad_db::PgPool;
 use kicad_db::{
     messages::{ChatCompletionRequest, Message},
     utilities::load_environment_file::load_environment_file,
     xai_client::{InputMessage, ResponsesRequest, Tool, XaiClient},
     PgPool,
 };
+
+/// Load the system prompt from the grokprompts directory
+fn load_system_prompt() -> String {
+    // Try multiple paths to find the system prompt
+    let possible_paths = [
+        // Relative to CARGO_MANIFEST_DIR (during cargo run)
+        std::env::var("CARGO_MANIFEST_DIR")
+            .ok()
+            .map(|dir| PathBuf::from(dir).parent().map(|p| p.join("grokprompts/systemprompt.txt")))
+            .flatten(),
+        // Relative to current working directory
+        Some(PathBuf::from("grokprompts/systemprompt.txt")),
+        // Parent directory (if running from backend/)
+        Some(PathBuf::from("../grokprompts/systemprompt.txt")),
+    ];
+
+    for path in possible_paths.into_iter().flatten() {
+        if path.exists() {
+            match std::fs::read_to_string(&path) {
+                Ok(content) => {
+                    info!("Loaded system prompt from {:?}", path);
+                    return content;
+                }
+                Err(e) => {
+                    warn!("Failed to read system prompt from {:?}: {}", path, e);
+                }
+            }
+        }
+    }
+
+    // Fallback to embedded default prompt
+    warn!("Could not load system prompt file, using default");
+    DEFAULT_SYSTEM_PROMPT.to_string()
+}
+
+/// Default system prompt (fallback if file not found)
+const DEFAULT_SYSTEM_PROMPT: &str = r#"You are a specialized circuit-explanation assistant for KiCad schematics.
+
+## Data Model
+
+The user provides KiCad schematic data in **JSON** with:
+
+- `components`: reference, type/kind, value/part_name, pins (with connected nets)
+- `nets`: name and list of connected pins
+
+## Primary Objective
+
+Explain **what each IC (and nearby key parts) does** in simple, plain language.
+
+## Answer Style
+
+Keep answers **short and easy to read**:
+- For simple questions, give **one short sentence per part**
+- Only go into detailed explanations if asked
+
+Use everyday language and avoid heavy jargon. When you must use a technical term, add a short explanation."#;
+
+/// Build semantic context for selected components from distilled data
+fn build_component_context(
+    distilled: &serde_json::Value,
+    component_ids: &[String],
+) -> (String, String) {
+    let components = distilled
+        .get("components")
+        .and_then(|c| c.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter(|c| {
+                    c.get("reference")
+                        .and_then(|r| r.as_str())
+                        .map(|r| component_ids.contains(&r.to_string()))
+                        .unwrap_or(false)
+                })
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+
+    let nets = distilled
+        .get("nets")
+        .and_then(|n| n.as_object())
+        .cloned()
+        .unwrap_or_default();
+
+    let proximities = distilled
+        .get("proximities")
+        .and_then(|p| p.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    // Build detailed component descriptions
+    let mut component_details = Vec::new();
+    for comp in &components {
+        let reference = comp.get("reference").and_then(|v| v.as_str()).unwrap_or("?");
+        let value = comp.get("value").and_then(|v| v.as_str()).unwrap_or("?");
+        let lib_id = comp.get("lib_id").and_then(|v| v.as_str()).unwrap_or("?");
+        let category = comp.get("category").and_then(|v| v.as_str()).unwrap_or("other");
+        let footprint = comp.get("footprint").and_then(|v| v.as_str());
+        let sheet_path = comp.get("sheet_path").and_then(|v| v.as_str());
+
+        let mut detail = format!(
+            "**{}** ({})\n  - Type: {}\n  - Value: {}",
+            reference, category, lib_id, value
+        );
+
+        if let Some(fp) = footprint {
+            if !fp.is_empty() {
+                detail.push_str(&format!("\n  - Footprint: {}", fp));
+            }
+        }
+
+        if let Some(sp) = sheet_path {
+            if sp != "/" {
+                detail.push_str(&format!("\n  - Sheet: {}", sp));
+            }
+        }
+
+        // Add pin connections
+        if let Some(pins) = comp.get("pins").and_then(|p| p.as_array()) {
+            let pin_strs: Vec<String> = pins
+                .iter()
+                .filter_map(|pin| {
+                    let num = pin.get("number").and_then(|v| v.as_str())?;
+                    let name = pin.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                    let net = pin.get("net").and_then(|v| v.as_str()).unwrap_or("NC");
+                    if name.is_empty() {
+                        Some(format!("Pin {} → {}", num, net))
+                    } else {
+                        Some(format!("Pin {} ({}) → {}", num, name, net))
+                    }
+                })
+                .collect();
+
+            if !pin_strs.is_empty() {
+                detail.push_str(&format!("\n  - Pins:\n    {}", pin_strs.join("\n    ")));
+            }
+        }
+
+        // Add properties if any
+        if let Some(props) = comp.get("properties").and_then(|p| p.as_object()) {
+            let prop_strs: Vec<String> = props
+                .iter()
+                .filter(|(k, _)| !k.starts_with("ki_"))
+                .filter_map(|(k, v)| {
+                    v.as_str().map(|val| format!("{}: {}", k, val))
+                })
+                .collect();
+
+            if !prop_strs.is_empty() {
+                detail.push_str(&format!("\n  - Properties: {}", prop_strs.join(", ")));
+            }
+        }
+
+        component_details.push(detail);
+    }
+
+    // Find nearby components from proximities
+    let nearby_refs: Vec<String> = proximities
+        .iter()
+        .filter_map(|prox| {
+            let ref_a = prox.get("ref_a").and_then(|v| v.as_str())?;
+            let ref_b = prox.get("ref_b").and_then(|v| v.as_str())?;
+            let score = prox.get("score").and_then(|v| v.as_f64()).unwrap_or(0.0);
+
+            // Only include high-score proximities (likely related components)
+            if score > 0.3 {
+                if component_ids.contains(&ref_a.to_string()) && !component_ids.contains(&ref_b.to_string()) {
+                    return Some(ref_b.to_string());
+                }
+                if component_ids.contains(&ref_b.to_string()) && !component_ids.contains(&ref_a.to_string()) {
+                    return Some(ref_a.to_string());
+                }
+            }
+            None
+        })
+        .collect::<std::collections::HashSet<_>>()
+        .into_iter()
+        .take(10)
+        .collect();
+
+    // Get details for nearby components
+    let nearby_details: Vec<String> = if !nearby_refs.is_empty() {
+        distilled
+            .get("components")
+            .and_then(|c| c.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|c| {
+                        let reference = c.get("reference").and_then(|r| r.as_str())?;
+                        if nearby_refs.contains(&reference.to_string()) {
+                            let value = c.get("value").and_then(|v| v.as_str()).unwrap_or("?");
+                            let category = c.get("category").and_then(|v| v.as_str()).unwrap_or("?");
+                            Some(format!("{} ({}, {})", reference, value, category))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    // Build schematic overview
+    let all_components = distilled
+        .get("components")
+        .and_then(|c| c.as_array())
+        .map(|arr| arr.len())
+        .unwrap_or(0);
+
+    let schematic_overview = format!(
+        "The schematic contains {} total components and {} nets.",
+        all_components,
+        nets.len()
+    );
+
+    // Build selected context
+    let selected_context = if component_details.is_empty() {
+        "No specific components selected.".to_string()
+    } else {
+        let mut ctx = format!("## Selected Components ({})\n\n", component_details.len());
+        ctx.push_str(&component_details.join("\n\n"));
+
+        if !nearby_details.is_empty() {
+            ctx.push_str(&format!(
+                "\n\n## Nearby/Related Components\n{}",
+                nearby_details.join(", ")
+            ));
+        }
+
+        ctx
+    };
+
+    (selected_context, schematic_overview)
+}
 
 pub type AppState = Arc<PgPool>;
 
@@ -696,89 +931,30 @@ pub async fn selection_stream(
         }
     };
 
-    // Extract relevant component info from distilled data
-    let components = distilled
-        .get("components")
-        .and_then(|c| c.as_array())
-        .map(|arr| {
-            arr.iter()
-                .filter(|c| {
-                    c.get("reference")
-                        .and_then(|r| r.as_str())
-                        .map(|r| req.component_ids.contains(&r.to_string()))
-                        .unwrap_or(false)
-                })
-                .cloned()
-                .collect::<Vec<_>>()
-        })
-        .unwrap_or_default();
+    // Build rich semantic context from distilled data
+    let (selected_context, schematic_summary) = build_component_context(&distilled, &req.component_ids);
 
-    // Build context string for selected components
-    let selected_context = if components.is_empty() {
-        "No specific components selected.".to_string()
-    } else {
-        let component_summaries: Vec<String> = components
-            .iter()
-            .map(|c| {
-                let reference = c.get("reference").and_then(|v| v.as_str()).unwrap_or("?");
-                let value = c.get("value").and_then(|v| v.as_str()).unwrap_or("?");
-                let lib_id = c.get("lib_id").and_then(|v| v.as_str()).unwrap_or("?");
-                let category = c
-                    .get("category")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("other");
-                let pins = c
-                    .get("pins")
-                    .and_then(|p| p.as_array())
-                    .map(|arr| {
-                        arr.iter()
-                            .filter_map(|pin| {
-                                let num = pin.get("number").and_then(|v| v.as_str())?;
-                                let net = pin.get("net").and_then(|v| v.as_str()).unwrap_or("NC");
-                                Some(format!("pin {} -> {}", num, net))
-                            })
-                            .collect::<Vec<_>>()
-                            .join(", ")
-                    })
-                    .unwrap_or_default();
-                format!(
-                    "- {} ({}): {} [{}] | Pins: {}",
-                    reference, lib_id, value, category, pins
-                )
-            })
-            .collect();
-        format!("Selected components:\n{}", component_summaries.join("\n"))
-    };
+    // Load the system prompt from file
+    let base_system_prompt = load_system_prompt();
 
-    // Build a summary of the full schematic context
-    let schematic_summary = {
-        let all_components = distilled
-            .get("components")
-            .and_then(|c| c.as_array())
-            .map(|arr| arr.len())
-            .unwrap_or(0);
-        let nets = distilled
-            .get("nets")
-            .and_then(|n| n.as_object())
-            .map(|obj| obj.len())
-            .unwrap_or(0);
-        format!(
-            "Schematic contains {} total components and {} nets.",
-            all_components, nets
-        )
-    };
-
-    // Build system and user messages
+    // Build system and user messages with the loaded system prompt
     let system_prompt = format!(
-        "You are Grok, an expert AI assistant specialized in electronics and PCB design. \
-        You help users understand KiCad schematics, components, and circuit design. \
-        Be concise but informative. Use technical terms when appropriate.\n\n\
-        Context about the schematic:\n{}\n\n\
-        Full distilled schematic data is available for reference.",
+        "{}\n\n---\n\n## Schematic Context\n{}",
+        base_system_prompt,
         schematic_summary
     );
 
-    let user_prompt = format!("{}\n\nUser's question: {}", selected_context, req.query);
+    let user_prompt = format!(
+        "{}\n\n---\n\n## User's Question\n{}",
+        selected_context,
+        req.query
+    );
+
+    info!(
+        "Using system prompt ({} chars), context ({} chars)",
+        system_prompt.len(),
+        user_prompt.len()
+    );
 
     let messages = vec![Message::system(system_prompt), Message::user(user_prompt)];
 

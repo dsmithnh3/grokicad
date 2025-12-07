@@ -221,6 +221,30 @@ pub async fn retrieve_distilled_json(
     }
 }
 
+/// Clear distilled JSON cache for a repo (and optionally a specific commit)
+pub async fn clear_distilled_json(
+    pool: &PgPool,
+    repo_url: &str,
+    commit_hash: Option<&str>,
+) -> Result<u64, Error> {
+    let result = if let Some(commit) = commit_hash {
+        sqlx::query(
+            "UPDATE schematics SET distilled_json = NULL WHERE repo_url = $1 AND commit_hash = $2",
+        )
+        .bind(repo_url)
+        .bind(commit)
+        .execute(pool)
+        .await?
+    } else {
+        sqlx::query("UPDATE schematics SET distilled_json = NULL WHERE repo_url = $1")
+            .bind(repo_url)
+            .execute(pool)
+            .await?
+    };
+
+    Ok(result.rows_affected())
+}
+
 // Additional query: e.g., get schematics by part_uuid across commits
 pub async fn find_schematics_by_part(
     pool: &PgPool,

@@ -108,6 +108,32 @@ export interface DistillResponse {
     distilled: DistilledSchematic;
 }
 
+export interface RepoInitRequest {
+    repo: string;
+    commit?: string;
+}
+
+export interface RepoInitResponse {
+    repo: string;
+    commit: string;
+    cached: boolean;
+    component_count: number;
+    net_count: number;
+    schematic_files: string[];
+    distilled: DistilledSchematic;
+}
+
+export interface RepoClearCacheRequest {
+    repo: string;
+    commit?: string;
+}
+
+export interface RepoClearCacheResponse {
+    repo: string;
+    cleared: boolean;
+    message: string;
+}
+
 export interface DistilledSchematic {
     components: DistilledComponent[];
     nets: Record<string, Record<string, { Pin: string }[]>>;
@@ -304,6 +330,52 @@ export class GrokiAPI {
     }
 
     /**
+     * Initialize a repository by distilling its schematic files.
+     * This should be called when a user first loads a repository to prepare
+     * the semantic representation for AI analysis.
+     *
+     * @param repo - Repository in "owner/repo" format
+     * @param commit - Optional commit hash (uses latest if not provided)
+     * @returns Initialization response with distilled schematic data
+     */
+    static async initRepository(
+        repo: string,
+        commit?: string,
+    ): Promise<RepoInitResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/repo/init`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ repo, commit } satisfies RepoInitRequest),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => "");
+                throw new Error(
+                    `Failed to initialize repository: ${response.status} ${
+                        response.statusText
+                    }${errorText ? ` - ${errorText}` : ""}`,
+                );
+            }
+
+            const data: RepoInitResponse = await response.json();
+            console.log(
+                `[API] Repository ${repo} initialized: ${data.component_count} components, ${data.net_count} nets, cached=${data.cached}`,
+            );
+            return data;
+        } catch (e) {
+            if (e instanceof TypeError && e.message.includes("fetch")) {
+                throw new Error(
+                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
+                );
+            }
+            throw e;
+        }
+    }
+
+    /**
      * Create an EventSource for streaming Grok selection analysis
      * Returns the URL to connect to - caller manages the EventSource
      */
@@ -320,6 +392,48 @@ export class GrokiAPI {
             component_ids: componentIds.join(","),
         });
         return `${this.baseUrl}/grok/selection/stream?${params.toString()}`;
+    }
+
+    /**
+     * Clear the cached distilled schematic data for a repository.
+     * This forces a re-distillation on the next init call.
+     *
+     * @param repo - Repository in "owner/repo" format
+     * @param commit - Optional commit hash (clears all commits if not provided)
+     */
+    static async clearCache(
+        repo: string,
+        commit?: string,
+    ): Promise<RepoClearCacheResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/repo/clear-cache`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ repo, commit } satisfies RepoClearCacheRequest),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => "");
+                throw new Error(
+                    `Failed to clear cache: ${response.status} ${
+                        response.statusText
+                    }${errorText ? ` - ${errorText}` : ""}`,
+                );
+            }
+
+            const data: RepoClearCacheResponse = await response.json();
+            console.log(`[API] ${data.message}`);
+            return data;
+        } catch (e) {
+            if (e instanceof TypeError && e.message.includes("fetch")) {
+                throw new Error(
+                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
+                );
+            }
+            throw e;
+        }
     }
 
     /**

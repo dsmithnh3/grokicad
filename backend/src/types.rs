@@ -299,6 +299,54 @@ pub struct DistillResponse {
 }
 
 // ============================================================================
+// Repo Initialization Types
+// ============================================================================
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct RepoInitRequest {
+    /// GitHub repository in "owner/repo" format
+    pub repo: String,
+    /// Full commit hash (optional - uses latest if not provided)
+    pub commit: Option<String>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct RepoInitResponse {
+    /// GitHub repository in "owner/repo" format
+    pub repo: String,
+    /// Full commit hash that was initialized
+    pub commit: String,
+    /// Whether the distilled data was already cached
+    pub cached: bool,
+    /// Number of components found in the schematic
+    pub component_count: usize,
+    /// Number of nets found in the schematic
+    pub net_count: usize,
+    /// List of schematic files found
+    pub schematic_files: Vec<String>,
+    /// Distilled schematic data
+    pub distilled: serde_json::Value,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct RepoClearCacheRequest {
+    /// GitHub repository in "owner/repo" format
+    pub repo: String,
+    /// Full commit hash (optional - clears all commits if not provided)
+    pub commit: Option<String>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct RepoClearCacheResponse {
+    /// GitHub repository in "owner/repo" format
+    pub repo: String,
+    /// Whether the cache was cleared
+    pub cleared: bool,
+    /// Message describing what was cleared
+    pub message: String,
+}
+
+// ============================================================================
 // Error Types
 // ============================================================================
 

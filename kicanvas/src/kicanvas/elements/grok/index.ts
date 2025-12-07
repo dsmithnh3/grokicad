@@ -17,7 +17,7 @@ export type {
 export { createGrokEvent } from "./types";
 
 // Presets
-export { QUERY_PRESETS } from "./presets";
+export { QUERY_PRESETS, PROJECT_PRESETS, COMPONENT_PRESETS } from "./presets";
 
 // Styles
 export {
@@ -36,7 +36,7 @@ export {
 
 // API Service
 export { GrokAPIService, grokAPI } from "./grok-api-service";
-export type { StreamCallbacks, GrokStreamRequest } from "./grok-api-service";
+export type { StreamCallbacks, InitCallbacks, GrokStreamRequest } from "./grok-api-service";
 
 // Components
 export { KCGrokChatPanelElement } from "./grok-chat-panel";

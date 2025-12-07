@@ -223,6 +223,10 @@ export class KCGrokButtonElement extends KCUIElement {
         w: 0,
         h: 0,
     };
+    #repoInfo: { repo: string | null; commit: string | null } = {
+        repo: null,
+        commit: null,
+    };
 
     override initialContentCallback() {
         // Add click listener to button
@@ -237,6 +241,17 @@ export class KCGrokButtonElement extends KCUIElement {
             try {
                 this.viewer = await this.requestLazyContext("viewer");
                 await this.viewer.loaded;
+
+                // Get repo info context
+                try {
+                    this.#repoInfo = (await this.requestLazyContext("repoInfo")) as {
+                        repo: string | null;
+                        commit: string | null;
+                    };
+                    console.log("[GrokButton] Got repo context:", this.#repoInfo);
+                } catch {
+                    console.warn("[GrokButton] No repo info available (local file?)");
+                }
 
                 // Listen for single selection events (for backward compatibility)
                 this.addDisposable(
@@ -364,6 +379,8 @@ export class KCGrokButtonElement extends KCUIElement {
                     if (this.viewer) {
                         globalChatPanel.setViewer(this.viewer);
                     }
+                    // Pass repo context (panel is outside the normal hierarchy)
+                    globalChatPanel.setContext(this.#repoInfo.repo, this.#repoInfo.commit);
                     globalChatPanel.setSelectedComponents(selectedComponents);
                     globalChatPanel.show();
                 }
@@ -375,6 +392,9 @@ export class KCGrokButtonElement extends KCUIElement {
         if (this.viewer) {
             globalChatPanel.setViewer(this.viewer);
         }
+
+        // Always update repo context (in case it changed)
+        globalChatPanel.setContext(this.#repoInfo.repo, this.#repoInfo.commit);
 
         // Update components and show/toggle
         globalChatPanel.setSelectedComponents(selectedComponents);

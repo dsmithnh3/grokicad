@@ -18,7 +18,7 @@ import {
 
 // Local imports
 import { grokChatPanelStyles } from "./styles";
-import { QUERY_PRESETS } from "./presets";
+import { PROJECT_PRESETS, COMPONENT_PRESETS } from "./presets";
 import { grokAPI } from "./grok-api-service";
 import type { SelectedComponent, GrokContext } from "./types";
 
@@ -116,9 +116,50 @@ export class KCGrokChatPanelElement extends KCUIElement {
     // Public API
     // =========================================================================
 
-    public show() {
+    public async show() {
         this.visible = true;
         this._loadAllComponents();
+        
+        // Trigger repository initialization for AI analysis
+        await this._initializeForAI();
+    }
+
+    /**
+     * Initialize the repository for AI analysis.
+     * This triggers the distillation of schematic files on the backend.
+     */
+    private async _initializeForAI() {
+        const { repo, commit } = this._context;
+        if (!repo || !commit) {
+            console.warn("[GrokChat] No repo context, skipping AI initialization");
+            return;
+        }
+
+        try {
+            this._isLoading = true;
+            this.update();
+
+            await grokAPI.initRepository(repo, commit, {
+                onStart: () => {
+                    console.log("[GrokChat] Initializing repository for AI analysis...");
+                },
+                onComplete: (resp) => {
+                    console.log(
+                        `[GrokChat] Repository initialized: ${resp.component_count} components, ${resp.net_count} nets`,
+                    );
+                },
+                onError: (err) => {
+                    console.error("[GrokChat] Repository initialization failed:", err);
+                },
+            });
+
+            this._isLoading = false;
+            this.update();
+        } catch (err) {
+            console.error("[GrokChat] Failed to initialize repository:", err);
+            this._isLoading = false;
+            this.update();
+        }
     }
 
     /**
@@ -132,6 +173,22 @@ export class KCGrokChatPanelElement extends KCUIElement {
         this._loadAllComponents();
         if (!this._viewerEventsSetup) {
             this._setupViewerEvents();
+        }
+    }
+
+    /**
+     * Set the repository context directly (called from grok-button)
+     * This is needed because the panel is appended to document.body
+     * and can't use requestLazyContext to get the repoInfo.
+     */
+    public setContext(repo: string | null, commit: string | null) {
+        const changed = this._context.repo !== repo || this._context.commit !== commit;
+        this._context = { repo, commit };
+        
+        if (changed) {
+            // Clear cached data when context changes
+            grokAPI.clearCache();
+            console.log(`[GrokChat] Context set: ${repo}@${commit?.slice(0, 8) ?? 'latest'}`);
         }
     }
 
@@ -260,6 +317,12 @@ export class KCGrokChatPanelElement extends KCUIElement {
             }),
         );
 
+        this.addDisposable(
+            delegate(root, ".clear-data-button", "click", () => {
+                this._clearCache();
+            }),
+        );
+
         // Click on component card toggles selection
         this.addDisposable(
             delegate(root, ".component-card", "click", (e, source) => {
@@ -321,6 +384,10 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
         this.addDisposable(
             delegate(root, ".preset-card", "click", (e, source) => {
+                // Don't trigger if disabled or already streaming
+                if (source.classList.contains("disabled") || this.streaming || this._isLoading) {
+                    return;
+                }
                 const presetId = source.getAttribute("data-preset-id");
                 if (presetId) {
                     this._selectPreset(presetId);
@@ -666,18 +733,31 @@ export class KCGrokChatPanelElement extends KCUIElement {
     // Query Handling
     // =========================================================================
 
-    private _selectPreset(presetId: string) {
-        if (this._selectedPreset === presetId) {
-            this._selectedPreset = null;
-            this._customQuery = "";
-        } else {
-            this._selectedPreset = presetId;
-            const preset = QUERY_PRESETS.find((p) => p.id === presetId);
-            if (preset) {
-                this._customQuery = preset.query;
-            }
+    /**
+     * Handle preset click - auto-submits the query immediately
+     */
+    private async _selectPreset(presetId: string) {
+        // Find preset in both arrays
+        const allPresets = [...PROJECT_PRESETS, ...COMPONENT_PRESETS];
+        const preset = allPresets.find((p) => p.id === presetId);
+        
+        if (!preset) return;
+
+        // Check if this is a component preset and we have no selection
+        const isComponentPreset = COMPONENT_PRESETS.some((p) => p.id === presetId);
+        if (isComponentPreset && this._selectedComponents.length === 0) {
+            this._error = "Please select one or more components first";
+            this.update();
+            return;
         }
+
+        // Set the preset and query
+        this._selectedPreset = presetId;
+        this._customQuery = preset.query;
         this.update();
+
+        // Auto-submit the query
+        await this._submitQuery();
     }
 
     private async _submitQuery() {
@@ -847,26 +927,41 @@ export class KCGrokChatPanelElement extends KCUIElement {
     }
 
     private _renderPresets() {
+        const hasSelection = this._selectedComponents.length > 0;
+        const isLoading = this._isLoading || this.streaming;
+
         return html`
             <div class="section">
-                <div class="section-label">Quick Questions</div>
+                <div class="section-label">Project Analysis</div>
                 <div class="preset-cards">
-                    ${QUERY_PRESETS.map(
+                    ${PROJECT_PRESETS.map(
                         (preset) => html`
                             <div
-                                class="preset-card ${this._selectedPreset ===
-                                preset.id
-                                    ? "selected"
-                                    : ""}"
-                                data-preset-id="${preset.id}">
+                                class="preset-card ${this._selectedPreset === preset.id ? "selected" : ""} ${isLoading ? "disabled" : ""}"
+                                data-preset-id="${preset.id}"
+                                title="${preset.description}">
                                 ${preset.icon
-                                    ? html`<span class="preset-icon"
-                                          >${preset.icon}</span
-                                      >`
+                                    ? html`<span class="preset-icon">${preset.icon}</span>`
                                     : null}
-                                <span class="preset-title"
-                                    >${preset.title}</span
-                                >
+                                <span class="preset-title">${preset.title}</span>
+                            </div>
+                        `,
+                    )}
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-label">Component Analysis ${hasSelection ? `(${this._selectedComponents.length} selected)` : ""}</div>
+                <div class="preset-cards">
+                    ${COMPONENT_PRESETS.map(
+                        (preset) => html`
+                            <div
+                                class="preset-card ${this._selectedPreset === preset.id ? "selected" : ""} ${!hasSelection || isLoading ? "disabled" : ""}"
+                                data-preset-id="${preset.id}"
+                                title="${hasSelection ? preset.description : "Select components first"}">
+                                ${preset.icon
+                                    ? html`<span class="preset-icon">${preset.icon}</span>`
+                                    : null}
+                                <span class="preset-title">${preset.title}</span>
                             </div>
                         `,
                     )}
@@ -925,6 +1020,56 @@ export class KCGrokChatPanelElement extends KCUIElement {
         `;
     }
 
+    private _renderFooter() {
+        return html`
+            <div class="chat-footer">
+                <button 
+                    class="clear-data-button" 
+                    title="Clear cached schematic data and re-initialize"
+                    ?disabled="${this._isLoading || this.streaming}">
+                    🗑️ Clear Cache
+                </button>
+            </div>
+        `;
+    }
+
+    /**
+     * Clear all cached data (local and server) and re-initialize
+     */
+    private async _clearCache() {
+        if (this._isLoading || this.streaming) return;
+
+        const { repo, commit } = this._context;
+
+        this._isLoading = true;
+        this._responseContent = "Clearing cache...";
+        this._error = null;
+        this._selectedPreset = null;
+        this._customQuery = "";
+        this.update();
+
+        try {
+            // Clear both local and server-side cache
+            if (repo) {
+                await grokAPI.clearServerCache(repo, commit ?? undefined);
+            } else {
+                grokAPI.clearCache();
+            }
+
+            this._responseContent = "Cache cleared! Click a preset to re-analyze.";
+            this._isLoading = false;
+            this.update();
+
+            // Re-initialize repository
+            await this._initializeForAI();
+        } catch (err) {
+            console.error("[GrokChat] Failed to clear cache:", err);
+            this._isLoading = false;
+            this._error = err instanceof Error ? err.message : "Failed to clear cache";
+            this.update();
+        }
+    }
+
     // =========================================================================
     // Main Render
     // =========================================================================
@@ -938,6 +1083,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
                     ${this._renderSearch()} ${this._renderQueryInput()}
                     ${this._renderResponse()}
                 </div>
+                ${this._renderFooter()}
             </div>
         `;
     }

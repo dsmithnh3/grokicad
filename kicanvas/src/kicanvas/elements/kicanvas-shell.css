@@ -395,6 +395,13 @@ section.overlay p.drop-hint {
     z-index: 2;
 }
 
+section.overlay p.credits {
+    font-size: 0.95em;
+    color: #454545;
+    margin-top: 0.5em;
+    z-index: 2;
+}
+
 section.overlay p.note {
     color: #444444;
     font-size: 0.9em;

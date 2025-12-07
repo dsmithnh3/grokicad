@@ -348,6 +348,8 @@ class KiCanvasShellElement extends KCUIElement {
                         </button>
                     </div>
                     <p class="drop-hint">or drag & drop your KiCAD files</p>
+                    <p class="credits">Made by Clement Hathaway, Ernest Yeung, Evan Hekman, Julian Carrier</p>
+
                 </section>
                 <section class="loading-overlay">
                     <div class="hero-glow"></div>

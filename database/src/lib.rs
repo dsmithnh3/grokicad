@@ -14,9 +14,13 @@ pub struct Schematic {
     pub id: i32,
     pub repo_url: String,
     pub commit_hash: String,
+    pub commit_date: Option<DateTime<Utc>>,
+    pub git_message: Option<String>,
     pub schematic_image: Option<Vec<u8>>,
     pub change_summary: Option<String>,
     pub project_overview: Option<String>,
+    pub blurb: Option<String>,
+    pub description: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -33,9 +37,13 @@ pub struct Part {
 pub struct FullSchematic {
     pub repo_url: String,
     pub commit_hash: String,
+    pub commit_date: Option<DateTime<Utc>>,
+    pub git_message: Option<String>,
     pub schematic_image: Option<Vec<u8>>,
     pub change_summary: Option<String>,
     pub project_overview: Option<String>,
+    pub blurb: Option<String>,
+    pub description: Option<String>,
     pub created_at: DateTime<Utc>,
     pub parts: HashMap<Uuid, FullPart>,
 }
@@ -55,9 +63,13 @@ pub async fn store_schematic(
     pool: &PgPool,
     repo_url: &str,
     commit_hash: &str,
+    commit_date: Option<DateTime<Utc>>,
+    git_message: Option<&str>,
     schematic_image: Option<Vec<u8>>,
     change_summary: Option<&str>,
     project_overview: Option<&str>,
+    blurb: Option<&str>,
+    description: Option<&str>,
     parts: HashMap<Uuid, (Option<String>, Value)>,  // part_uuid -> (blurb, properties)
 ) -> Result<i32, Error> {
     let mut tx = pool.begin().await?;
@@ -65,20 +77,28 @@ pub async fn store_schematic(
     // Upsert schematic
     let schematic_id = sqlx::query_as::<_, Schematic>(
         r#"
-        INSERT INTO schematics (repo_url, commit_hash, schematic_image, change_summary, project_overview)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO schematics (repo_url, commit_hash, commit_date, git_message, schematic_image, change_summary, project_overview, blurb, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         ON CONFLICT (repo_url, commit_hash) DO UPDATE SET
+            commit_date = EXCLUDED.commit_date,
+            git_message = EXCLUDED.git_message,
             schematic_image = EXCLUDED.schematic_image,
             change_summary = EXCLUDED.change_summary,
-            project_overview = EXCLUDED.project_overview
-        RETURNING id
+            project_overview = EXCLUDED.project_overview,
+            blurb = EXCLUDED.blurb,
+            description = EXCLUDED.description
+        RETURNING id, repo_url, commit_hash, commit_date, git_message, schematic_image, change_summary, project_overview, blurb, description, created_at
         "#
     )
     .bind(repo_url)
     .bind(commit_hash)
+    .bind(commit_date)
+    .bind(git_message)
     .bind(schematic_image)
     .bind(change_summary)
     .bind(project_overview)
+    .bind(blurb)
+    .bind(description)
     .fetch_one(&mut *tx)
     .await?
     .id;
@@ -136,9 +156,13 @@ pub async fn retrieve_schematic(
     Ok(Some(FullSchematic {
         repo_url: sch.repo_url,
         commit_hash: sch.commit_hash,
+        commit_date: sch.commit_date,
+        git_message: sch.git_message,
         schematic_image: sch.schematic_image,
         change_summary: sch.change_summary,
         project_overview: sch.project_overview,
+        blurb: sch.blurb,
+        description: sch.description,
         created_at: sch.created_at,
         parts: parts_map,
     }))

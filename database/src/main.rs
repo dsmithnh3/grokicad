@@ -18,9 +18,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         &pool,
         "https://github.com/evanhekman/hackathon.git",
         "main",
+        None, // commit_date
+        Some("Test git message"), // git_message
         None,  // image bytes
-        Some("Initial commit"),
-        Some("Smartwatch project"),
+        Some("Initial commit"), // change_summary
+        Some("Smartwatch project"), // project_overview
+        Some("Brief blurb"), // blurb
+        Some("Detailed description of changes"), // description
         parts,
     ).await?;
     println!("Stored with id: {}", id);

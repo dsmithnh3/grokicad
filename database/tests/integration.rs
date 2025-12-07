@@ -31,9 +31,13 @@ async fn test_store_and_retrieve() -> Result<(), Box<dyn std::error::Error>> {
         &pool,
         test_repo,
         test_commit,
-        Some(b"test image bytes".to_vec()),
-        Some("test summary"),
-        Some("test overview"),
+        None, // commit_date
+        None, // git_message
+        Some(b"test image bytes".to_vec()), // image
+        Some("test summary"), // change_summary
+        Some("test overview"), // project_overview
+        Some("test blurb"), // blurb
+        Some("test description"), // description
         parts.clone(),
     ).await?;
 
@@ -44,7 +48,11 @@ async fn test_store_and_retrieve() -> Result<(), Box<dyn std::error::Error>> {
     let sch = retrieved.unwrap();
     assert_eq!(sch.repo_url, test_repo);
     assert_eq!(sch.commit_hash, test_commit);
+    assert_eq!(sch.commit_date, None);
+    assert_eq!(sch.git_message, None);
     assert_eq!(sch.schematic_image, Some(b"test image bytes".to_vec()));
+    assert_eq!(sch.blurb, Some("test blurb".to_string()));
+    assert_eq!(sch.description, Some("test description".to_string()));
     assert_eq!(sch.parts.len(), 1);
     let part = sch.parts.get(&test_uuid).unwrap();
     assert_eq!(part.blurb, Some("test blurb".to_string()));

@@ -97,6 +97,9 @@ export class KCViewerBottomToolbarElement extends KCUIElement {
             this.#clear_cache_btn.addEventListener("click", async (e) => {
                 e.preventDefault();
                 if (this.#repoInfo.repo) {
+                    const confirmed = confirm("Clear the Grok cache for this repository?");
+                    if (!confirmed) return;
+
                     try {
                         this.#clear_cache_btn.disabled = true;
                         await grokAPI.clearServerCache(this.#repoInfo.repo);

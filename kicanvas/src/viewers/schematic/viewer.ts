@@ -271,6 +271,9 @@ export class SchematicViewer extends DocumentViewer<
         // Deduplicate connections regardless of ordering
         const seen = new Set<string>();
 
+        const isPowerRef = (ref: string) =>
+            ref.startsWith("#PWR") || ref.toUpperCase().startsWith("PWR?");
+
         const pushConnection = (
             a: { symbol: SchematicSymbol; pin: PinInstance },
             b: { symbol: SchematicSymbol; pin: PinInstance },
@@ -278,6 +281,11 @@ export class SchematicViewer extends DocumentViewer<
         ) => {
             const aRef = a.symbol.reference;
             const bRef = b.symbol.reference;
+
+            // Drop power symbol connections
+            if (isPowerRef(aRef) || isPowerRef(bRef)) {
+                return;
+            }
 
             if (aRef === bRef) {
                 return;
@@ -304,7 +312,7 @@ export class SchematicViewer extends DocumentViewer<
             }
             seen.add(key);
 
-            connections.push({
+                                    connections.push({
                 from: from.symbol.reference,
                 fromPin: from.pin.number,
                 to: to.symbol.reference,

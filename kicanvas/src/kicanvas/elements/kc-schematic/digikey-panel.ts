@@ -15,10 +15,12 @@ import { SchematicViewer } from "../../../viewers/schematic/viewer";
 import type {
     DigiKeyPartInfo,
     DigiKeySearchResponse,
+    GrokObsoleteReplacementResponse,
 } from "../../services/api";
 import { GrokiAPI } from "../../services/api";
 
 type SearchState = "idle" | "loading" | "success" | "error" | "not_configured";
+type ReplacementState = "idle" | "loading" | "success" | "error";
 
 export class KCSchematicDigiKeyPanelElement extends KCUIElement {
     static override styles = [
@@ -127,6 +129,14 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             .status-unknown {
                 background: rgba(156, 163, 175, 0.2);
                 color: #9ca3af;
+            }
+
+            .status-section {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 0.25em;
+                flex-shrink: 0;
             }
 
             .part-body {
@@ -296,6 +306,202 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             .selected-part-info strong {
                 color: var(--panel-fg);
             }
+
+            /* Grok Replacement Button & Panel Styles */
+            .grok-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3em;
+                padding: 0.2em 0.5em;
+                margin-top: 0.35em;
+                background: rgba(233, 69, 96, 0.15);
+                border: 1px solid rgba(233, 69, 96, 0.4);
+                border-radius: 4px;
+                color: #e94560;
+                font-size: 0.7em;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+
+            .grok-button:hover {
+                background: rgba(233, 69, 96, 0.25);
+                border-color: #e94560;
+            }
+
+            .grok-button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .grok-button kc-ui-icon {
+                font-size: 1em;
+            }
+
+            .grok-loading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 1.5em;
+                gap: 0.75em;
+            }
+
+            .grok-loading-spinner {
+                width: 32px;
+                height: 32px;
+                border: 3px solid #16213e;
+                border-top-color: #e94560;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            .grok-loading-text {
+                color: #e94560;
+                font-size: 0.9em;
+                text-align: center;
+            }
+
+            .replacement-panel {
+                margin-top: 0.75em;
+                border: 1px solid #0f3460;
+                border-radius: 6px;
+                overflow: hidden;
+                background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            }
+
+            .replacement-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.6em 0.75em;
+                background: rgba(233, 69, 96, 0.1);
+                border-bottom: 1px solid #0f3460;
+            }
+
+            .replacement-title {
+                display: flex;
+                align-items: center;
+                gap: 0.5em;
+                color: #e94560;
+                font-weight: 600;
+                font-size: 0.9em;
+            }
+
+            .replacement-close {
+                background: none;
+                border: none;
+                color: #9ca3af;
+                cursor: pointer;
+                padding: 0.25em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+                transition: all 0.15s;
+            }
+
+            .replacement-close:hover {
+                background: rgba(239, 68, 68, 0.2);
+                color: #ef4444;
+            }
+
+            .replacement-body {
+                padding: 0.75em;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+
+            .replacement-content {
+                font-size: 0.85em;
+                line-height: 1.6;
+                color: var(--panel-fg);
+            }
+
+            .replacement-content .grok-h1 {
+                color: #e94560;
+                margin: 0.75em 0 0.5em 0;
+                font-size: 1.2em;
+                font-weight: 700;
+                border-bottom: 1px solid rgba(233, 69, 96, 0.3);
+                padding-bottom: 0.25em;
+            }
+
+            .replacement-content .grok-h2 {
+                color: #e94560;
+                margin: 0.75em 0 0.4em 0;
+                font-size: 1.1em;
+                font-weight: 600;
+            }
+
+            .replacement-content .grok-h3 {
+                color: #fbbf24;
+                margin: 0.6em 0 0.3em 0;
+                font-size: 1em;
+                font-weight: 600;
+            }
+
+            .replacement-content .grok-h4 {
+                color: #9ca3af;
+                margin: 0.5em 0 0.25em 0;
+                font-size: 0.95em;
+                font-weight: 600;
+            }
+
+            .replacement-content .grok-h1:first-child,
+            .replacement-content .grok-h2:first-child {
+                margin-top: 0;
+            }
+
+            .replacement-content .grok-link {
+                color: #60a5fa;
+                text-decoration: none;
+                border-bottom: 1px dotted rgba(96, 165, 250, 0.5);
+                transition: all 0.15s;
+            }
+
+            .replacement-content .grok-link:hover {
+                color: #93c5fd;
+                border-bottom-color: #93c5fd;
+            }
+
+            .replacement-content .citation-link {
+                color: #22c55e;
+                text-decoration: none;
+                font-size: 0.8em;
+                font-weight: 600;
+                padding: 0 0.1em;
+            }
+
+            .replacement-content .citation-link:hover {
+                color: #4ade80;
+                text-decoration: underline;
+            }
+
+            .replacement-content sup {
+                line-height: 0;
+            }
+
+            .replacement-content ul,
+            .replacement-content ol {
+                margin: 0.4em 0;
+                padding-left: 1.25em;
+            }
+
+            .replacement-content li {
+                margin: 0.2em 0;
+            }
+
+            .replacement-content strong {
+                color: #fbbf24;
+            }
+
+            .replacement-error {
+                padding: 1em;
+                color: #f87171;
+                background: rgba(248, 113, 113, 0.1);
+                border-radius: 4px;
+                font-size: 0.9em;
+            }
         `,
     ];
 
@@ -304,6 +510,11 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
     search_state: SearchState = "idle";
     search_result?: DigiKeySearchResponse;
     digikey_configured = false;
+    
+    // Grok replacement state
+    replacement_state: ReplacementState = "idle";
+    replacement_result?: GrokObsoleteReplacementResponse;
+    replacement_part?: DigiKeyPartInfo;
 
     override connectedCallback() {
         (async () => {
@@ -330,6 +541,29 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         if (retryBtn) {
             retryBtn.addEventListener("click", () => this.search_for_part());
         }
+
+        // Bind Grok replacement buttons
+        const grokButtons =
+            this.renderRoot.querySelectorAll(".grok-button");
+        grokButtons.forEach((btn) => {
+            const partIndex = btn.getAttribute("data-part-index");
+            if (partIndex !== null && this.search_result?.parts) {
+                const part = this.search_result.parts[parseInt(partIndex, 10)];
+                if (part) {
+                    btn.addEventListener("click", () =>
+                        this.find_replacement(part),
+                    );
+                }
+            }
+        });
+
+        // Bind close buttons for replacement panel
+        const closeButtons = this.renderRoot.querySelectorAll(
+            ".replacement-close",
+        );
+        closeButtons.forEach((btn) => {
+            btn.addEventListener("click", () => this.close_replacement_panel());
+        });
     }
 
     private setup_events() {
@@ -479,6 +713,218 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         return qty.toLocaleString();
     }
 
+    private async find_replacement(part: DigiKeyPartInfo) {
+        this.replacement_state = "loading";
+        this.replacement_part = part;
+        this.replacement_result = undefined;
+        this.update();
+
+        try {
+            this.replacement_result =
+                await GrokiAPI.findObsoleteReplacement(part);
+
+            if (this.replacement_result.success) {
+                this.replacement_state = "success";
+            } else {
+                this.replacement_state = "error";
+            }
+        } catch {
+            this.replacement_state = "error";
+            this.replacement_result = {
+                original_part: part.manufacturer_part_number || "Unknown",
+                analysis: "",
+                success: false,
+                error: "Failed to connect to Grok AI",
+            };
+        }
+
+        this.update();
+    }
+
+    private close_replacement_panel() {
+        this.replacement_state = "idle";
+        this.replacement_result = undefined;
+        this.replacement_part = undefined;
+        this.update();
+    }
+
+    private get_part_index(part: DigiKeyPartInfo): number {
+        if (!this.search_result?.parts) return -1;
+        return this.search_result.parts.indexOf(part);
+    }
+
+    private render_replacement_panel() {
+        if (this.replacement_state === "idle") {
+            return "";
+        }
+
+        if (this.replacement_state === "loading") {
+            return html`
+                <div class="replacement-panel">
+                    <div class="replacement-header">
+                        <span class="replacement-title">
+                            <kc-ui-icon>psychology</kc-ui-icon>
+                            Grok AI
+                        </span>
+                    </div>
+                    <div class="grok-loading">
+                        <div class="grok-loading-spinner"></div>
+                        <div class="grok-loading-text">
+                            Researching replacement options for<br />
+                            <strong
+                                >${this.replacement_part
+                                    ?.manufacturer_part_number ||
+                                "this part"}</strong
+                            >...
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (this.replacement_state === "error") {
+            return html`
+                <div class="replacement-panel">
+                    <div class="replacement-header">
+                        <span class="replacement-title">
+                            <kc-ui-icon>psychology</kc-ui-icon>
+                            Grok AI
+                        </span>
+                        <button class="replacement-close">
+                            <kc-ui-icon>close</kc-ui-icon>
+                        </button>
+                    </div>
+                    <div class="replacement-body">
+                        <div class="replacement-error">
+                            <strong>Error</strong>
+                            <p>
+                                ${this.replacement_result?.error ||
+                                "Unknown error occurred"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Success state - render the analysis with markdown-like formatting
+        const analysis = this.replacement_result?.analysis || "";
+        const formattedAnalysis = this.format_analysis(analysis);
+
+        return html`
+            <div class="replacement-panel">
+                <div class="replacement-header">
+                    <span class="replacement-title">
+                        <kc-ui-icon>psychology</kc-ui-icon>
+                        Grok Recommends
+                    </span>
+                    <button class="replacement-close">
+                        <kc-ui-icon>close</kc-ui-icon>
+                    </button>
+                </div>
+                <div class="replacement-body">
+                    <div class="replacement-content">${formattedAnalysis}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    private format_analysis(text: string): HTMLElement {
+        // Create a container div
+        const container = document.createElement("div");
+
+        // Convert markdown-like text to HTML
+        let formatted = text;
+
+        // Handle headers (must do before other processing)
+        formatted = formatted
+            .replace(/^#### (.+)$/gm, '<h4 class="grok-h4">$1</h4>')
+            .replace(/^### (.+)$/gm, '<h3 class="grok-h3">$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2 class="grok-h2">$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1 class="grok-h1">$1</h1>');
+
+        // Handle bold
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+        // Handle citation-style links first: [[1]](url) -> superscript link
+        formatted = formatted.replace(
+            /\[\[(\d+)\]\]\(([^)]+)\)/g,
+            '<sup><a href="$2" target="_blank" rel="noopener noreferrer" class="citation-link">[$1]</a></sup>',
+        );
+
+        // Handle standard markdown links: [text](url)
+        formatted = formatted.replace(
+            /\[([^\]]+)\]\(([^)]+)\)/g,
+            '<a href="$2" target="_blank" rel="noopener noreferrer" class="grok-link">$1</a>',
+        );
+
+        // Handle plain URLs (but not already in href)
+        formatted = formatted.replace(
+            /(?<!href=")(https?:\/\/[^\s<>"]+)/g,
+            '<a href="$1" target="_blank" rel="noopener noreferrer" class="grok-link">$1</a>',
+        );
+
+        // Handle bullet points with proper list wrapping
+        const lines = formatted.split("\n");
+        let inList = false;
+        let listType = "";
+        const processedLines: string[] = [];
+
+        for (const line of lines) {
+            const bulletMatch = line.match(/^(\s*)- (.+)$/);
+            const numberMatch = line.match(/^(\s*)(\d+)\. (.+)$/);
+
+            if (bulletMatch) {
+                if (!inList || listType !== "ul") {
+                    if (inList) processedLines.push(`</${listType}>`);
+                    processedLines.push("<ul>");
+                    inList = true;
+                    listType = "ul";
+                }
+                processedLines.push(`<li>${bulletMatch[2]}</li>`);
+            } else if (numberMatch) {
+                if (!inList || listType !== "ol") {
+                    if (inList) processedLines.push(`</${listType}>`);
+                    processedLines.push("<ol>");
+                    inList = true;
+                    listType = "ol";
+                }
+                processedLines.push(`<li>${numberMatch[3]}</li>`);
+            } else {
+                if (inList) {
+                    processedLines.push(`</${listType}>`);
+                    inList = false;
+                    listType = "";
+                }
+                // Don't add <br> after headers or empty lines
+                if (
+                    line.trim() === "" ||
+                    line.includes("<h1") ||
+                    line.includes("<h2") ||
+                    line.includes("<h3") ||
+                    line.includes("<h4")
+                ) {
+                    processedLines.push(line);
+                } else {
+                    processedLines.push(line + "<br>");
+                }
+            }
+        }
+        if (inList) processedLines.push(`</${listType}>`);
+
+        formatted = processedLines.join("\n");
+
+        // Clean up extra <br> tags
+        formatted = formatted.replace(/<br>\s*<br>/g, "<br>");
+        formatted = formatted.replace(/<br>\s*<\/ul>/g, "</ul>");
+        formatted = formatted.replace(/<br>\s*<\/ol>/g, "</ol>");
+        formatted = formatted.replace(/<br>\s*<ul>/g, "<ul>");
+        formatted = formatted.replace(/<br>\s*<ol>/g, "<ol>");
+
+        container.innerHTML = formatted;
+        return container;
+    }
+
     private render_part_card(part: DigiKeyPartInfo) {
         const important_params = part.parameters.slice(0, 6);
 
@@ -504,10 +950,26 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                             </div>
                         </div>
                     </div>
-                    <span
-                        class="status-badge ${this.get_status_class(part)}">
-                        ${this.get_status_text(part)}
-                    </span>
+                    <div class="status-section">
+                        <span
+                            class="status-badge ${this.get_status_class(part)}">
+                            ${this.get_status_text(part)}
+                        </span>
+                        ${part.is_obsolete
+                            ? html`
+                                  <button
+                                      class="grok-button"
+                                      data-part-index="${this.get_part_index(
+                                          part,
+                                      )}"
+                                      disabled="${this.replacement_state ===
+                                      "loading"}">
+                                      <kc-ui-icon>psychology</kc-ui-icon>
+                                      Grok Replace
+                                  </button>
+                              `
+                            : ""}
+                    </div>
                 </div>
                 <div class="part-body">
                     ${part.description
@@ -576,6 +1038,10 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                               </a>`
                             : ""}
                     </div>
+
+                    ${part.is_obsolete && this.replacement_part === part
+                        ? this.render_replacement_panel()
+                        : ""}
 
                     ${important_params.length > 0
                         ? html`

@@ -230,6 +230,36 @@ pub struct GrokRepoSummaryResponse {
     pub details: String,
 }
 
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct GrokObsoleteReplacementRequest {
+    /// Manufacturer part number of the obsolete part
+    pub manufacturer_part_number: String,
+    /// Manufacturer name
+    pub manufacturer: Option<String>,
+    /// Part description
+    pub description: Option<String>,
+    /// Product category
+    pub category: Option<String>,
+    /// Datasheet URL (PDF link for Grok to analyze)
+    pub datasheet_url: Option<String>,
+    /// DigiKey product page URL
+    pub product_url: Option<String>,
+    /// Key parameters/specifications
+    pub parameters: Vec<DigiKeyParameter>,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct GrokObsoleteReplacementResponse {
+    /// The original obsolete part number
+    pub original_part: String,
+    /// AI-generated analysis and replacement recommendations
+    pub analysis: String,
+    /// Whether the search was successful
+    pub success: bool,
+    /// Error message if failed
+    pub error: Option<String>,
+}
+
 // ============================================================================
 // Distill Endpoint Types
 // ============================================================================

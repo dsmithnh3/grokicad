@@ -51,6 +51,23 @@ export interface DigiKeyStatusResponse {
     message: string;
 }
 
+export interface GrokObsoleteReplacementRequest {
+    manufacturer_part_number: string;
+    manufacturer: string | null;
+    description: string | null;
+    category: string | null;
+    datasheet_url: string | null;
+    product_url: string | null;
+    parameters: DigiKeyParameter[];
+}
+
+export interface GrokObsoleteReplacementResponse {
+    original_part: string;
+    analysis: string;
+    success: boolean;
+    error: string | null;
+}
+
 export interface CommitInfo {
     commit_hash: string;
     commit_date: string | null;
@@ -294,6 +311,64 @@ export class GrokiAPI {
                         : "Failed to connect to backend",
                 parts: [],
                 total_count: 0,
+            };
+        }
+    }
+
+    // ========================================================================
+    // Grok AI Methods
+    // ========================================================================
+
+    /**
+     * Find replacement parts for an obsolete component using Grok AI
+     * @param part - The obsolete DigiKey part information
+     */
+    static async findObsoleteReplacement(
+        part: DigiKeyPartInfo,
+    ): Promise<GrokObsoleteReplacementResponse> {
+        try {
+            const request: GrokObsoleteReplacementRequest = {
+                manufacturer_part_number:
+                    part.manufacturer_part_number || "Unknown",
+                manufacturer: part.manufacturer,
+                description: part.description,
+                category: part.category,
+                datasheet_url: part.datasheet_url,
+                product_url: part.product_url,
+                parameters: part.parameters,
+            };
+
+            const response = await fetch(
+                `${this.baseUrl}/grok/obsolete/replacement`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(request),
+                },
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => "");
+                return {
+                    original_part: part.manufacturer_part_number || "Unknown",
+                    analysis: "",
+                    success: false,
+                    error: `Request failed: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`,
+                };
+            }
+
+            return await response.json();
+        } catch (e) {
+            return {
+                original_part: part.manufacturer_part_number || "Unknown",
+                analysis: "",
+                success: false,
+                error:
+                    e instanceof Error
+                        ? e.message
+                        : "Failed to connect to backend",
             };
         }
     }

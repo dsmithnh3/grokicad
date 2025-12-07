@@ -12,8 +12,10 @@ use tracing::{error, info};
 
 use crate::services::git;
 use crate::types::{
-    ApiError, GrokCommitSummaryRequest, GrokCommitSummaryResponse, GrokRepoSummaryRequest,
-    GrokRepoSummaryResponse, GrokSelectionSummaryRequest, GrokSelectionSummaryResponse,
+    ApiError, GrokCommitSummaryRequest, GrokCommitSummaryResponse, 
+    GrokObsoleteReplacementRequest, GrokObsoleteReplacementResponse,
+    GrokRepoSummaryRequest, GrokRepoSummaryResponse, GrokSelectionSummaryRequest, 
+    GrokSelectionSummaryResponse,
 };
 // use kicad_db::PgPool;
 use kicad_db::{
@@ -324,6 +326,203 @@ pub async fn summarize_repo(
         repo: req.repo,
         summary,
         details,
+    }))
+}
+
+/// Find replacement parts for an obsolete component using Grok AI
+#[utoipa::path(
+    post,
+    path = "/api/grok/obsolete/replacement",
+    request_body = GrokObsoleteReplacementRequest,
+    responses(
+        (status = 200, description = "AI-generated replacement recommendations", body = GrokObsoleteReplacementResponse),
+        (status = 500, description = "Internal server error", body = ApiError)
+    ),
+    tag = "grok"
+)]
+pub async fn find_replacement(
+    State(_state): State<AppState>,
+    Json(req): Json<GrokObsoleteReplacementRequest>,
+) -> Result<Json<GrokObsoleteReplacementResponse>, (StatusCode, Json<ApiError>)> {
+    info!(
+        "Grok find_replacement called for obsolete part: {}",
+        req.manufacturer_part_number
+    );
+
+    // Load environment file to get XAI_API_KEY
+    load_environment_file(None).map_err(|e| {
+        error!("Failed to load environment file: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiError::internal(format!(
+                "Failed to load environment: {}",
+                e
+            ))),
+        )
+    })?;
+
+    // Create XAI client
+    let xai_client = XaiClient::new().map_err(|e| {
+        error!("Failed to create XAI client: {}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiError::internal(format!(
+                "Failed to initialize XAI client: {}",
+                e
+            ))),
+        )
+    })?;
+
+    // Build the context about the obsolete part
+    let mut part_info = format!(
+        "Obsolete Part: {}\n",
+        req.manufacturer_part_number
+    );
+    
+    if let Some(ref mfr) = req.manufacturer {
+        part_info.push_str(&format!("Manufacturer: {}\n", mfr));
+    }
+    
+    if let Some(ref desc) = req.description {
+        part_info.push_str(&format!("Description: {}\n", desc));
+    }
+    
+    if let Some(ref cat) = req.category {
+        part_info.push_str(&format!("Category: {}\n", cat));
+    }
+    
+    // Add key parameters
+    if !req.parameters.is_empty() {
+        part_info.push_str("Key Specifications:\n");
+        for param in &req.parameters {
+            part_info.push_str(&format!("  - {}: {}\n", param.name, param.value));
+        }
+    }
+    
+    // Add links for Grok to research
+    if let Some(ref datasheet_url) = req.datasheet_url {
+        part_info.push_str(&format!("\nDatasheet URL: {}\n", datasheet_url));
+    }
+    
+    if let Some(ref product_url) = req.product_url {
+        part_info.push_str(&format!("DigiKey Product Page: {}\n", product_url));
+    }
+
+    // Create user message with comprehensive prompt
+    let user_message = format!(
+        r#"I need to find replacement parts for an OBSOLETE electronic component. Here is the information about the obsolete part:
+
+{}
+
+Please help me find compatible replacement parts by:
+1. First, analyze the datasheet and product page (if URLs provided) to understand the full specifications
+2. Search for currently available parts with matching or better specifications
+3. Focus on finding parts that are pin-compatible or have similar footprints
+4. Consider functional equivalents from other manufacturers
+5. Prioritize parts that are actively manufactured (not NRND or obsolete)
+
+For each recommended replacement, provide:
+- Part number and manufacturer
+- Why it's a good replacement (key matching specs)
+- Any differences or modifications needed
+- Direct links to purchase (DigiKey, Mouser, or manufacturer page)
+
+Format the response clearly with headers and bullet points."#,
+        part_info
+    );
+
+    // Create input message for responses API
+    let input = vec![InputMessage::user(user_message)];
+
+    // Use web_search tool for comprehensive online research
+    let tools = vec![Tool::web_search()];
+
+    // Create responses request with Grok model (must use grok-4 family for tools)
+    let responses_request = ResponsesRequest::new("grok-4-1-fast-reasoning".to_string(), input, tools);
+
+    // Make API call using responses endpoint
+    let api_response = xai_client
+        .responses(&responses_request)
+        .await
+        .map_err(|e| {
+            error!("XAI API call failed: {}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ApiError::internal(format!(
+                    "Failed to get AI replacement suggestions: {}",
+                    e
+                ))),
+            )
+        })?;
+
+    // Extract the analysis from the response
+    let analysis = if let Some(output) = &api_response.output {
+        let mut result_parts = Vec::new();
+
+        for item in output {
+            // Extract content from message type outputs
+            if let Some(content) = &item.content {
+                // Content can be a string or array of content blocks
+                if let Some(content_str) = content.as_str() {
+                    result_parts.push(content_str.to_string());
+                } else if let Some(content_arr) = content.as_array() {
+                    for content_item in content_arr {
+                        if let Some(text) = content_item.get("text").and_then(|t| t.as_str()) {
+                            result_parts.push(text.to_string());
+                        }
+                    }
+                }
+            }
+            
+            // Also check for result field (tool outputs)
+            if let Some(result) = &item.result {
+                if let Some(result_str) = result.as_str() {
+                    // Don't include raw tool results, just note they were used
+                    if result_str.len() > 0 {
+                        result_parts.push(format!("[Research data retrieved]"));
+                    }
+                }
+            }
+        }
+
+        if result_parts.is_empty() {
+            format!(
+                "Unable to generate replacement recommendations for {}. Please try again or search manually on DigiKey.",
+                req.manufacturer_part_number
+            )
+        } else {
+            // Filter out duplicate "Research data retrieved" messages
+            let filtered: Vec<String> = result_parts
+                .into_iter()
+                .filter(|s| !s.contains("[Research data retrieved]") || s.len() > 30)
+                .collect();
+            
+            if filtered.is_empty() {
+                format!(
+                    "Research completed but no specific recommendations could be extracted for {}. Please try searching manually.",
+                    req.manufacturer_part_number
+                )
+            } else {
+                filtered.join("\n\n")
+            }
+        }
+    } else {
+        format!(
+            "No response received from AI for {}. Please try again.",
+            req.manufacturer_part_number
+        )
+    };
+
+    info!(
+        "Successfully generated replacement suggestions for {}",
+        req.manufacturer_part_number
+    );
+
+    Ok(Json(GrokObsoleteReplacementResponse {
+        original_part: req.manufacturer_part_number,
+        analysis,
+        success: true,
+        error: None,
     }))
 }
 

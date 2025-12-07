@@ -15,14 +15,11 @@ import { CommitFileSystem } from "../services/commit-vfs";
 import { GrokiAPI } from "../services/api";
 import { KCBoardAppElement } from "./kc-board/app";
 import { KCSchematicAppElement } from "./kc-schematic/app";
-import { KCCommitHistoryPanelElement } from "./common/commit-history-panel";
-
 import kc_ui_styles from "../../kc-ui/kc-ui.css";
 import shell_styles from "./kicanvas-shell.css";
 
 import "../icons/sprites";
 import "./common/project-panel";
-import "./common/commit-history-panel";
 
 // Setup KCUIIconElement to use icon sprites.
 KCUIIconElement.sprites_url = sprites_url;
@@ -39,11 +36,11 @@ KCUIIconElement.sprites_url = sprites_url;
  *
  * <kc-kicanvas-shell>
  *   <kc-ui-app>
- *     <kc-commit-history-panel>
  *     <kc-project-panel>
  *     <kc-schematic-app>
  *       <kc-schematic-viewer>
  *       <kc-ui-activity-side-bar>
+ *         <kc-schematic-git-panel> (commit history)
  *     <kc-board-app>
  *       <kc-board-viewer>
  *       <kc-ui-activity-side-bar>
@@ -61,13 +58,16 @@ class KiCanvasShellElement extends KCUIElement {
 
     #schematic_app: KCSchematicAppElement;
     #board_app: KCBoardAppElement;
-    #commit_history_panel: KCCommitHistoryPanelElement | null = null;
     #current_repo: string | null = null;
     #current_commit: string | null = null;
 
     constructor() {
         super();
         this.provideContext("project", this.project);
+        this.provideLazyContext("repoInfo", () => ({
+            repo: this.#current_repo,
+            commit: this.#current_commit,
+        }));
     }
 
     @attribute({ type: Boolean })
@@ -81,9 +81,6 @@ class KiCanvasShellElement extends KCUIElement {
 
     @query(`input[name="link"]`, true)
     public link_input: HTMLInputElement;
-
-    @query("kc-commit-history-panel", true)
-    public commit_panel: KCCommitHistoryPanelElement;
 
     override initialContentCallback() {
         const url_params = new URLSearchParams(document.location.search);
@@ -163,12 +160,6 @@ class KiCanvasShellElement extends KCUIElement {
                     latestCommit,
                 );
                 await this.setup_project(vfs);
-
-                // Update the commit history panel
-                if (this.#commit_history_panel) {
-                    await this.#commit_history_panel.setRepo(repo);
-                    this.#commit_history_panel.setSelectedCommit(latestCommit);
-                }
             } else {
                 throw new Error("No commits with schematic files found");
             }
@@ -227,9 +218,6 @@ class KiCanvasShellElement extends KCUIElement {
         this.#board_app = html`
             <kc-board-app controls="full"></kc-board-app>
         ` as KCBoardAppElement;
-        this.#commit_history_panel = html`
-            <kc-commit-history-panel></kc-commit-history-panel>
-        ` as KCCommitHistoryPanelElement;
 
         return html`
             <kc-ui-app>
@@ -280,25 +268,11 @@ class KiCanvasShellElement extends KCUIElement {
                         Nothing ever leaves your machine.
                     </p>
                 </section>
-                ${this.#commit_history_panel}
                 <main>${this.#schematic_app} ${this.#board_app}</main>
             </kc-ui-app>
         `;
     }
 
-    override renderedCallback() {
-        // After render, update the commit history panel if we have a repo
-        if (this.#current_repo && this.#commit_history_panel) {
-            later(async () => {
-                await this.#commit_history_panel!.setRepo(this.#current_repo!);
-                if (this.#current_commit) {
-                    this.#commit_history_panel!.setSelectedCommit(
-                        this.#current_commit,
-                    );
-                }
-            });
-        }
-    }
 }
 
 window.customElements.define("kc-kicanvas-shell", KiCanvasShellElement);

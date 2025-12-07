@@ -23,21 +23,6 @@
     display: contents;
 }
 
-/* Hide commit history panel when not loaded */
-:host(:not([loaded])) kc-commit-history-panel {
-    display: none;
-}
-
-/* Show commit history panel when loaded */
-:host([loaded]) kc-commit-history-panel {
-    display: flex;
-    width: 280px;
-    min-width: 200px;
-    max-width: 400px;
-    height: 100%;
-    flex-shrink: 0;
-}
-
 section.overlay {
     position: absolute;
     top: 0;
@@ -281,7 +266,6 @@ kc-schematic-app {
     flex: 1;
 }
 
-/* Layout for kc-ui-app when commit history is present */
 kc-ui-app {
     display: flex;
     flex-direction: row;

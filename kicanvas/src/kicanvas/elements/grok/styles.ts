@@ -12,8 +12,8 @@ import { css } from "../../../base/web-components";
 export const hostStyles = css`
     :host {
         position: fixed;
-        top: 20px;
-        bottom: 20px;
+        top: 60px;
+        bottom: 80px;
         right: 20px;
         z-index: 1000;
         pointer-events: auto;

@@ -46,6 +46,10 @@ export interface GrokPayload {
 // Singleton reference to the chat panel
 let globalChatPanel: KCGrokChatPanelElement | null = null;
 
+
+
+
+
 export class KCGrokButtonElement extends KCUIElement {
     static override styles = [
         ...KCUIElement.styles,
@@ -192,20 +196,14 @@ export class KCGrokButtonElement extends KCUIElement {
                 opacity: 1;
             }
 
-            /* Disabled state when no selection */
-            :host(:not([has-selection])) .grok-button {
-                opacity: 0.4;
-                cursor: not-allowed;
+            .grok-button:hover {
+                background: rgba(26, 26, 26, 0.95);
+                border-color: rgba(255, 255, 255, 0.3);
+                transform: scale(1.05);
             }
 
-            :host(:not([has-selection])) .grok-button:hover {
-                transform: none;
-                background: rgba(10, 10, 10, 0.9);
-                border-color: rgba(255, 255, 255, 0.15);
-            }
-
-            :host(:not([has-selection])) .grok-button:active {
-                transform: none;
+            .grok-button:active {
+                transform: scale(0.98);
             }
         `,
     ];
@@ -229,7 +227,7 @@ export class KCGrokButtonElement extends KCUIElement {
     };
 
     override initialContentCallback() {
-        // Add click listener to button
+        // Add click listener to button - always clickable despite disabled appearance
         const button = this.renderRoot.querySelector(".grok-button");
         button?.addEventListener("click", (e) => {
             e.preventDefault();
@@ -342,7 +340,7 @@ export class KCGrokButtonElement extends KCUIElement {
         console.log("Selected Items Count:", payload.selectedItems.length);
         console.log(
             "Selected Item UIDs:",
-            payload.selectedItems.map((i) => i.uuid),
+            payload.selectedItems.map((i: any) => i.uuid),
         );
         console.log("Full Payload:", payload);
         console.log("===========================");
@@ -350,8 +348,8 @@ export class KCGrokButtonElement extends KCUIElement {
         // Convert payload items to the format expected by chat panel
         // Filter out items without a valid reference (wires, labels, etc.)
         const selectedComponents = payload.selectedItems
-            .filter((item) => item.reference && item.reference.trim() !== "")
-            .map((item) => ({
+            .filter((item: any) => item.reference && item.reference.trim() !== "")
+            .map((item: any) => ({
                 uuid: item.uuid,
                 reference: item.reference!,
                 value: item.value ?? "",
@@ -396,14 +394,9 @@ export class KCGrokButtonElement extends KCUIElement {
         // Always update repo context (in case it changed)
         globalChatPanel.setContext(this.#repoInfo.repo, this.#repoInfo.commit);
 
-        // Update components and show/toggle
+        // Update components and toggle panel visibility
         globalChatPanel.setSelectedComponents(selectedComponents);
-
-        if (globalChatPanel.visible) {
-            // If already visible, just update (components already set above)
-        } else {
-            globalChatPanel.show();
-        }
+        globalChatPanel.toggle();
 
         // Dispatch event with payload for external consumers
         this.dispatchEvent(
@@ -417,6 +410,8 @@ export class KCGrokButtonElement extends KCUIElement {
             }),
         );
     }
+
+
 
     override render() {
         return html`

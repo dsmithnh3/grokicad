@@ -941,7 +941,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
                                 data-preset-id="${preset.id}"
                                 title="${preset.description}">
                                 ${preset.icon
-                                    ? html`<span class="preset-icon">${preset.icon}</span>`
+                                    ? html`<kc-ui-icon class="preset-icon">${preset.icon}</kc-ui-icon>`
                                     : null}
                                 <span class="preset-title">${preset.title}</span>
                             </div>
@@ -959,7 +959,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
                                 data-preset-id="${preset.id}"
                                 title="${hasSelection ? preset.description : "Select components first"}">
                                 ${preset.icon
-                                    ? html`<span class="preset-icon">${preset.icon}</span>`
+                                    ? html`<kc-ui-icon class="preset-icon">${preset.icon}</kc-ui-icon>`
                                     : null}
                                 <span class="preset-title">${preset.title}</span>
                             </div>
@@ -1027,7 +1027,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
                     class="clear-data-button" 
                     title="Clear cached schematic data and re-initialize"
                     ?disabled="${this._isLoading || this.streaming}">
-                    🗑️ Clear Cache
+                    <kc-ui-icon>delete</kc-ui-icon> Clear Cache
                 </button>
             </div>
         `;

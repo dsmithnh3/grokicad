@@ -36,6 +36,26 @@ export class KCSchematicZonePanelElement extends KCUIElement {
     static override styles = [
         ...KCUIElement.styles,
         css`
+            :host {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            kc-ui-panel {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+            }
+
+            kc-ui-panel-body {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+            }
+
             .zone-info {
                 padding: 0.5em;
                 background: rgba(255, 255, 255, 0.05);
@@ -238,34 +258,9 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                 font-size: 0.9em;
             }
 
-            .export-buttons {
-                display: flex;
-                gap: 0.5em;
-                margin-top: 1em;
-                padding-top: 0.5em;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-
-            .export-button {
-                flex: 1;
-                padding: 0.5em;
-                background: rgba(78, 205, 196, 0.2);
-                border: 1px solid rgba(78, 205, 196, 0.3);
-                border-radius: 4px;
-                color: rgb(78, 205, 196);
-                cursor: pointer;
-                font-size: 0.85em;
-                text-align: center;
-                transition: all 0.2s ease;
-            }
-
-            .export-button:hover {
-                background: rgba(78, 205, 196, 0.3);
-                border-color: rgba(78, 205, 196, 0.5);
-            }
-
             .scrollable {
-                max-height: 400px;
+                flex: 1;
+                min-height: 0;
                 overflow-y: auto;
             }
         `,
@@ -309,18 +304,6 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                 const uuid = symbolItem.dataset["symbolUuid"];
                 if (uuid) {
                     this.viewer.select(uuid);
-                }
-                return;
-            }
-            
-            // Handle action buttons
-            const actionButton = target.closest("[data-action]") as HTMLElement;
-            if (actionButton) {
-                const action = actionButton.dataset["action"];
-                if (action === "copy") {
-                    this.copy_to_clipboard();
-                } else if (action === "export") {
-                    this.export_to_json();
                 }
             }
         });
@@ -384,47 +367,6 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                 composed: true,
             }),
         );
-    }
-
-    private export_to_json() {
-        if (!this.zoneData) return;
-
-        const exportData = {
-            bounds: this.zoneData.bounds,
-            symbols: this.zoneData.symbols.map((s) => ({
-                reference: s.reference,
-                value: s.value,
-                footprint: s.footprint,
-                pins: s.pins,
-            })),
-            connections: this.zoneData.connections,
-            summary: {
-                symbolCount: this.zoneData.symbols.length,
-                wireCount: this.zoneData.wireCount,
-                labelCount: this.zoneData.labelCount,
-                connectionCount: this.zoneData.connections.length,
-            },
-        };
-
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-            type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "zone-selection.json";
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    private copy_to_clipboard() {
-        if (!this.zoneData) return;
-
-        const text = this.zoneData.symbols
-            .map((s) => `${s.reference}\t${s.value}\t${s.footprint}`)
-            .join("\n");
-
-        navigator.clipboard.writeText(text);
     }
 
     override render() {
@@ -559,19 +501,6 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                                   </div>
                               `
                             : null}
-                    </div>
-
-                    <div class="export-buttons">
-                        <button
-                            class="export-button"
-                            data-action="copy">
-                            📋 Copy
-                        </button>
-                        <button
-                            class="export-button"
-                            data-action="export">
-                            📥 Export JSON
-                        </button>
                     </div>
                 </kc-ui-panel-body>
             </kc-ui-panel>

@@ -1,9 +1,10 @@
 use utoipa::OpenApi;
 
-use crate::controllers::{distill, grok, hook, repo};
+use crate::controllers::{digikey, distill, grok, hook, repo};
 use crate::types::{
     ApiError, CommitFilesRequest, CommitFilesResponse, CommitInfo, CommitInfoRequest,
-    CommitInfoResponse, DistillRequest, DistillResponse, GrokCommitSummaryRequest,
+    CommitInfoResponse, DigiKeyParameter, DigiKeyPartInfo, DigiKeySearchRequest,
+    DigiKeySearchResponse, DistillRequest, DistillResponse, GrokCommitSummaryRequest,
     GrokCommitSummaryResponse, GrokRepoSummaryRequest, GrokRepoSummaryResponse,
     GrokSelectionSummaryRequest, GrokSelectionSummaryResponse, HookUpdateResponse,
     RepoCommitsRequest, RepoCommitsResponse, SchematicFile,
@@ -28,6 +29,8 @@ use crate::types::{
         grok::summarize_repo,
         grok::chat_stream,
         distill::distill_schematics,
+        digikey::search_parts,
+        digikey::get_status,
     ),
     components(schemas(
         RepoCommitsRequest,
@@ -47,13 +50,18 @@ use crate::types::{
         GrokRepoSummaryResponse,
         DistillRequest,
         DistillResponse,
+        DigiKeySearchRequest,
+        DigiKeySearchResponse,
+        DigiKeyPartInfo,
+        DigiKeyParameter,
         ApiError,
     )),
     tags(
         (name = "repo", description = "Repository and commit information endpoints"),
         (name = "hook", description = "Webhook endpoints for triggering updates"),
         (name = "grok", description = "AI-powered analysis endpoints"),
-        (name = "distill", description = "Schematic distillation endpoints")
+        (name = "distill", description = "Schematic distillation endpoints"),
+        (name = "digikey", description = "DigiKey part lookup endpoints")
     )
 )]
 pub struct ApiDoc;

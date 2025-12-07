@@ -9,6 +9,7 @@ import { KCViewerAppElement } from "../common/app";
 import { KCSchematicViewerElement } from "./viewer";
 
 // import dependent elements so they're registered before use.
+import "./digikey-panel";
 import "./git-panel";
 import "./info-panel";
 import "./properties-panel";
@@ -39,9 +40,7 @@ export class KCSchematicAppElement extends KCViewerAppElement<KCSchematicViewerE
             return;
         }
 
-        // Otherwise, selecting the same item twice should show the
-        // properties panel.
-        this.change_activity("properties");
+        // Stay on the current tab - panels will update based on selection
     }
 
     override can_load(src: ProjectPage): boolean {
@@ -76,6 +75,14 @@ export class KCSchematicAppElement extends KCViewerAppElement<KCSchematicViewerE
                 name="Properties"
                 icon="list">
                 <kc-schematic-properties-panel></kc-schematic-properties-panel>
+            </kc-ui-activity>`,
+
+            // DigiKey part lookup
+            html`<kc-ui-activity
+                slot="activities"
+                name="DigiKey"
+                icon="shopping_cart">
+                <kc-schematic-digikey-panel></kc-schematic-digikey-panel>
             </kc-ui-activity>`,
 
             // Git history

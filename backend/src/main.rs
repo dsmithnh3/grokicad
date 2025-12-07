@@ -16,6 +16,9 @@ use openapi::ApiDoc;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // Load environment variables from .env file
+    dotenvy::dotenv().ok();
+    
     tracing_subscriber::fmt().init();
 
     let pool = kicad_db::create_pool()
@@ -30,6 +33,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api/hook", routes::hook::router())
         .nest("/api/grok", routes::grok::router())
         .nest("/api/distill", routes::distill::router())
+        .nest("/api/digikey", routes::digikey::router())
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(tower_http::cors::CorsLayer::permissive())
         .with_state(app_state);

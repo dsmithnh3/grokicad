@@ -11,6 +11,46 @@ const API_BASE_URL = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
 
 console.log(`[API] Using backend URL: ${API_BASE_URL}`);
 
+// ============================================================================
+// DigiKey Types
+// ============================================================================
+
+export interface DigiKeyParameter {
+    name: string;
+    value: string;
+}
+
+export interface DigiKeyPartInfo {
+    digikey_part_number: string | null;
+    manufacturer_part_number: string | null;
+    manufacturer: string | null;
+    description: string | null;
+    detailed_description: string | null;
+    product_url: string | null;
+    datasheet_url: string | null;
+    photo_url: string | null;
+    quantity_available: number | null;
+    unit_price: number | null;
+    product_status: string | null;
+    is_obsolete: boolean;
+    lifecycle_status: string | null;
+    category: string | null;
+    parameters: DigiKeyParameter[];
+}
+
+export interface DigiKeySearchResponse {
+    query: string;
+    success: boolean;
+    error: string | null;
+    parts: DigiKeyPartInfo[];
+    total_count: number;
+}
+
+export interface DigiKeyStatusResponse {
+    configured: boolean;
+    message: string;
+}
+
 export interface CommitInfo {
     commit_hash: string;
     commit_date: string | null;
@@ -176,6 +216,85 @@ export class GrokiAPI {
             return null;
         } catch {
             return null;
+        }
+    }
+
+    // ========================================================================
+    // DigiKey API Methods
+    // ========================================================================
+
+    /**
+     * Check if DigiKey integration is configured on the backend
+     */
+    static async getDigiKeyStatus(): Promise<DigiKeyStatusResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/digikey/status`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                return {
+                    configured: false,
+                    message: `Failed to check DigiKey status: ${response.status}`,
+                };
+            }
+
+            return await response.json();
+        } catch (e) {
+            return {
+                configured: false,
+                message:
+                    e instanceof Error
+                        ? e.message
+                        : "Failed to connect to backend",
+            };
+        }
+    }
+
+    /**
+     * Search DigiKey for part information
+     * @param query - Search query (part number, keyword, etc.)
+     * @param mpn - Optional manufacturer part number for more precise search
+     */
+    static async searchDigiKey(
+        query: string,
+        mpn?: string,
+    ): Promise<DigiKeySearchResponse> {
+        try {
+            const response = await fetch(`${this.baseUrl}/digikey/search`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ query, mpn }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => "");
+                return {
+                    query: mpn || query,
+                    success: false,
+                    error: `Search failed: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`,
+                    parts: [],
+                    total_count: 0,
+                };
+            }
+
+            return await response.json();
+        } catch (e) {
+            return {
+                query: mpn || query,
+                success: false,
+                error:
+                    e instanceof Error
+                        ? e.message
+                        : "Failed to connect to backend",
+                parts: [],
+                total_count: 0,
+            };
         }
     }
 }

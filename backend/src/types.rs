@@ -3,6 +3,74 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 // ============================================================================
+// DigiKey API Types
+// ============================================================================
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct DigiKeySearchRequest {
+    /// Part number or keyword to search for
+    pub query: String,
+    /// Manufacturer part number (optional, for more precise search)
+    pub mpn: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema, Clone)]
+pub struct DigiKeyPartInfo {
+    /// DigiKey part number
+    pub digikey_part_number: Option<String>,
+    /// Manufacturer part number
+    pub manufacturer_part_number: Option<String>,
+    /// Manufacturer name
+    pub manufacturer: Option<String>,
+    /// Part description
+    pub description: Option<String>,
+    /// Detailed product description
+    pub detailed_description: Option<String>,
+    /// Product URL on DigiKey
+    pub product_url: Option<String>,
+    /// Datasheet URL
+    pub datasheet_url: Option<String>,
+    /// Primary photo URL
+    pub photo_url: Option<String>,
+    /// Quantity available
+    pub quantity_available: Option<i64>,
+    /// Unit price (USD)
+    pub unit_price: Option<f64>,
+    /// Product status (Active, Obsolete, etc.)
+    pub product_status: Option<String>,
+    /// Whether the part is obsolete/deprecated
+    pub is_obsolete: bool,
+    /// Lifecycle status description
+    pub lifecycle_status: Option<String>,
+    /// Category name
+    pub category: Option<String>,
+    /// Product parameters/specifications
+    pub parameters: Vec<DigiKeyParameter>,
+}
+
+#[derive(Debug, Serialize, Deserialize, ToSchema, Clone)]
+pub struct DigiKeyParameter {
+    /// Parameter name (e.g., "Resistance", "Capacitance")
+    pub name: String,
+    /// Parameter value
+    pub value: String,
+}
+
+#[derive(Debug, Serialize, ToSchema)]
+pub struct DigiKeySearchResponse {
+    /// The search query used
+    pub query: String,
+    /// Whether the search was successful
+    pub success: bool,
+    /// Error message if search failed
+    pub error: Option<String>,
+    /// List of matching parts (may be empty)
+    pub parts: Vec<DigiKeyPartInfo>,
+    /// Total number of results found
+    pub total_count: usize,
+}
+
+// ============================================================================
 // Repo Endpoint Types
 // ============================================================================
 

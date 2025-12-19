@@ -121,16 +121,13 @@ export class SchematicExtension implements ChatExtension {
 
     /**
      * Get presets based on current context.
+     * Always returns both project and component presets.
+     * Component presets will be disabled if no components are selected.
      */
     getPresets(context: ChatContext): PresetGroup[] {
-        const groups: PresetGroup[] = [PROJECT_PRESETS];
-        
-        // Only show component presets if there are selected items
-        if (context.selectedItems && context.selectedItems.length > 0) {
-            groups.push(COMPONENT_PRESETS);
-        }
-        
-        return groups;
+        // Always show both groups - component presets will appear disabled
+        // when no components are selected (via requiresContext: true)
+        return [PROJECT_PRESETS, COMPONENT_PRESETS];
     }
 
     /**

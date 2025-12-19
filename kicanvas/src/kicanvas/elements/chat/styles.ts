@@ -58,23 +58,57 @@ export const chatCssProperties = css`
 
 export const hostStyles = css`
     :host {
-        position: fixed;
-        top: 60px;
-        bottom: 80px;
-        right: 20px;
+        display: block;
         z-index: 1000;
         pointer-events: auto;
-        opacity: 1;
-        transform: translateX(0);
-        transition:
-            opacity var(--chat-transition-normal),
-            transform var(--chat-transition-normal);
     }
 
     :host(:not([visible])) {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateX(20px);
+        display: none;
+    }
+    
+    /* Docked tab positioning - always visible at right edge */
+    .docked-tab {
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 44px;
+        height: 72px;
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        border: 1px solid var(--chat-panel-border);
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1000;
+        transition: all var(--chat-transition-fast);
+        box-shadow: -2px 0 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    .docked-tab:hover {
+        width: 52px;
+        background: linear-gradient(135deg, #252525 0%, #1a1a1a 100%);
+        border-color: rgba(255, 206, 84, 0.5);
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 206, 84, 0.15);
+    }
+    
+    .docked-logo {
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        transition: transform var(--chat-transition-fast);
+    }
+    
+    .docked-tab:hover .docked-logo {
+        transform: scale(1.1);
+    }
+    
+    .docked-tab kc-ui-icon {
+        font-size: 24px;
+        color: var(--chat-accent);
     }
     
     :host(.dock-hint) .chat-container {
@@ -85,8 +119,11 @@ export const hostStyles = css`
 
 export const containerStyles = css`
     .chat-container {
+        position: fixed;
+        top: 60px;
+        bottom: 80px;
+        right: 20px;
         width: var(--chat-panel-width);
-        height: 100%;
         background: var(--chat-panel-bg);
         border: 1px solid var(--chat-panel-border);
         border-radius: var(--chat-panel-radius);
@@ -96,6 +133,7 @@ export const containerStyles = css`
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         transition: box-shadow var(--chat-transition-fast), 
                     border-color var(--chat-transition-fast);
+        z-index: 1000;
     }
     
     .chat-container.dragging {
@@ -107,43 +145,6 @@ export const containerStyles = css`
 
     :host([data-search-open]) .chat-container {
         overflow: visible;
-    }
-    
-    .docked-tab {
-        position: fixed;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 44px;
-        height: 72px;
-        background: #0a0a0a;
-        border: 1px solid var(--chat-panel-border);
-        border-right: none;
-        border-radius: 8px 0 0 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
-    }
-    
-    .docked-tab:hover {
-        width: 52px;
-        background: #1a1a1a;
-        border-color: rgba(255, 206, 84, 0.5);
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 206, 84, 0.1);
-    }
-    
-    .docked-logo {
-        width: 26px;
-        height: 26px;
-        object-fit: contain;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .docked-tab:hover .docked-logo {
-        transform: scale(1.15);
     }
 `;
 
@@ -296,6 +297,9 @@ export const messageStyles = css`
         font-size: 13px;
         line-height: 1.6;
         color: var(--chat-text-primary);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
     }
 
     /* Streaming cursor animation */
@@ -482,8 +486,12 @@ export const inputStyles = css`
 
 export const presetStyles = css`
     .presets-section {
-        padding: 12px 14px;
+        padding: 10px 14px;
         border-bottom: 1px solid var(--chat-panel-border);
+    }
+    
+    .presets-section.collapsed {
+        padding: 6px 14px;
     }
 
     .presets-header {
@@ -491,6 +499,10 @@ export const presetStyles = css`
         align-items: center;
         justify-content: space-between;
         margin-bottom: 10px;
+    }
+    
+    .presets-section.collapsed .presets-header {
+        margin-bottom: 0;
     }
 
     .presets-label {
@@ -629,6 +641,9 @@ export const contextStyles = css`
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
+        max-height: 80px;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     .context-item {
@@ -643,6 +658,13 @@ export const contextStyles = css`
         color: var(--chat-accent);
         cursor: pointer;
         transition: all var(--chat-transition-fast);
+        max-width: 140px;
+    }
+    
+    .context-item-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .context-item:hover {
@@ -674,6 +696,26 @@ export const contextStyles = css`
 
     .context-item-remove kc-ui-icon {
         font-size: 12px;
+    }
+    
+    .context-expand-btn,
+    .context-collapse-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 5px;
+        font-size: 11px;
+        color: var(--chat-text-secondary);
+        cursor: pointer;
+        transition: all var(--chat-transition-fast);
+    }
+    
+    .context-expand-btn:hover,
+    .context-collapse-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--chat-text-primary);
     }
 `;
 
@@ -860,6 +902,242 @@ export const statusStyles = css`
 `;
 
 // =============================================================================
+// Overlay Mode Styles
+// =============================================================================
+
+export const overlayStyles = css`
+    /* Overlay backdrop */
+    .overlay-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Overlay mode container */
+    .chat-container.overlay-mode {
+        position: fixed;
+        top: 20px;
+        left: 280px; /* Avoid left sidebar */
+        right: 20px;
+        bottom: 20px;
+        width: auto;
+        height: auto;
+        max-width: none;
+        z-index: 1000;
+        animation: scaleIn 0.2s ease;
+    }
+
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Adjust overlay for smaller screens */
+    @media (max-width: 768px) {
+        .chat-container.overlay-mode {
+            left: 10px;
+            right: 10px;
+            top: 10px;
+            bottom: 10px;
+        }
+    }
+`;
+
+// =============================================================================
+// History Panel Styles
+// =============================================================================
+
+export const historyPanelStyles = css`
+    .history-panel {
+        position: absolute;
+        top: var(--chat-header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--chat-panel-bg);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--chat-panel-border);
+        flex-shrink: 0;
+    }
+
+    .history-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--chat-text-primary);
+    }
+
+    .history-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .history-actions button,
+    .history-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: var(--chat-text-secondary);
+        transition: all var(--chat-transition-fast);
+    }
+
+    .history-actions button:hover,
+    .history-close:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--chat-text-primary);
+    }
+
+    .clear-all-history:hover {
+        background: rgba(255, 100, 100, 0.15);
+        color: #ff6b6b;
+    }
+
+    .history-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+    }
+
+    .history-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100px;
+        color: var(--chat-text-muted);
+        font-size: 13px;
+    }
+
+    .history-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        margin-bottom: 4px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all var(--chat-transition-fast);
+    }
+
+    .history-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .history-item.active {
+        background: rgba(255, 206, 84, 0.1);
+        border-color: rgba(255, 206, 84, 0.25);
+    }
+
+    .history-item-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .history-item-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--chat-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+    }
+
+    .history-item-meta {
+        font-size: 11px;
+        color: var(--chat-text-muted);
+    }
+
+    .history-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        opacity: 0;
+        transition: opacity var(--chat-transition-fast);
+    }
+
+    .history-item:hover .history-item-actions {
+        opacity: 1;
+    }
+
+    .history-item-download,
+    .history-item-delete {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: var(--chat-text-muted);
+        transition: all var(--chat-transition-fast);
+    }
+
+    .history-item-download:hover {
+        background: rgba(96, 165, 250, 0.15);
+        color: #60a5fa;
+    }
+
+    .history-item-delete:hover {
+        background: rgba(255, 100, 100, 0.15);
+        color: #ff6b6b;
+    }
+
+    .history-item-download kc-ui-icon,
+    .history-item-delete kc-ui-icon {
+        font-size: 16px;
+    }
+`;
+
+// =============================================================================
 // Combined Styles Export
 // =============================================================================
 
@@ -875,4 +1153,3 @@ export const chatPanelStyles = [
     contentStyles,
     statusStyles,
 ];
-

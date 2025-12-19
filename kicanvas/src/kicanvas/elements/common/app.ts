@@ -25,8 +25,8 @@ import "./help-panel";
 import "./preferences-panel";
 import "./project-panel";
 import "./viewer-bottom-toolbar";
-import "./grok-button";
-import "./grok-chat-panel";
+// Import the new extensible chat panel
+import "../chat/chat-panel";
 
 interface ViewerElement extends HTMLElement {
     viewer: Viewer;
@@ -190,8 +190,8 @@ export abstract class KCViewerAppElement<
             this.#activity_bar = null;
         }
 
-        // Grok button in upper right corner
-        const grok_button = controls != "none" ? html`<kc-grok-button></kc-grok-button>` : null;
+        // Chat panel with docked tab (replaces old grok button)
+        const chat_panel = controls != "none" ? html`<kc-chat-panel></kc-chat-panel>` : null;
 
         let bottom_toolbar = null;
         if (controls != "none") {
@@ -201,7 +201,7 @@ export abstract class KCViewerAppElement<
         return html`<kc-ui-split-view vertical>
             ${this.#activity_bar} ${resizer}
             <kc-ui-view class="grow">
-                ${grok_button} ${this.#viewer_elm} ${bottom_toolbar}
+                ${chat_panel} ${this.#viewer_elm} ${bottom_toolbar}
             </kc-ui-view>
         </kc-ui-split-view>`;
     }

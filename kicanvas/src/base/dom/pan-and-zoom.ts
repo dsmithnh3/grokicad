@@ -46,78 +46,110 @@ export class PanAndZoom {
         let startDistance: number | null = null;
         let startPosition: TouchList | null = null;
 
-        this.target.addEventListener("touchstart", (e: TouchEvent) => {
-            if (e.touches.length === 2) {
-                startDistance = this.#getDistanceBetweenTouches(e.touches);
-            } else if (e.touches.length === 1) {
-                startPosition = e.touches;
-            }
-        });
+        // Touch events need { passive: false } to allow preventDefault() for zoom gestures
+        this.target.addEventListener(
+            "touchstart",
+            (e: TouchEvent) => {
+                if (e.touches.length === 2) {
+                    startDistance = this.#getDistanceBetweenTouches(e.touches);
+                    e.preventDefault(); // Prevent native pinch zoom
+                } else if (e.touches.length === 1) {
+                    startPosition = e.touches;
+                }
+            },
+            { passive: false },
+        );
 
-        this.target.addEventListener("touchmove", (e: TouchEvent) => {
-            if (e.touches.length === 2) {
-                if (startDistance !== null) {
-                    const currentDistance = this.#getDistanceBetweenTouches(
-                        e.touches,
-                    );
-                    if (Math.abs(startDistance - currentDistance) < 10) {
-                        const scale = (currentDistance / startDistance) * 4;
-                        if (startDistance < currentDistance) {
-                            this.#handle_zoom(scale * -1);
-                        } else {
-                            this.#handle_zoom(scale);
+        this.target.addEventListener(
+            "touchmove",
+            (e: TouchEvent) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault(); // Prevent native pinch zoom
+                    if (startDistance !== null) {
+                        const currentDistance = this.#getDistanceBetweenTouches(
+                            e.touches,
+                        );
+                        if (Math.abs(startDistance - currentDistance) < 10) {
+                            const scale = (currentDistance / startDistance) * 4;
+                            if (startDistance < currentDistance) {
+                                this.#handle_zoom(scale * -1);
+                            } else {
+                                this.#handle_zoom(scale);
+                            }
                         }
+                        startDistance = currentDistance;
                     }
-                    startDistance = currentDistance;
+                } else if (e.touches.length === 1 && startPosition !== null) {
+                    e.preventDefault(); // Prevent native scroll
+                    const sx = startPosition[0]?.clientX ?? 0;
+                    const sy = startPosition[0]?.clientY ?? 0;
+                    const ex = e.touches[0]?.clientX ?? 0;
+                    const ey = e.touches[0]?.clientY ?? 0;
+                    if (Math.abs(sx - ex) < 100 && Math.abs(sy - ey) < 100) {
+                        this.#handle_pan(sx - ex, sy - ey);
+                    }
+                    startPosition = e.touches;
                 }
-            } else if (e.touches.length === 1 && startPosition !== null) {
-                const sx = startPosition[0]?.clientX ?? 0;
-                const sy = startPosition[0]?.clientY ?? 0;
-                const ex = e.touches[0]?.clientX ?? 0;
-                const ey = e.touches[0]?.clientY ?? 0;
-                if (Math.abs(sx - ex) < 100 && Math.abs(sy - ey) < 100) {
-                    this.#handle_pan(sx - ex, sy - ey);
-                }
-                startPosition = e.touches;
-            }
-        });
+            },
+            { passive: false },
+        );
 
-        this.target.addEventListener("touchend", () => {
-            startDistance = null;
-            startPosition = null;
-        });
+        this.target.addEventListener(
+            "touchend",
+            () => {
+                startDistance = null;
+                startPosition = null;
+            },
+            { passive: true },
+        );
 
         let dragStartPosition: Vec2 | null = null;
         let dragging = false;
 
-        this.target.addEventListener("mousedown", (e: MouseEvent) => {
-            if (e.button === 1 || e.button === 2) {
-                e.preventDefault();
-                dragging = true;
-                dragStartPosition = new Vec2(e.clientX, e.clientY);
-            }
-        });
+        this.target.addEventListener(
+            "mousedown",
+            (e: MouseEvent) => {
+                if (e.button === 1 || e.button === 2) {
+                    e.preventDefault();
+                    dragging = true;
+                    dragStartPosition = new Vec2(e.clientX, e.clientY);
+                }
+            },
+            { passive: false },
+        );
 
-        this.target.addEventListener("mousemove", (e: MouseEvent) => {
-            if (dragging && dragStartPosition !== null) {
-                const currentPosition = new Vec2(e.clientX, e.clientY);
-                const delta = currentPosition.sub(dragStartPosition);
-                this.#handle_pan(-delta.x, -delta.y);
-                dragStartPosition = currentPosition;
-            }
-        });
+        this.target.addEventListener(
+            "mousemove",
+            (e: MouseEvent) => {
+                if (dragging && dragStartPosition !== null) {
+                    const currentPosition = new Vec2(e.clientX, e.clientY);
+                    const delta = currentPosition.sub(dragStartPosition);
+                    this.#handle_pan(-delta.x, -delta.y);
+                    dragStartPosition = currentPosition;
+                }
+            },
+            { passive: true },
+        );
 
-        this.target.addEventListener("mouseup", (e: MouseEvent) => {
-            if (e.button === 1 || e.button === 2) {
-                dragging = false;
-                dragStartPosition = null;
-            }
-        });
+        this.target.addEventListener(
+            "mouseup",
+            (e: MouseEvent) => {
+                if (e.button === 1 || e.button === 2) {
+                    dragging = false;
+                    dragStartPosition = null;
+                }
+            },
+            { passive: true },
+        );
 
         // Prevent the browser's default context menu.
-        this.target.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-        });
+        this.target.addEventListener(
+            "contextmenu",
+            (e) => {
+                e.preventDefault();
+            },
+            { passive: false },
+        );
     }
 
     #getDistanceBetweenTouches(touches: TouchList) {

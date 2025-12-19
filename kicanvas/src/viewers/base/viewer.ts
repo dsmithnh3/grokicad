@@ -54,6 +54,9 @@ export abstract class Viewer extends EventTarget {
     #last_screen_position: { x: number; y: number } = { x: 0, y: 0 };
     #hover_check_pending = false;
 
+    // Frame throttling to prevent redundant repaints (Firefox performance fix)
+    #draw_pending = false;
+
     constructor(
         public canvas: HTMLCanvasElement,
         protected interactive = true,
@@ -103,16 +106,26 @@ export abstract class Viewer extends EventTarget {
             this.viewport.enable_pan_and_zoom(0.5, 190);
 
             this.disposables.add(
-                listen(this.canvas, "mousemove", (e) => {
-                    this.on_mouse_change(e);
-                    this.on_zone_selection_move(e);
-                }),
+                listen(
+                    this.canvas,
+                    "mousemove",
+                    (e) => {
+                        this.on_mouse_change(e);
+                        this.on_zone_selection_move(e);
+                    },
+                    { passive: true },
+                ),
             );
 
             this.disposables.add(
-                listen(this.canvas, "panzoom", (e) => {
-                    this.on_mouse_change(e as MouseEvent);
-                }),
+                listen(
+                    this.canvas,
+                    "panzoom",
+                    (e) => {
+                        this.on_mouse_change(e as MouseEvent);
+                    },
+                    { passive: true },
+                ),
             );
 
             this.disposables.add(
@@ -292,7 +305,14 @@ export abstract class Viewer extends EventTarget {
             return;
         }
 
+        // Prevent redundant animation frames from queuing up (Firefox performance fix)
+        if (this.#draw_pending) {
+            return;
+        }
+
+        this.#draw_pending = true;
         window.requestAnimationFrame(() => {
+            this.#draw_pending = false;
             this.on_draw();
         });
     }

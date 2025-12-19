@@ -1,7 +1,10 @@
 /*
-    Frontend Git Service using isomorphic-git.
+    Frontend Git Service using isomorphic-git with IndexedDB persistence.
     Replaces the backend git2-based implementation for commit history
     and file retrieval at specific commits.
+
+    Uses lightning-fs for persistent IndexedDB storage so cloned repos
+    survive page reloads.
 */
 
 // Buffer polyfill for browser environment (required by isomorphic-git)
@@ -12,6 +15,33 @@ if (typeof globalThis.Buffer === "undefined") {
 
 import git, { type ReadCommitResult } from "isomorphic-git";
 import http from "isomorphic-git/http/web";
+import LightningFS from "@isomorphic-git/lightning-fs";
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+/** Configuration options for the GitService */
+export interface GitServiceConfig {
+    /** CORS proxy URL for GitHub access */
+    corsProxy: string;
+    /** Maximum depth of commits to fetch (limits memory usage) */
+    maxCommitDepth: number;
+    /** Clone timeout in milliseconds */
+    cloneTimeoutMs: number;
+    /** Enable debug logging */
+    debug: boolean;
+    /** IndexedDB database name */
+    dbName: string;
+}
+
+const DEFAULT_CONFIG: GitServiceConfig = {
+    corsProxy: "https://cors.isomorphic-git.org",
+    maxCommitDepth: 500,
+    cloneTimeoutMs: 60000, // 60 seconds
+    debug: false,
+    dbName: "grokicad-git",
+};
 
 // ============================================================================
 // Types
@@ -29,183 +59,164 @@ export interface SchematicFile {
     content: string;
 }
 
+/** Cached repository metadata */
+export interface CachedRepoInfo {
+    slug: string;
+    clonedAt: string;
+    lastAccessed: string;
+}
+
+/** Error thrown when a git operation fails */
+export class GitServiceError extends Error {
+    public readonly code:
+        | "CLONE_FAILED"
+        | "TIMEOUT"
+        | "NOT_FOUND"
+        | "NETWORK_ERROR"
+        | "INVALID_REPO"
+        | "DB_ERROR";
+
+    constructor(
+        message: string,
+        code:
+            | "CLONE_FAILED"
+            | "TIMEOUT"
+            | "NOT_FOUND"
+            | "NETWORK_ERROR"
+            | "INVALID_REPO"
+            | "DB_ERROR",
+        public override readonly cause?: unknown,
+    ) {
+        super(message);
+        this.name = "GitServiceError";
+        this.code = code;
+    }
+}
+
 // ============================================================================
-// In-Memory File System for isomorphic-git
+// Metadata Storage (separate from git data)
 // ============================================================================
 
-/**
- * Minimal in-memory filesystem that implements the FS interface for isomorphic-git.
- * This avoids the need for IndexedDB or other persistent storage.
- */
-class InMemoryFS {
-    private files: Map<string, Uint8Array> = new Map();
-    private dirs: Set<string> = new Set();
+const METADATA_STORE = "repo-metadata";
 
-    constructor() {
-        this.dirs.add("/");
-    }
+interface RepoMetadata {
+    slug: string;
+    clonedAt: string;
+    lastAccessed: string;
+}
 
-    private normalizePath(path: string): string {
-        if (!path.startsWith("/")) {
-            path = "/" + path;
-        }
-        // Remove trailing slash except for root
-        if (path.length > 1 && path.endsWith("/")) {
-            path = path.slice(0, -1);
-        }
-        return path;
-    }
-
-    private getParentDir(path: string): string {
-        const normalized = this.normalizePath(path);
-        const lastSlash = normalized.lastIndexOf("/");
-        return lastSlash <= 0 ? "/" : normalized.slice(0, lastSlash);
-    }
-
-    async readFile(
-        path: string,
-        options?: { encoding?: string },
-    ): Promise<Uint8Array | string> {
-        const normalized = this.normalizePath(path);
-        const content = this.files.get(normalized);
-        if (content === undefined) {
-            const error = new Error(`ENOENT: no such file: ${path}`);
-            (error as NodeJS.ErrnoException).code = "ENOENT";
-            throw error;
-        }
-        if (options?.encoding === "utf8") {
-            return new TextDecoder().decode(content);
-        }
-        return content;
-    }
-
-    async writeFile(
-        path: string,
-        data: Uint8Array | string,
-        _options?: { encoding?: string; mode?: number },
-    ): Promise<void> {
-        const normalized = this.normalizePath(path);
-        const content =
-            typeof data === "string" ? new TextEncoder().encode(data) : data;
-        this.files.set(normalized, content);
-        // Ensure parent directories exist
-        let parent = this.getParentDir(normalized);
-        while (parent !== "/" && !this.dirs.has(parent)) {
-            this.dirs.add(parent);
-            parent = this.getParentDir(parent);
-        }
-    }
-
-    async unlink(path: string): Promise<void> {
-        const normalized = this.normalizePath(path);
-        this.files.delete(normalized);
-    }
-
-    async readdir(path: string): Promise<string[]> {
-        const normalized = this.normalizePath(path);
-        const entries = new Set<string>();
-
-        // Add files in this directory
-        for (const filePath of this.files.keys()) {
-            if (filePath.startsWith(normalized + "/") || normalized === "/") {
-                const relativePath =
-                    normalized === "/"
-                        ? filePath.slice(1)
-                        : filePath.slice(normalized.length + 1);
-                const firstSegment = relativePath.split("/")[0];
-                if (firstSegment) {
-                    entries.add(firstSegment);
-                }
+async function openMetadataDB(dbName: string): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(`${dbName}-metadata`, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (!db.objectStoreNames.contains(METADATA_STORE)) {
+                db.createObjectStore(METADATA_STORE, { keyPath: "slug" });
             }
-        }
+        };
+    });
+}
 
-        // Add subdirectories
-        for (const dirPath of this.dirs) {
-            if (dirPath.startsWith(normalized + "/") || normalized === "/") {
-                const relativePath =
-                    normalized === "/"
-                        ? dirPath.slice(1)
-                        : dirPath.slice(normalized.length + 1);
-                const firstSegment = relativePath.split("/")[0];
-                if (firstSegment) {
-                    entries.add(firstSegment);
+async function saveRepoMetadata(
+    dbName: string,
+    metadata: RepoMetadata,
+): Promise<void> {
+    try {
+        const db = await openMetadataDB(dbName);
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(METADATA_STORE, "readwrite");
+            const store = tx.objectStore(METADATA_STORE);
+            const request = store.put(metadata);
+            request.onerror = () => {
+                const error = request.error;
+                db.close();
+                // Check for quota errors
+                if (
+                    error &&
+                    (error.name === "QuotaExceededError" ||
+                        error.message?.includes("quota"))
+                ) {
+                    reject(
+                        new Error(
+                            "Storage quota exceeded. Please clear some cached repositories.",
+                        ),
+                    );
+                } else {
+                    reject(error);
                 }
-            }
-        }
-
-        return Array.from(entries);
-    }
-
-    async mkdir(path: string, _options?: { recursive?: boolean }): Promise<void> {
-        const normalized = this.normalizePath(path);
-        this.dirs.add(normalized);
-        // Create parent directories
-        let parent = this.getParentDir(normalized);
-        while (parent !== "/" && !this.dirs.has(parent)) {
-            this.dirs.add(parent);
-            parent = this.getParentDir(parent);
-        }
-    }
-
-    async rmdir(path: string): Promise<void> {
-        const normalized = this.normalizePath(path);
-        this.dirs.delete(normalized);
-    }
-
-    async stat(
-        path: string,
-    ): Promise<{ type: string; mode: number; size: number; isFile: () => boolean; isDirectory: () => boolean; isSymbolicLink: () => boolean }> {
-        const normalized = this.normalizePath(path);
-        if (this.files.has(normalized)) {
-            const content = this.files.get(normalized)!;
-            return {
-                type: "file",
-                mode: 0o100644,
-                size: content.length,
-                isFile: () => true,
-                isDirectory: () => false,
-                isSymbolicLink: () => false,
             };
+            request.onsuccess = () => resolve();
+            tx.oncomplete = () => db.close();
+        });
+    } catch (e) {
+        const message =
+            e instanceof Error ? e.message : String(e);
+        if (
+            message.includes("QuotaExceededError") ||
+            message.includes("quota")
+        ) {
+            throw new Error(
+                "Storage quota exceeded. Please clear some cached repositories.",
+            );
         }
-        if (this.dirs.has(normalized)) {
-            return {
-                type: "dir",
-                mode: 0o40755,
-                size: 0,
-                isFile: () => false,
-                isDirectory: () => true,
-                isSymbolicLink: () => false,
-            };
-        }
-        const error = new Error(`ENOENT: no such file or directory: ${path}`);
-        (error as NodeJS.ErrnoException).code = "ENOENT";
-        throw error;
+        throw e;
     }
+}
 
-    async lstat(
-        path: string,
-    ): Promise<{ type: string; mode: number; size: number; isFile: () => boolean; isDirectory: () => boolean; isSymbolicLink: () => boolean }> {
-        return this.stat(path);
-    }
+async function getRepoMetadata(
+    dbName: string,
+    slug: string,
+): Promise<RepoMetadata | null> {
+    const db = await openMetadataDB(dbName);
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(METADATA_STORE, "readonly");
+        const store = tx.objectStore(METADATA_STORE);
+        const request = store.get(slug);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result ?? null);
+        tx.oncomplete = () => db.close();
+    });
+}
 
-    async readlink(_path: string): Promise<string> {
-        throw new Error("Symlinks not supported");
-    }
+async function getAllRepoMetadata(dbName: string): Promise<RepoMetadata[]> {
+    const db = await openMetadataDB(dbName);
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(METADATA_STORE, "readonly");
+        const store = tx.objectStore(METADATA_STORE);
+        const request = store.getAll();
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result ?? []);
+        tx.oncomplete = () => db.close();
+    });
+}
 
-    async symlink(_target: string, _path: string): Promise<void> {
-        throw new Error("Symlinks not supported");
-    }
+async function deleteRepoMetadata(
+    dbName: string,
+    slug: string,
+): Promise<void> {
+    const db = await openMetadataDB(dbName);
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(METADATA_STORE, "readwrite");
+        const store = tx.objectStore(METADATA_STORE);
+        const request = store.delete(slug);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+        tx.oncomplete = () => db.close();
+    });
+}
 
-    async chmod(_path: string, _mode: number): Promise<void> {
-        // No-op for in-memory fs
-    }
-
-    // Clear all data
-    clear(): void {
-        this.files.clear();
-        this.dirs.clear();
-        this.dirs.add("/");
-    }
+async function clearAllRepoMetadata(dbName: string): Promise<void> {
+    const db = await openMetadataDB(dbName);
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(METADATA_STORE, "readwrite");
+        const store = tx.objectStore(METADATA_STORE);
+        const request = store.clear();
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+        tx.oncomplete = () => db.close();
+    });
 }
 
 // ============================================================================
@@ -213,15 +224,108 @@ class InMemoryFS {
 // ============================================================================
 
 /**
- * Frontend git service using isomorphic-git.
- * Caches cloned repositories in memory for the session.
+ * Frontend git service using isomorphic-git with IndexedDB persistence.
+ *
+ * Features:
+ * - Persistent IndexedDB storage via lightning-fs
+ * - Cloned repos survive page reloads
+ * - Concurrent clone prevention (deduplication)
+ * - Configurable timeouts and depth limits
+ * - Proper error handling with typed errors
  */
 export class GitService {
-    private static repoCache: Map<string, InMemoryFS> = new Map();
+    private static fs: LightningFS | null = null;
     private static cloneInProgress: Map<string, Promise<void>> = new Map();
+    private static config: GitServiceConfig = { ...DEFAULT_CONFIG };
 
-    // CORS proxy for GitHub - isomorphic-git provides one, or use your own
-    private static corsProxy = "https://cors.isomorphic-git.org";
+    /**
+     * Initialize the filesystem (lazy initialization)
+     */
+    private static async ensureInitialized(): Promise<LightningFS> {
+        if (!this.fs) {
+            this.fs = new LightningFS(this.config.dbName);
+            this.log("Initialized IndexedDB filesystem");
+        }
+        return this.fs;
+    }
+
+    /**
+     * Configure the GitService
+     */
+    static configure(config: Partial<GitServiceConfig>): void {
+        // If dbName changes after initialization, we need to reinitialize
+        if (config.dbName && config.dbName !== this.config.dbName && this.fs) {
+            this.fs = null;
+        }
+        this.config = { ...this.config, ...config };
+    }
+
+    /**
+     * Get current configuration
+     */
+    static getConfig(): Readonly<GitServiceConfig> {
+        return { ...this.config };
+    }
+
+    private static log(message: string, ...args: unknown[]): void {
+        if (this.config.debug) {
+            console.log(`[GitService] ${message}`, ...args);
+        }
+    }
+
+    private static warn(message: string, ...args: unknown[]): void {
+        console.warn(`[GitService] ${message}`, ...args);
+    }
+
+    /**
+     * Validate and sanitize repository slug format
+     * @returns The sanitized repository slug
+     * @throws GitServiceError if the slug is invalid
+     */
+    private static validateAndSanitizeRepoSlug(repoSlug: string): string {
+        if (!repoSlug || typeof repoSlug !== "string") {
+            throw new GitServiceError(
+                "Repository slug is required",
+                "INVALID_REPO",
+            );
+        }
+
+        // Sanitize: remove leading/trailing whitespace
+        const sanitized = repoSlug.trim();
+
+        // Validate format: owner/repo
+        const parts = sanitized.split("/");
+        if (parts.length !== 2 || !parts[0] || !parts[1]) {
+            throw new GitServiceError(
+                `Invalid repository format: "${repoSlug}". Expected "owner/repo"`,
+                "INVALID_REPO",
+            );
+        }
+
+        // Validate owner and repo names don't contain invalid characters
+        const owner = parts[0]!;
+        const repo = parts[1]!;
+
+        // GitHub allows: alphanumeric, hyphens, underscores, dots
+        // But we'll be more restrictive for security
+        const validPattern = /^[a-zA-Z0-9._-]+$/;
+        if (!validPattern.test(owner) || !validPattern.test(repo)) {
+            throw new GitServiceError(
+                `Invalid repository format: "${repoSlug}". Owner and repo names can only contain alphanumeric characters, dots, hyphens, and underscores.`,
+                "INVALID_REPO",
+            );
+        }
+
+        // Check reasonable length limits (GitHub allows up to 100 chars for owner, 100 for repo)
+        if (owner.length > 100 || repo.length > 100) {
+            throw new GitServiceError(
+                `Repository slug too long: "${repoSlug}"`,
+                "INVALID_REPO",
+            );
+        }
+
+        return sanitized;
+    }
 
     /**
      * Get the directory path for a repository
@@ -231,90 +335,310 @@ export class GitService {
     }
 
     /**
-     * Get or create an in-memory filesystem for a repository
+     * Check if a repository is already cloned in IndexedDB
      */
-    private static getFS(repoSlug: string): InMemoryFS {
-        let fs = this.repoCache.get(repoSlug);
-        if (!fs) {
-            fs = new InMemoryFS();
-            this.repoCache.set(repoSlug, fs);
+    static async isRepoCached(repoSlug: string): Promise<boolean> {
+        try {
+            const sanitizedSlug = this.validateAndSanitizeRepoSlug(repoSlug);
+            const fs = await this.ensureInitialized();
+            const dir = this.getRepoDir(sanitizedSlug);
+            await git.resolveRef({ fs, dir, ref: "HEAD" });
+            return true;
+        } catch {
+            return false;
         }
-        return fs;
     }
 
     /**
-     * Clone a repository if not already cached
+     * Get list of all cached repositories, sorted by last accessed (most recent first)
      */
-    static async ensureRepo(repoSlug: string): Promise<{ fs: InMemoryFS; dir: string }> {
-        const fs = this.getFS(repoSlug);
-        const dir = this.getRepoDir(repoSlug);
+    static async getCachedRepos(): Promise<CachedRepoInfo[]> {
+        try {
+            const metadata = await getAllRepoMetadata(this.config.dbName);
+            return metadata
+                .map((m) => ({
+                    slug: m.slug,
+                    clonedAt: m.clonedAt,
+                    lastAccessed: m.lastAccessed,
+                }))
+                .sort((a, b) => {
+                    // Sort by lastAccessed descending (most recent first)
+                    return (
+                        new Date(b.lastAccessed).getTime() -
+                        new Date(a.lastAccessed).getTime()
+                    );
+                });
+        } catch (e) {
+            this.warn("Failed to get cached repos:", e);
+            return [];
+        }
+    }
+
+    /**
+     * Clone a repository if not already cached.
+     * Handles concurrent requests by deduplicating clone operations.
+     */
+    static async ensureRepo(
+        repoSlug: string,
+    ): Promise<{ fs: LightningFS; dir: string }> {
+        const sanitizedSlug = this.validateAndSanitizeRepoSlug(repoSlug);
+
+        const fs = await this.ensureInitialized();
+        const dir = this.getRepoDir(sanitizedSlug);
 
         // Check if already cloned
         try {
             await git.resolveRef({ fs, dir, ref: "HEAD" });
+            // Update last accessed time
+            const existing = await getRepoMetadata(this.config.dbName, sanitizedSlug);
+            if (existing) {
+                await saveRepoMetadata(this.config.dbName, {
+                    ...existing,
+                    lastAccessed: new Date().toISOString(),
+                });
+            }
+            this.log(`Using cached repo: ${sanitizedSlug}`);
             return { fs, dir };
         } catch {
             // Not cloned yet, need to clone
         }
 
-        // Check if clone is already in progress
-        const inProgress = this.cloneInProgress.get(repoSlug);
+        // Check if clone is already in progress (prevents duplicate clones)
+        const inProgress = this.cloneInProgress.get(sanitizedSlug);
         if (inProgress) {
             await inProgress;
             return { fs, dir };
         }
 
-        // Start clone
-        const clonePromise = this.cloneRepo(fs, dir, repoSlug);
-        this.cloneInProgress.set(repoSlug, clonePromise);
+        // Start clone with timeout
+        const clonePromise = this.cloneRepoWithTimeout(fs, dir, sanitizedSlug);
+        this.cloneInProgress.set(sanitizedSlug, clonePromise);
 
         try {
             await clonePromise;
         } finally {
-            this.cloneInProgress.delete(repoSlug);
+            this.cloneInProgress.delete(sanitizedSlug);
         }
 
         return { fs, dir };
     }
 
     /**
-     * Clone a repository
+     * Clone a repository with timeout protection
      */
-    private static async cloneRepo(
-        fs: InMemoryFS,
+    private static async cloneRepoWithTimeout(
+        fs: LightningFS,
         dir: string,
         repoSlug: string,
     ): Promise<void> {
         const url = `https://github.com/${repoSlug}`;
 
-        console.log(`[GitService] Cloning ${repoSlug}...`);
+        this.log(`Cloning ${repoSlug}...`);
         const startTime = performance.now();
 
-        await git.clone({
-            fs,
-            http,
-            dir,
-            url,
-            corsProxy: this.corsProxy,
-            singleBranch: true,
-            depth: 100, // Limit depth for performance - adjust as needed
-            noTags: true,
+        // Use Promise.race to implement timeout
+        // Note: isomorphic-git doesn't support AbortSignal, so we use Promise.race
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            timeoutId = setTimeout(() => {
+                reject(
+                    new GitServiceError(
+                        `Clone timed out after ${this.config.cloneTimeoutMs}ms`,
+                        "TIMEOUT",
+                    ),
+                );
+            }, this.config.cloneTimeoutMs);
         });
 
-        const elapsed = performance.now() - startTime;
-        console.log(`[GitService] Cloned ${repoSlug} in ${elapsed.toFixed(0)}ms`);
+        try {
+            await Promise.race([
+                git.clone({
+                    fs,
+                    http,
+                    dir,
+                    url,
+                    corsProxy: this.config.corsProxy,
+                    singleBranch: true,
+                    depth: Math.min(this.config.maxCommitDepth, 100), // Clone depth
+                    noTags: true,
+                }),
+                timeoutPromise,
+            ]);
+
+            // Clone succeeded - clear the timeout and save metadata
+            if (timeoutId !== null) {
+                clearTimeout(timeoutId);
+            }
+
+            const elapsed = performance.now() - startTime;
+            this.log(`Cloned ${repoSlug} in ${elapsed.toFixed(0)}ms`);
+
+            // Save metadata
+            const now = new Date().toISOString();
+            try {
+                await saveRepoMetadata(this.config.dbName, {
+                    slug: repoSlug,
+                    clonedAt: now,
+                    lastAccessed: now,
+                });
+            } catch (e) {
+                // If metadata save fails (e.g., quota exceeded), log but don't fail
+                this.warn(`Failed to save metadata for ${repoSlug}:`, e);
+            }
+        } catch (error) {
+            // Always clear timeout on error
+            if (timeoutId !== null) {
+                clearTimeout(timeoutId);
+            }
+            // Clean up failed clone
+            try {
+                await this.deleteRepoFromFS(fs, dir);
+            } catch {
+                // Ignore cleanup errors
+            }
+
+            // If it's already a GitServiceError (e.g., timeout), rethrow
+            if (error instanceof GitServiceError) {
+                throw error;
+            }
+
+            const message =
+                error instanceof Error ? error.message : String(error);
+
+            // Check for IndexedDB quota errors
+            if (
+                message.includes("QuotaExceededError") ||
+                message.includes("quota") ||
+                message.includes("storage")
+            ) {
+                throw new GitServiceError(
+                    `Storage quota exceeded. Please clear some cached repositories.`,
+                    "DB_ERROR",
+                    error,
+                );
+            }
+
+            if (message.includes("404") || message.includes("not found")) {
+                throw new GitServiceError(
+                    `Repository not found: ${repoSlug}`,
+                    "NOT_FOUND",
+                    error,
+                );
+            }
+
+            if (
+                message.includes("fetch") ||
+                message.includes("network") ||
+                message.includes("CORS")
+            ) {
+                throw new GitServiceError(
+                    `Network error cloning ${repoSlug}: ${message}`,
+                    "NETWORK_ERROR",
+                    error,
+                );
+            }
+
+            throw new GitServiceError(
+                `Failed to clone ${repoSlug}: ${message}`,
+                "CLONE_FAILED",
+                error,
+            );
+        }
     }
 
     /**
-     * Invalidate (clear) the cache for a repository
+     * Delete a repository directory from the filesystem
      */
-    static invalidateCache(repoSlug: string): void {
-        const fs = this.repoCache.get(repoSlug);
-        if (fs) {
-            fs.clear();
-            this.repoCache.delete(repoSlug);
+    private static async deleteRepoFromFS(
+        fs: LightningFS,
+        dir: string,
+    ): Promise<void> {
+        const pfs = fs.promises;
+        try {
+            const entries = await pfs.readdir(dir);
+            for (const entry of entries) {
+                const fullPath = `${dir}/${entry}`;
+                const stat = await pfs.stat(fullPath);
+                if (stat.isDirectory()) {
+                    await this.deleteRepoFromFS(fs, fullPath);
+                } else {
+                    await pfs.unlink(fullPath);
+                }
+            }
+            await pfs.rmdir(dir);
+        } catch {
+            // Directory might not exist, ignore
         }
-        console.log(`[GitService] Invalidated cache for ${repoSlug}`);
+    }
+
+    /**
+     * Invalidate (delete) a single repository from cache
+     */
+    static async invalidateCache(repoSlug: string): Promise<void> {
+        try {
+            const fs = await this.ensureInitialized();
+            const dir = this.getRepoDir(repoSlug);
+            await this.deleteRepoFromFS(fs, dir);
+            await deleteRepoMetadata(this.config.dbName, repoSlug);
+            this.log(`Invalidated cache for ${repoSlug}`);
+        } catch (e) {
+            this.warn(`Failed to invalidate cache for ${repoSlug}:`, e);
+        }
+    }
+
+    /**
+     * Clear ALL cached repositories from IndexedDB
+     */
+    static async clearAllCaches(): Promise<void> {
+        try {
+            // Delete the entire IndexedDB database
+            if (this.fs) {
+                // Get all repos and delete them
+                const repos = await this.getCachedRepos();
+                const fs = this.fs;
+                for (const repo of repos) {
+                    const dir = this.getRepoDir(repo.slug);
+                    await this.deleteRepoFromFS(fs, dir);
+                }
+            }
+
+            // Clear metadata
+            await clearAllRepoMetadata(this.config.dbName);
+
+            // Delete the lightning-fs database
+            const dbName = this.config.dbName;
+            await new Promise<void>((resolve, reject) => {
+                const request = indexedDB.deleteDatabase(dbName);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+
+            // Reset state
+            this.fs = null;
+
+            console.log("[GitService] Cleared all caches");
+        } catch (e) {
+            console.error("[GitService] Failed to clear caches:", e);
+            throw new GitServiceError(
+                "Failed to clear caches",
+                "DB_ERROR",
+                e,
+            );
+        }
+    }
+
+    /**
+     * Get cache statistics
+     */
+    static async getCacheStats(): Promise<{
+        repoCount: number;
+        repos: CachedRepoInfo[];
+    }> {
+        const repos = await this.getCachedRepos();
+        return {
+            repoCount: repos.length,
+            repos,
+        };
     }
 
     /**
@@ -323,13 +647,13 @@ export class GitService {
     static async getAllCommits(repoSlug: string): Promise<CommitInfo[]> {
         const { fs, dir } = await this.ensureRepo(repoSlug);
 
-        console.log(`[GitService] Getting commits for ${repoSlug}...`);
+        this.log(`Getting commits for ${repoSlug}...`);
         const startTime = performance.now();
 
         const commits = await git.log({
             fs,
             dir,
-            depth: 500, // Limit for performance
+            depth: this.config.maxCommitDepth,
         });
 
         const result: CommitInfo[] = [];
@@ -354,8 +678,8 @@ export class GitService {
         }
 
         const elapsed = performance.now() - startTime;
-        console.log(
-            `[GitService] Got ${result.length} commits for ${repoSlug} in ${elapsed.toFixed(0)}ms`,
+        this.log(
+            `Got ${result.length} commits for ${repoSlug} in ${elapsed.toFixed(0)}ms`,
         );
 
         return result;
@@ -365,7 +689,7 @@ export class GitService {
      * Check if a commit contains changes to .kicad_sch files
      */
     private static async hasSchematicChanges(
-        fs: InMemoryFS,
+        fs: LightningFS,
         dir: string,
         commit: ReadCommitResult,
         parentCommit?: ReadCommitResult,
@@ -386,8 +710,8 @@ export class GitService {
 
             return changes.some((path) => path.endsWith(".kicad_sch"));
         } catch (e) {
-            console.warn(
-                `[GitService] Error checking schematic changes for ${commit.oid}:`,
+            this.warn(
+                `Error checking schematic changes for ${commit.oid}:`,
                 e,
             );
             return false;
@@ -398,7 +722,7 @@ export class GitService {
      * Check if a tree contains any .kicad_sch files
      */
     private static async treeHasSchematicFiles(
-        fs: InMemoryFS,
+        fs: LightningFS,
         dir: string,
         treeOid: string,
     ): Promise<boolean> {
@@ -425,7 +749,7 @@ export class GitService {
      * Get changed file paths between two tree OIDs
      */
     private static async getChangedFiles(
-        fs: InMemoryFS,
+        fs: LightningFS,
         dir: string,
         oldTreeOid: string,
         newTreeOid: string,
@@ -502,7 +826,7 @@ export class GitService {
      * Get all file paths in a tree (recursive)
      */
     private static async getAllFilesInTree(
-        fs: InMemoryFS,
+        fs: LightningFS,
         dir: string,
         treeOid: string,
         prefix: string,
@@ -537,8 +861,8 @@ export class GitService {
     ): Promise<SchematicFile[]> {
         const { fs, dir } = await this.ensureRepo(repoSlug);
 
-        console.log(
-            `[GitService] Getting schematic files for ${repoSlug}@${commitHash.slice(0, 7)}...`,
+        this.log(
+            `Getting schematic files for ${repoSlug}@${commitHash.slice(0, 7)}...`,
         );
 
         // Resolve the commit
@@ -547,7 +871,7 @@ export class GitService {
 
         await this.collectKiCadFiles(fs, dir, commit.commit.tree, "", files);
 
-        console.log(`[GitService] Found ${files.length} KiCad files`);
+        this.log(`Found ${files.length} KiCad files`);
         return files;
     }
 
@@ -555,7 +879,7 @@ export class GitService {
      * Recursively collect KiCad files from a tree
      */
     private static async collectKiCadFiles(
-        fs: InMemoryFS,
+        fs: LightningFS,
         dir: string,
         treeOid: string,
         prefix: string,
@@ -590,7 +914,11 @@ export class GitService {
     ): Promise<string[]> {
         const { fs, dir } = await this.ensureRepo(repoSlug);
 
-        const commits = await git.log({ fs, dir, depth: 500 });
+        const commits = await git.log({
+            fs,
+            dir,
+            depth: this.config.maxCommitDepth,
+        });
         const commitIndex = commits.findIndex((c) => c.oid === commitHash);
 
         if (commitIndex === -1) {
@@ -630,7 +958,11 @@ export class GitService {
         const commit = await git.readCommit({ fs, dir, oid: commitHash });
 
         // Find parent to check for schematic changes
-        const commits = await git.log({ fs, dir, depth: 500 });
+        const commits = await git.log({
+            fs,
+            dir,
+            depth: this.config.maxCommitDepth,
+        });
         const commitIndex = commits.findIndex((c) => c.oid === commitHash);
         const parentCommit =
             commitIndex !== -1 ? commits[commitIndex + 1] : undefined;
@@ -665,18 +997,6 @@ export class GitService {
      * Set a custom CORS proxy URL
      */
     static setCorsProxy(url: string): void {
-        this.corsProxy = url;
-    }
-
-    /**
-     * Clear all cached repositories
-     */
-    static clearAllCaches(): void {
-        for (const fs of this.repoCache.values()) {
-            fs.clear();
-        }
-        this.repoCache.clear();
-        console.log("[GitService] Cleared all caches");
+        this.config.corsProxy = url;
     }
 }
-

@@ -13,6 +13,7 @@ import { Project } from "../project";
 import { FetchFileSystem, type VirtualFileSystem } from "../services/vfs";
 import { CommitFileSystem } from "../services/commit-vfs";
 import { GrokiAPI } from "../services/api";
+import { GitService, GitServiceError, type CachedRepoInfo } from "../services/git-service";
 import { KCBoardAppElement } from "./kc-board/app";
 import { KCSchematicAppElement } from "./kc-schematic/app";
 import kc_ui_styles from "../../kc-ui/kc-ui.css";
@@ -60,6 +61,8 @@ class KiCanvasShellElement extends KCUIElement {
     #board_app: KCBoardAppElement;
     #current_repo: string | null = null;
     #current_commit: string | null = null;
+    #cached_repos: CachedRepoInfo[] = [];
+    #eventListeners: Array<{ element: Element; event: string; handler: EventListener }> = [];
 
     constructor() {
         super();
@@ -90,6 +93,9 @@ class KiCanvasShellElement extends KCUIElement {
         const github_paths = url_params.getAll("github");
 
         later(async () => {
+            // Load cached repos from IndexedDB
+            await this.refreshCachedRepos();
+
             if (this.src) {
                 const vfs = new FetchFileSystem([this.src]);
                 await this.setup_project(vfs);
@@ -152,19 +158,156 @@ class KiCanvasShellElement extends KCUIElement {
             await this.loadCommit(detail.repo, detail.commit);
         });
 
-        // Setup example buttons event listeners
-        const grokBtn = this.renderRoot.querySelector(
-            "#grok-watch-btn",
-        ) as HTMLButtonElement;
-        if (grokBtn) {
-            grokBtn.addEventListener("click", (e) => this.loadExample(e));
+        // Setup example buttons and cached repo buttons
+        this.setupExampleButtons();
+        this.setupCachedRepoListeners();
+    }
+
+    /**
+     * Refresh the list of cached repositories from IndexedDB
+     */
+    private async refreshCachedRepos(): Promise<void> {
+        try {
+            this.#cached_repos = await GitService.getCachedRepos();
+            this.update();
+            // Re-setup listeners after update (both example and cached repo buttons)
+            later(() => {
+                this.cleanupEventListeners();
+                this.setupExampleButtons();
+                this.setupCachedRepoListeners();
+            });
+        } catch (e) {
+            console.error("Failed to load cached repos:", e);
         }
-        const ubmsBtn = this.renderRoot.querySelector(
-            "#ubms-btn",
-        ) as HTMLButtonElement;
-        if (ubmsBtn) {
-            ubmsBtn.addEventListener("click", (e) => this.loadExample(e));
+    }
+
+    /**
+     * Clean up all tracked event listeners to prevent memory leaks
+     */
+    private cleanupEventListeners(): void {
+        for (const { element, event, handler } of this.#eventListeners) {
+            element.removeEventListener(event, handler);
         }
+        this.#eventListeners = [];
+    }
+
+    /**
+     * Called when the element is removed from the DOM
+     * Clean up event listeners and other resources
+     */
+    override disconnectedCallback(): void {
+        super.disconnectedCallback();
+        this.cleanupEventListeners();
+    }
+
+    /**
+     * Setup event listeners for example buttons
+     * Called after render/update to ensure listeners are attached to current DOM
+     */
+    private setupExampleButtons(): void {
+        const exampleBtns = this.renderRoot.querySelectorAll(
+            "#grok-watch-btn, #ubms-btn",
+        );
+        exampleBtns.forEach((btn) => {
+            const handler = (e: Event) => this.loadExample(e as MouseEvent);
+            btn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: btn,
+                event: "click",
+                handler,
+            });
+        });
+    }
+
+    /**
+     * Setup event listeners for cached repo buttons
+     */
+    private setupCachedRepoListeners(): void {
+        // Cached repo buttons
+        const cachedBtns = this.renderRoot.querySelectorAll(".cached-repo-btn");
+        cachedBtns.forEach((btn) => {
+            const handler = (e: Event) => {
+                const target = e.currentTarget as HTMLButtonElement;
+                const slug = target.dataset["slug"];
+                if (slug) {
+                    this.loadCachedRepo(slug);
+                }
+            };
+            btn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: btn,
+                event: "click",
+                handler,
+            });
+        });
+
+        // Delete individual repo buttons
+        const deleteBtns = this.renderRoot.querySelectorAll(".delete-repo-btn");
+        deleteBtns.forEach((btn) => {
+            const handler = async (e: Event) => {
+                e.stopPropagation();
+                const target = e.currentTarget as HTMLButtonElement;
+                const slug = target.dataset["slug"];
+                if (slug) {
+                    try {
+                        await GitService.invalidateCache(slug);
+                        await this.refreshCachedRepos();
+                    } catch (error) {
+                        console.error("Failed to invalidate cache:", error);
+                        this.showError(
+                            `Failed to remove repository from cache: ${error instanceof Error ? error.message : "Unknown error"}`,
+                        );
+                    }
+                }
+            };
+            btn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: btn,
+                event: "click",
+                handler,
+            });
+        });
+
+        // Clear all cache button
+        const clearBtn = this.renderRoot.querySelector("#clear-cache-btn");
+        if (clearBtn) {
+            const handler = async () => {
+                if (
+                    confirm(
+                        "Clear all cached repositories? This will free up storage space.",
+                    )
+                ) {
+                    try {
+                        await GitService.clearAllCaches();
+                        await this.refreshCachedRepos();
+                    } catch (error) {
+                        console.error("Failed to clear caches:", error);
+                        this.showError(
+                            `Failed to clear cache: ${error instanceof Error ? error.message : "Unknown error"}`,
+                        );
+                    }
+                }
+            };
+            clearBtn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: clearBtn,
+                event: "click",
+                handler,
+            });
+        }
+    }
+
+    /**
+     * Load a cached repository
+     */
+    private async loadCachedRepo(slug: string): Promise<void> {
+        this.#current_repo = slug;
+        this.link_input.value = `https://github.com/${slug}`;
+        await this.loadFromGitHub(slug);
+
+        const location = new URL(window.location.href);
+        location.searchParams.set("github", `https://github.com/${slug}`);
+        window.history.pushState(null, "", location);
     }
 
     /**
@@ -190,15 +333,57 @@ class KiCanvasShellElement extends KCUIElement {
                     latestCommit,
                 );
                 await this.setup_project(vfs);
+
+                // Refresh cached repos list (repo is now cached in IndexedDB)
+                await this.refreshCachedRepos();
             } else {
                 throw new Error("No commits with schematic files found");
             }
         } catch (e) {
             console.error("Failed to load from GitHub:", e);
             this.loading = false;
-            this.showError(
-                `Failed to load schematic: ${e instanceof Error ? e.message : "Unknown error"}. Please check that the repository exists and is public.`,
-            );
+
+            // Provide user-friendly error messages based on error type
+            let errorMessage = "Failed to load schematic.";
+
+            if (e instanceof GitServiceError) {
+                // Use typed error codes for precise error handling
+                switch (e.code) {
+                    case "TIMEOUT":
+                        errorMessage =
+                            "Request timed out. The repository may be too large. Please try a smaller repository.";
+                        break;
+                    case "NOT_FOUND":
+                        errorMessage =
+                            "Repository not found. Please check that the repository exists and is public.";
+                        break;
+                    case "NETWORK_ERROR":
+                        errorMessage =
+                            "Network error. Please check your internet connection and try again.";
+                        break;
+                    case "DB_ERROR":
+                        errorMessage =
+                            "Storage quota exceeded. Please clear some cached repositories and try again.";
+                        break;
+                    case "INVALID_REPO":
+                        errorMessage = e.message;
+                        break;
+                    case "CLONE_FAILED":
+                    default:
+                        errorMessage = `${e.message}. Please check that the repository exists and is public.`;
+                        break;
+                }
+            } else if (e instanceof Error) {
+                // Fallback for non-GitServiceError exceptions
+                if (e.message.includes("quota") || e.message.includes("QuotaExceededError")) {
+                    errorMessage =
+                        "Storage quota exceeded. Please clear some cached repositories and try again.";
+                } else {
+                    errorMessage = `${e.message}. Please check that the repository exists and is public.`;
+                }
+            }
+
+            this.showError(errorMessage);
         }
     }
 
@@ -279,6 +464,25 @@ class KiCanvasShellElement extends KCUIElement {
         }
     }
 
+    /**
+     * Format a date string as relative time (e.g., "2 hours ago")
+     */
+    private formatRelativeDate(isoDate: string): string {
+        const date = new Date(isoDate);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffSecs = Math.floor(diffMs / 1000);
+        const diffMins = Math.floor(diffSecs / 60);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+
+        if (diffSecs < 60) return "just now";
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
+    }
+
     override render() {
         this.#schematic_app = html`
             <kc-schematic-app controls="full"></kc-schematic-app>
@@ -344,6 +548,48 @@ class KiCanvasShellElement extends KCUIElement {
                             Battery System
                         </button>
                     </div>
+                    ${this.#cached_repos.length > 0
+                        ? html`
+                              <div class="cached-repos">
+                                  <h3>
+                                      <span>📦 Cached Repositories</span>
+                                      <button
+                                          id="clear-cache-btn"
+                                          class="clear-cache-btn"
+                                          title="Clear all cached repositories">
+                                          🗑️ Clear All
+                                      </button>
+                                  </h3>
+                                  <div class="cached-repo-list">
+                                      ${this.#cached_repos.map(
+                                          (repo) => html`
+                                              <div class="cached-repo-item">
+                                                  <button
+                                                      class="cached-repo-btn"
+                                                      data-slug="${repo.slug}"
+                                                      title="Load ${repo.slug}">
+                                                      <span class="repo-name"
+                                                          >${repo.slug}</span
+                                                      >
+                                                      <span class="repo-date"
+                                                          >${this.formatRelativeDate(
+                                                              repo.lastAccessed,
+                                                          )}</span
+                                                      >
+                                                  </button>
+                                                  <button
+                                                      class="delete-repo-btn"
+                                                      data-slug="${repo.slug}"
+                                                      title="Remove from cache">
+                                                      ✕
+                                                  </button>
+                                              </div>
+                                          `,
+                                      )}
+                                  </div>
+                              </div>
+                          `
+                        : null}
                     <p class="drop-hint">or drag & drop your KiCAD files</p>
                     <p class="credits">Made by Clement Hathaway, Ernest Yeung, Evan Hekman, Julian Carrier</p>
 

@@ -529,3 +529,119 @@ section.overlay .examples button:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
+
+/* Cached repositories section */
+section.overlay .cached-repos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1.5em;
+    z-index: 2;
+    width: 100%;
+    max-width: 500px;
+}
+
+section.overlay .cached-repos h3 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    color: #888888;
+    font-size: 0.95em;
+    margin: 0 0 0.75em 0;
+    font-weight: 500;
+}
+
+section.overlay .cached-repos h3 span {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+section.overlay .clear-cache-btn {
+    padding: 0.4em 0.8em;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section.overlay .clear-cache-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: rgba(255, 107, 107, 0.5);
+    color: #ff8a8a;
+}
+
+section.overlay .cached-repo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    width: 100%;
+}
+
+section.overlay .cached-repo-item {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+}
+
+section.overlay .cached-repo-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6em 1em;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    color: #aaaaaa;
+    font-size: 0.9em;
+    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+section.overlay .cached-repo-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+section.overlay .cached-repo-btn .repo-name {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+section.overlay .cached-repo-btn .repo-date {
+    font-size: 0.85em;
+    color: #666666;
+    flex-shrink: 0;
+    margin-left: 1em;
+}
+
+section.overlay .delete-repo-btn {
+    padding: 0.6em 0.8em;
+    background: rgba(255, 107, 107, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 6px 6px 0;
+    color: #666666;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section.overlay .delete-repo-btn:hover {
+    background: rgba(255, 107, 107, 0.15);
+    border-color: rgba(255, 107, 107, 0.4);
+    color: #ff6b6b;
+}

@@ -53,6 +53,7 @@
     },
     "homepage": "https://github.com/theacodes/kicanvas.js#readme",
     "dependencies": {
+        "@isomorphic-git/lightning-fs": "^4.6.2",
         "buffer": "^6.0.3",
         "isomorphic-git": "^1.36.1"
     }

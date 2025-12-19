@@ -2,6 +2,9 @@
     DigiKey Part Information Panel
     Shows DigiKey part data when a component is selected, including
     availability, pricing, and most importantly - obsolescence status.
+    
+    Now integrates with the chat system for AI-powered part replacement
+    suggestions when a part is obsolete or unavailable.
 */
 
 import { css, html } from "../../../base/web-components";
@@ -17,6 +20,12 @@ import type {
     DigiKeySearchResponse,
 } from "../../services/digikey-client";
 import { DigiKeyClient } from "../../services/digikey-client";
+import { KCChatPanelElement } from "../chat/chat-panel";
+import {
+    partReplacementExtension,
+    createPartContextFromDigiKey,
+} from "../chat/extensions";
+import { xaiSettings } from "../../services/xai-settings";
 
 type SearchState = "idle" | "loading" | "success" | "error" | "not_connected";
 type ConnectionState = "checking" | "connected" | "disconnected";
@@ -625,8 +634,9 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
     search_result?: DigiKeySearchResponse;
     connection_state: ConnectionState = "checking";
     
-    // Note: Grok replacement feature removed - now uses xAI directly in browser
-    // The "Find Replacement" functionality can be re-added using the xai-client.ts service
+    // Grok replacement chat panel
+    private _chatPanel: KCChatPanelElement | null = null;
+    private _chatPanelInitialized = false;
 
     override connectedCallback() {
         (async () => {
@@ -641,6 +651,11 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
 
     override disconnectedCallback() {
         super.disconnectedCallback();
+        // Cleanup chat panel if it exists
+        if (this._chatPanel) {
+            this._chatPanel.remove();
+            this._chatPanel = null;
+        }
     }
 
     private check_oauth_callback() {
@@ -698,6 +713,98 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         if (disconnectBtn) {
             disconnectBtn.addEventListener("click", () => this.handle_disconnect());
         }
+
+        // Bind grok replacement button
+        const grokBtn = this.renderRoot.querySelector(".grok-button");
+        if (grokBtn) {
+            grokBtn.addEventListener("click", () => this.show_replacement_chat());
+        }
+    }
+
+    /**
+     * Show the AI chat panel for finding part replacements.
+     */
+    private async show_replacement_chat() {
+        if (!this.search_result?.parts?.[0]) return;
+        
+        const part = this.search_result.parts[0];
+        const reference = this.selected_item?.reference;
+        
+        // Create or get the chat panel
+        if (!this._chatPanel) {
+            this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
+            this._chatPanel.configure({
+                title: "Find Replacement",
+                logoSrc: "./images/Grok_Logomark_Light.png",
+                draggable: true,
+                dockable: true,
+                showThinkingToggle: true,
+                showPresets: true,
+                showContextItems: false,
+                placeholder: "Ask about replacement options...",
+            });
+            document.body.appendChild(this._chatPanel);
+        }
+
+        // Set up the extension with part context
+        if (!this._chatPanelInitialized) {
+            const context = createPartContextFromDigiKey(part, reference);
+            await this._chatPanel.setExtension(partReplacementExtension, context);
+            this._chatPanelInitialized = true;
+        } else {
+            // Update context for the current part
+            const context = createPartContextFromDigiKey(part, reference);
+            this._chatPanel.updateContext(context);
+            this._chatPanel.clearConversation();
+        }
+
+        // Update presets based on the extension
+        const presets = partReplacementExtension.getPresets(
+            createPartContextFromDigiKey(part, reference)
+        );
+        this._chatPanel.setPresets(presets);
+
+        // Show the panel
+        this._chatPanel.show();
+    }
+
+    /**
+     * Check if the xAI API is configured.
+     */
+    private is_xai_configured(): boolean {
+        return xaiSettings.isConfigured;
+    }
+
+    /**
+     * Render the Grok replacement button for parts that need replacement.
+     */
+    private render_grok_button(part: DigiKeyPartInfo) {
+        // Show button for obsolete, NRND, or out-of-stock parts
+        const shouldShow = 
+            part.is_obsolete ||
+            part.lifecycle_status?.toLowerCase().includes("not recommended") ||
+            part.quantity_available === 0;
+
+        if (!shouldShow) {
+            return "";
+        }
+
+        // If xAI is not configured, show disabled state
+        if (!this.is_xai_configured()) {
+            return html`
+                <button class="grok-button" disabled title="Configure xAI API key to find replacements">
+                    <kc-ui-icon>find_replace</kc-ui-icon>
+                    Find Replacement
+                </button>
+            `;
+        }
+
+        return html`
+            <button class="grok-button" title="Find AI-powered replacement suggestions">
+                <kc-ui-icon>find_replace</kc-ui-icon>
+                Find Replacement
+            </button>
+        `;
     }
 
     private setup_events() {
@@ -914,6 +1021,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                             class="status-badge ${this.get_status_class(part)}">
                             ${this.get_status_text(part)}
                         </span>
+                        ${this.render_grok_button(part)}
                     </div>
                 </div>
                 <div class="part-body">

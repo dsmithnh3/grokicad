@@ -3,12 +3,24 @@
  * These are non-sensitive frontend constants that can be safely embedded in the bundle
  */
 
-// Backend API base URL
-// Note: The Grok AI functionality now runs entirely in the browser using the xAI API directly.
-// The backend URL is only used for DigiKey integration (if enabled).
-// Set to empty string to use relative URLs (same origin)
-// Or set to full URL like "https://api.example.com" for cross-origin requests
-export const BACKEND_URL = "http://localhost:8080";
+// Note: The backend has been fully migrated to the frontend.
+// - Git operations use isomorphic-git in the browser
+// - Schematic distillation runs in the browser
+// - Grok AI uses xAI API directly from the browser
+// - DigiKey integration uses OAuth 3-legged flow via Cloudflare Worker
 
-// API base URL - constructed from BACKEND_URL (used for DigiKey integration only)
-export const API_BASE_URL = BACKEND_URL ? `${BACKEND_URL}/api` : "/api";
+/**
+ * DigiKey Worker URL
+ * 
+ * In production (when deployed to Cloudflare), leave empty to use same-origin.
+ * For local development, set to your deployed worker URL.
+ * 
+ * Replace with your actual worker URL after deploying:
+ * e.g., "https://grokicad.your-subdomain.workers.dev"
+ */
+const isLocalDev = typeof window !== "undefined" && 
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+export const DIGIKEY_WORKER_URL = isLocalDev 
+    ? "https://grokicad.mo0nbase.workers.dev"
+    : "";

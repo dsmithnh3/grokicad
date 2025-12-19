@@ -7,7 +7,7 @@
         "test": "tests"
     },
     "devDependencies": {
-        "wrangler": "^4.53.0",
+        "@cloudflare/workers-types": "^4.20241218.0",
         "@esm-bundle/chai": "^4.3.4-fix.0",
         "@open-wc/semantic-dom-diff": "^0.20.1",
         "@types/mocha": "^10.0.4",
@@ -24,7 +24,8 @@
         "prettier": "^3.0.3",
         "svgstore": "^3.0.1",
         "typescript": "^5.2.2",
-        "typescript-lit-html-plugin": "^0.9.0"
+        "typescript-lit-html-plugin": "^0.9.0",
+        "wrangler": "^4.56.0"
     },
     "scripts": {
         "test:watch": "web-test-runner --config scripts/web-test-runner.config.mjs --watch",
@@ -40,7 +41,10 @@
         "build:font": "node scripts/build-font.js",
         "build:sprites": "node scripts/build-sprites.js",
         "build": "tsc -p tsconfig.json && node scripts/build.js && mkdir -p debug/kicanvas && cp build/kicanvas.js debug/kicanvas/kicanvas.js",
-        "clean": "rm -rf build && rm -rf debug/kicanvas"
+        "clean": "rm -rf build && rm -rf debug/kicanvas",
+        "worker:dev": "wrangler dev",
+        "worker:deploy": "wrangler deploy",
+        "worker:types": "tsc -p worker/tsconfig.json --noEmit"
     },
     "repository": {
         "type": "git",

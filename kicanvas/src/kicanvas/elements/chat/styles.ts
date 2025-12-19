@@ -908,23 +908,11 @@ export const statusStyles = css`
 export const overlayStyles = css`
     /* Overlay backdrop */
     .overlay-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        z-index: 999;
-        animation: fadeIn 0.2s ease;
+        /* No backdrop - transparent so schematic shows through */
+        display: none;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    /* Overlay mode container */
+    /* Overlay mode container - integrated into UI */
     .chat-container.overlay-mode {
         position: fixed;
         top: 20px;
@@ -935,17 +923,18 @@ export const overlayStyles = css`
         height: auto;
         max-width: none;
         z-index: 1000;
-        animation: scaleIn 0.2s ease;
+        /* Remove scale animation - just fade in */
+        animation: fadeInOverlay 0.2s ease;
+        /* Make it look integrated, not floating */
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     }
 
-    @keyframes scaleIn {
+    @keyframes fadeInOverlay {
         from {
             opacity: 0;
-            transform: scale(0.95);
         }
         to {
             opacity: 1;
-            transform: scale(1);
         }
     }
 

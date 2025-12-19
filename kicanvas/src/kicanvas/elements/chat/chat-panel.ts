@@ -329,8 +329,8 @@ export class KCChatPanelElement extends KCUIElement {
             }
         }
         
-        // Apply stored panel position if dragged
-        if (this._panelPosition && !this._isDocked) {
+        // Apply stored panel position if dragged (but not in overlay mode)
+        if (this._panelPosition && !this._isDocked && !this._isOverlay) {
             const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
             if (container) {
                 container.style.position = 'fixed';
@@ -338,6 +338,16 @@ export class KCChatPanelElement extends KCUIElement {
                 container.style.top = `${this._panelPosition.top}px`;
                 container.style.right = 'auto';
                 container.style.bottom = 'auto';
+            }
+        } else if (this._isOverlay) {
+            // Clear any stored position when in overlay mode - use CSS positioning
+            const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
+            if (container) {
+                container.style.position = '';
+                container.style.left = '';
+                container.style.top = '';
+                container.style.right = '';
+                container.style.bottom = '';
             }
         }
         
@@ -394,6 +404,19 @@ export class KCChatPanelElement extends KCUIElement {
     show(): void {
         if (!this._isDocked) return; // Already expanded
         this._isDocked = false;
+        // Reset panel position to default when opening
+        this._panelPosition = null;
+        // Clear any inline styles to use default CSS positioning
+        requestAnimationFrame(() => {
+            const container = this.renderRoot?.querySelector('.chat-container') as HTMLElement;
+            if (container && !this._isOverlay) {
+                container.style.position = '';
+                container.style.left = '';
+                container.style.top = '';
+                container.style.right = '';
+                container.style.bottom = '';
+            }
+        });
         this._refreshPresets();
         this._scheduleUpdate();
         this.dispatchEvent(new CustomEvent("chat-show", { bubbles: true, composed: true }));
@@ -856,14 +879,10 @@ export class KCChatPanelElement extends KCUIElement {
         this.addDisposable(
             delegate(root, ".overlay-button", "click", () => {
                 this._isOverlay = !this._isOverlay;
-                this._scheduleUpdate();
-            }),
-        );
-
-        // Close overlay on backdrop click
-        this.addDisposable(
-            delegate(root, ".overlay-backdrop", "click", () => {
-                this._isOverlay = false;
+                // Clear stored position when entering overlay mode
+                if (this._isOverlay) {
+                    this._panelPosition = null;
+                }
                 this._scheduleUpdate();
             }),
         );
@@ -1351,12 +1370,9 @@ export class KCChatPanelElement extends KCUIElement {
             return this._renderDockedTab();
         }
 
-        // Overlay mode
+        // Overlay mode - no backdrop, just the panel integrated into UI
         if (this._isOverlay) {
-            return html`
-                <div class="overlay-backdrop"></div>
-                ${this._renderPanel()}
-            `;
+            return this._renderPanel();
         }
 
         // Normal panel mode

@@ -732,3 +732,221 @@ export function distillHierarchicalSchematics(
     };
 }
 
+// ============================================================================
+// Context Slicing for Selected Components
+// ============================================================================
+
+export interface SlicedContext {
+    /** Components explicitly selected by the user */
+    selected: DistilledComponent[];
+    /** Components connected via nets to selected components */
+    connected: DistilledComponent[];
+    /** Components nearby (from proximity data) */
+    nearby: DistilledComponent[];
+    /** Nets involving selected or connected components */
+    relevantNets: Record<string, DistilledNet>;
+    /** Proximities involving selected components */
+    relevantProximities: ProximityEdge[];
+    /** Summary stats */
+    stats: {
+        selectedCount: number;
+        connectedCount: number;
+        nearbyCount: number;
+        relevantNetCount: number;
+    };
+}
+
+/**
+ * Slice a distilled schematic to focus on selected components and their context.
+ * This provides a focused view for AI analysis of a subsystem.
+ *
+ * @param distilled - The full distilled schematic
+ * @param selectedRefs - Array of component references selected by the user
+ * @param options - Slicing options
+ * @returns Focused context with selected, connected, and nearby components
+ */
+export function sliceDistillationForComponents(
+    distilled: DistilledSchematic,
+    selectedRefs: string[],
+    options: {
+        /** Include components sharing nets with selected (default: true) */
+        includeConnected?: boolean;
+        /** Include nearby components from proximity data (default: true) */
+        includeNearby?: boolean;
+        /** Maximum number of connected components to include (default: 20) */
+        maxConnected?: number;
+        /** Maximum number of nearby components to include (default: 10) */
+        maxNearby?: number;
+        /** Minimum proximity score to consider (default: 0.2) */
+        minProximityScore?: number;
+    } = {},
+): SlicedContext {
+    const {
+        includeConnected = true,
+        includeNearby = true,
+        maxConnected = 20,
+        maxNearby = 10,
+        minProximityScore = 0.2,
+    } = options;
+
+    const selectedSet = new Set(selectedRefs);
+    const connectedSet = new Set<string>();
+    const nearbySet = new Set<string>();
+
+    // Build component lookup by reference
+    const componentByRef = new Map<string, DistilledComponent>();
+    for (const comp of distilled.components) {
+        componentByRef.set(comp.reference, comp);
+    }
+
+    // Get selected components
+    const selected = selectedRefs
+        .map((ref) => componentByRef.get(ref))
+        .filter((c): c is DistilledComponent => c !== undefined);
+
+    // Find connected components via nets
+    if (includeConnected) {
+        // Get all nets that involve selected components
+        const selectedNets = new Set<string>();
+        for (const comp of selected) {
+            for (const pin of comp.pins) {
+                if (pin.net) {
+                    selectedNets.add(pin.net);
+                }
+            }
+        }
+
+        // Find components that share these nets
+        for (const comp of distilled.components) {
+            if (selectedSet.has(comp.reference)) continue;
+
+            for (const pin of comp.pins) {
+                if (pin.net && selectedNets.has(pin.net)) {
+                    connectedSet.add(comp.reference);
+                    break;
+                }
+            }
+
+            if (connectedSet.size >= maxConnected) break;
+        }
+    }
+
+    // Find nearby components from proximity data
+    if (includeNearby) {
+        // Sort proximities by score for selected components
+        const relevantProximities = distilled.proximities
+            .filter((p) => {
+                const hasSelected =
+                    selectedSet.has(p.ref_a) || selectedSet.has(p.ref_b);
+                return hasSelected && p.score >= minProximityScore;
+            })
+            .sort((a, b) => b.score - a.score);
+
+        for (const prox of relevantProximities) {
+            const other = selectedSet.has(prox.ref_a)
+                ? prox.ref_b
+                : prox.ref_a;
+
+            if (
+                !selectedSet.has(other) &&
+                !connectedSet.has(other) &&
+                nearbySet.size < maxNearby
+            ) {
+                nearbySet.add(other);
+            }
+        }
+    }
+
+    // Get component details for connected and nearby
+    const connected = Array.from(connectedSet)
+        .map((ref) => componentByRef.get(ref))
+        .filter((c): c is DistilledComponent => c !== undefined);
+
+    const nearby = Array.from(nearbySet)
+        .map((ref) => componentByRef.get(ref))
+        .filter((c): c is DistilledComponent => c !== undefined);
+
+    // Get all relevant component refs (for net filtering)
+    const allRelevantRefs = new Set([
+        ...selectedSet,
+        ...connectedSet,
+        ...nearbySet,
+    ]);
+
+    // Filter nets to only those involving relevant components
+    const relevantNets: Record<string, DistilledNet> = {};
+    for (const [netName, net] of Object.entries(distilled.nets)) {
+        const relevantPins: DistilledNet = {};
+        let hasRelevantComponent = false;
+
+        for (const [ref, pins] of Object.entries(net)) {
+            if (allRelevantRefs.has(ref)) {
+                relevantPins[ref] = pins;
+                hasRelevantComponent = true;
+            }
+        }
+
+        if (hasRelevantComponent) {
+            relevantNets[netName] = relevantPins;
+        }
+    }
+
+    // Filter proximities to those involving selected components
+    const relevantProximities = distilled.proximities.filter(
+        (p) =>
+            (selectedSet.has(p.ref_a) || selectedSet.has(p.ref_b)) &&
+            (allRelevantRefs.has(p.ref_a) && allRelevantRefs.has(p.ref_b)),
+    );
+
+    return {
+        selected,
+        connected,
+        nearby,
+        relevantNets,
+        relevantProximities,
+        stats: {
+            selectedCount: selected.length,
+            connectedCount: connected.length,
+            nearbyCount: nearby.length,
+            relevantNetCount: Object.keys(relevantNets).length,
+        },
+    };
+}
+
+/**
+ * Create a focused distilled schematic for selected components.
+ * This is a convenience function that returns a DistilledSchematic
+ * containing only the relevant components, nets, and proximities.
+ *
+ * @param distilled - The full distilled schematic
+ * @param selectedRefs - Array of component references selected by the user
+ * @returns A new DistilledSchematic focused on the selection
+ */
+export function createFocusedDistillation(
+    distilled: DistilledSchematic,
+    selectedRefs: string[],
+): DistilledSchematic {
+    const slice = sliceDistillationForComponents(distilled, selectedRefs);
+
+    // Combine all relevant components
+    const allComponents = [
+        ...slice.selected,
+        ...slice.connected,
+        ...slice.nearby,
+    ];
+
+    // Remove duplicates by reference
+    const seen = new Set<string>();
+    const uniqueComponents = allComponents.filter((c) => {
+        if (seen.has(c.reference)) return false;
+        seen.add(c.reference);
+        return true;
+    });
+
+    return {
+        components: uniqueComponents,
+        nets: slice.relevantNets,
+        proximities: slice.relevantProximities,
+    };
+}
+

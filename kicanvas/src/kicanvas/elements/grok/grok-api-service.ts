@@ -5,6 +5,7 @@
 
 import type { DistilledSchematic, RepoClearCacheResponse } from "../../services/api";
 import { distillService, type DistillResult } from "../../services/distill-service";
+import { createFocusedDistillation } from "../../../kicad/distill";
 import type { SelectedComponent, GrokContext } from "./types";
 import { API_BASE_URL } from "../../../config";
 
@@ -139,13 +140,13 @@ export class GrokAPIService {
      * Call this when the repo/commit changes.
      */
     clearCache(): void {
-        this._distillResult = null;
-        this._currentRepo = null;
-        this._currentCommit = null;
-        // Also clear the distill service cache
+        // Clear the distill service cache BEFORE nulling the repo
         if (this._currentRepo) {
             distillService.clearCache(this._currentRepo);
         }
+        this._distillResult = null;
+        this._currentRepo = null;
+        this._currentCommit = null;
     }
 
     /**
@@ -221,7 +222,7 @@ export class GrokAPIService {
 
         try {
             // Fetch distilled schematic if needed
-            const distilled = await this.getDistilledSchematic(repo, commit);
+            const fullDistilled = await this.getDistilledSchematic(repo, commit);
 
             // Check if we were aborted during the async operation
             if (abortController.signal.aborted) {
@@ -229,6 +230,17 @@ export class GrokAPIService {
             }
 
             const componentIds = components.map((c) => c.reference);
+
+            // Create focused distillation for selected components
+            // This includes selected + connected + nearby components with relevant nets
+            const distilled = componentIds.length > 0
+                ? createFocusedDistillation(fullDistilled, componentIds)
+                : fullDistilled;
+
+            console.log(
+                `[GrokAPIService] Sending focused context: ${distilled.components.length} components, ` +
+                `${Object.keys(distilled.nets).length} nets, ${distilled.proximities.length} proximities`
+            );
 
             const response = await fetch(
                 `${API_BASE_URL}/grok/selection/stream`,

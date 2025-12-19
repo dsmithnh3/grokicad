@@ -20,7 +20,9 @@ import type {
     DigiKeySearchResponse,
 } from "../../services/digikey-client";
 import { DigiKeyClient } from "../../services/digikey-client";
-import { KCChatPanelElement } from "../chat/chat-panel";
+// Import chat panel for side-effect registration of the custom element
+import "../chat/chat-panel";
+import type { KCChatPanelElement } from "../chat/chat-panel";
 import {
     partReplacementExtension,
     createPartContextFromDigiKey,
@@ -730,9 +732,20 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         const part = this.search_result.parts[0];
         const reference = this.selected_item?.reference;
         
+        // Ensure the custom element is defined before creating it
+        await customElements.whenDefined("kc-chat-panel");
+        
         // Create or get the chat panel
-        if (!this._chatPanel) {
+        if (!this._chatPanel || !this._chatPanel.isConnected) {
+            // Remove any stale panels
+            document.querySelectorAll("kc-chat-panel").forEach(el => el.remove());
+            
             this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
+            document.body.appendChild(this._chatPanel);
+            
+            // Wait for element to be upgraded and ready
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            
             this._chatPanel.configure({
                 title: "Find Replacement",
                 logoSrc: "./images/Grok_Logomark_Light.png",
@@ -743,25 +756,24 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                 showContextItems: false,
                 placeholder: "Ask about replacement options...",
             });
-            document.body.appendChild(this._chatPanel);
+            
+            this._chatPanelInitialized = false;
         }
 
         // Set up the extension with part context
+        const context = createPartContextFromDigiKey(part, reference);
+        
         if (!this._chatPanelInitialized) {
-            const context = createPartContextFromDigiKey(part, reference);
             await this._chatPanel.setExtension(partReplacementExtension, context);
             this._chatPanelInitialized = true;
         } else {
             // Update context for the current part
-            const context = createPartContextFromDigiKey(part, reference);
             this._chatPanel.updateContext(context);
             this._chatPanel.clearConversation();
         }
 
         // Update presets based on the extension
-        const presets = partReplacementExtension.getPresets(
-            createPartContextFromDigiKey(part, reference)
-        );
+        const presets = partReplacementExtension.getPresets(context);
         this._chatPanel.setPresets(presets);
 
         // Show the panel

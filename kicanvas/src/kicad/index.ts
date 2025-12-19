@@ -15,3 +15,17 @@ export type {
     SchematicTheme,
     BoardOrSchematicTheme,
 } from "./theme";
+
+// Schematic distillation for AI context
+export {
+    distillSchematic,
+    distillHierarchicalSchematics,
+    createDefaultConfig,
+    type DistilledSchematic,
+    type DistilledComponent,
+    type DistilledPin,
+    type DistilledNet,
+    type ProximityEdge,
+    type DistillationConfig,
+    type ComponentCategory,
+} from "./distill";

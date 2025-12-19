@@ -1,9 +1,10 @@
 /*
     Grok API Service - handles streaming communication with the Grok AI backend.
-    Extracted from grok-chat-panel.ts for better separation of concerns.
+    Distillation is now performed entirely in the browser.
 */
 
-import { GrokiAPI, type DistilledSchematic, type RepoInitResponse, type RepoClearCacheResponse } from "../../services/api";
+import type { DistilledSchematic, RepoClearCacheResponse } from "../../services/api";
+import { distillService, type DistillResult } from "../../services/distill-service";
 import type { SelectedComponent, GrokContext } from "./types";
 import { API_BASE_URL } from "../../../config";
 
@@ -13,6 +14,17 @@ export interface StreamCallbacks {
     onChunk?: (content: string) => void;
     onComplete?: (fullContent: string) => void;
     onError?: (error: string) => void;
+}
+
+/** Response type for repository initialization (browser-based) */
+export interface RepoInitResponse {
+    repo: string;
+    commit: string;
+    cached: boolean;
+    component_count: number;
+    net_count: number;
+    schematic_files: string[];
+    distilled: DistilledSchematic;
 }
 
 /** Callback types for initialization events */
@@ -34,19 +46,18 @@ export interface GrokStreamRequest {
 
 /**
  * Service for interacting with the Grok AI backend.
- * Handles repository initialization, distilled schematics, and streaming AI responses.
+ * Distillation is performed in the browser; only AI queries go to the backend.
  */
 export class GrokAPIService {
-    private _distilledSchematic: DistilledSchematic | null = null;
-    private _initResponse: RepoInitResponse | null = null;
+    private _distillResult: DistillResult | null = null;
     private _currentRepo: string | null = null;
     private _currentCommit: string | null = null;
     private _abortController: AbortController | null = null;
 
     /**
-     * Initialize a repository by distilling its schematic files.
+     * Initialize a repository by distilling its schematic files in the browser.
      * This prepares the semantic representation for AI analysis.
-     * Results are cached for the repo/commit combination.
+     * Results are cached locally (no backend required for distillation).
      */
     async initRepository(
         repo: string,
@@ -55,21 +66,25 @@ export class GrokAPIService {
     ): Promise<RepoInitResponse> {
         // Return cached if same repo/commit
         if (
-            this._initResponse &&
+            this._distillResult &&
             this._currentRepo === repo &&
             this._currentCommit === commit
         ) {
-            return this._initResponse;
+            const response = this.buildInitResponse(this._distillResult, true);
+            return response;
         }
 
         callbacks?.onStart?.();
 
         try {
-            const response = await GrokiAPI.initRepository(repo, commit);
-            this._initResponse = response;
-            this._distilledSchematic = response.distilled;
+            // Distill in browser using the distill service
+            const result = await distillService.distillRepository(repo, commit);
+            
+            this._distillResult = result;
             this._currentRepo = repo;
             this._currentCommit = commit;
+            
+            const response = this.buildInitResponse(result, false);
             callbacks?.onComplete?.(response);
             return response;
         } catch (err) {
@@ -80,8 +95,23 @@ export class GrokAPIService {
     }
 
     /**
+     * Build a RepoInitResponse from a DistillResult
+     */
+    private buildInitResponse(result: DistillResult, cached: boolean): RepoInitResponse {
+        return {
+            repo: result.repo,
+            commit: result.commit,
+            cached,
+            component_count: result.component_count,
+            net_count: result.net_count,
+            schematic_files: result.schematic_files,
+            distilled: result.distilled,
+        };
+    }
+
+    /**
      * Fetches and caches the distilled schematic for a repo/commit.
-     * Uses the init endpoint if not already initialized.
+     * Uses browser-based distillation (no backend required).
      */
     async getDistilledSchematic(
         repo: string,
@@ -89,49 +119,61 @@ export class GrokAPIService {
     ): Promise<DistilledSchematic> {
         // If we already have it cached for this repo/commit
         if (
-            this._distilledSchematic &&
+            this._distillResult &&
             this._currentRepo === repo &&
             this._currentCommit === commit
         ) {
-            return this._distilledSchematic;
+            return this._distillResult.distilled;
         }
 
-        // Use init endpoint to get distilled data (also caches on server)
-        const response = await this.initRepository(repo, commit);
-        return response.distilled;
+        // Distill in browser
+        const result = await distillService.distillRepository(repo, commit);
+        this._distillResult = result;
+        this._currentRepo = repo;
+        this._currentCommit = commit;
+        return result.distilled;
     }
 
     /**
-     * Clears the local cached distilled schematic and init response.
+     * Clears the local cached distilled schematic.
      * Call this when the repo/commit changes.
      */
     clearCache(): void {
-        this._distilledSchematic = null;
-        this._initResponse = null;
+        this._distillResult = null;
         this._currentRepo = null;
         this._currentCommit = null;
+        // Also clear the distill service cache
+        if (this._currentRepo) {
+            distillService.clearCache(this._currentRepo);
+        }
     }
 
     /**
-     * Clears both local and server-side cache for the current repo.
-     * Forces a complete re-distillation on the next init call.
+     * Clears local cache for the current repo.
+     * (No server-side cache to clear since distillation is browser-based)
      */
     async clearServerCache(
         repo: string,
         commit?: string,
     ): Promise<RepoClearCacheResponse> {
-        // Clear local cache first
+        // Clear local caches
         this.clearCache();
-
-        // Clear server-side cache
-        return GrokiAPI.clearCache(repo, commit);
+        distillService.clearCache(repo, commit);
+        
+        // Return a success response (no server call needed)
+        return {
+            repo,
+            cleared: true,
+            message: `Cache cleared for ${repo}${commit ? ` at ${commit.slice(0, 8)}` : ""}`,
+        };
     }
 
     /**
      * Get the current initialization response if available.
      */
     getInitResponse(): RepoInitResponse | null {
-        return this._initResponse;
+        if (!this._distillResult) return null;
+        return this.buildInitResponse(this._distillResult, true);
     }
 
     /**

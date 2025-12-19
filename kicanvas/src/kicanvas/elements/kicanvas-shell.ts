@@ -101,8 +101,8 @@ class KiCanvasShellElement extends KCUIElement {
                 const repo = GrokiAPI.extractRepoFromUrl(github_paths[0]!);
                 if (repo) {
                     this.#current_repo = repo;
-                    // Load via backend API (avoids GitHub rate limits)
-                    await this.loadViaBackendAPI(repo);
+                    // Load via isomorphic-git in the browser
+                    await this.loadFromGitHub(repo);
                 } else {
                     console.error("Could not extract repo from GitHub URL");
                 }
@@ -139,7 +139,7 @@ class KiCanvasShellElement extends KCUIElement {
             }
 
             this.#current_repo = repo;
-            await this.loadViaBackendAPI(repo);
+            await this.loadFromGitHub(repo);
 
             const location = new URL(window.location.href);
             location.searchParams.set("github", link);
@@ -168,15 +168,15 @@ class KiCanvasShellElement extends KCUIElement {
     }
 
     /**
-     * Load repository via the backend API
+     * Load repository using isomorphic-git in the browser (no backend required)
      */
-    private async loadViaBackendAPI(repo: string): Promise<void> {
+    private async loadFromGitHub(repo: string): Promise<void> {
         this.loaded = false;
         this.loading = true;
         this.removeAttribute("error");
 
         try {
-            // Get commits from our API
+            // Clone repo and get commits using isomorphic-git
             const commits = await GrokiAPI.getCommits(repo);
 
             if (commits.length > 0) {
@@ -184,7 +184,7 @@ class KiCanvasShellElement extends KCUIElement {
                 const latestCommit = commits[0]!.commit_hash;
                 this.#current_commit = latestCommit;
 
-                // Load the schematic files for this commit via backend
+                // Load the schematic files for this commit
                 const vfs = await CommitFileSystem.fromCommit(
                     repo,
                     latestCommit,
@@ -194,10 +194,10 @@ class KiCanvasShellElement extends KCUIElement {
                 throw new Error("No commits with schematic files found");
             }
         } catch (e) {
-            console.error("Backend API failed:", e);
+            console.error("Failed to load from GitHub:", e);
             this.loading = false;
             this.showError(
-                "Failed to load schematic. Please ensure the backend is running and the repository exists.",
+                `Failed to load schematic: ${e instanceof Error ? e.message : "Unknown error"}. Please check that the repository exists and is public.`,
             );
         }
     }
@@ -222,10 +222,7 @@ class KiCanvasShellElement extends KCUIElement {
             console.error("Failed to load commit:", e);
             this.loading = false;
             this.showError(
-                `Failed to load commit ${commit.substring(
-                    0,
-                    7,
-                )}. The commit may not exist or the backend may be unavailable.`,
+                `Failed to load commit ${commit.substring(0, 7)}: ${e instanceof Error ? e.message : "Unknown error"}`,
             );
         }
     }
@@ -274,7 +271,7 @@ class KiCanvasShellElement extends KCUIElement {
         const repo = GrokiAPI.extractRepoFromUrl(repoUrl);
         if (repo) {
             this.#current_repo = repo;
-            this.loadViaBackendAPI(repo).then(() => {
+            this.loadFromGitHub(repo).then(() => {
                 const location = new URL(window.location.href);
                 location.searchParams.set("github", repoUrl);
                 window.history.pushState(null, "", location);

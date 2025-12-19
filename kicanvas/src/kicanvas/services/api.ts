@@ -1,9 +1,11 @@
 /*
     API service for communicating with the groki backend.
-    Handles fetching commit history, schematic files at specific commits, etc.
+    Git operations are handled entirely in the frontend using isomorphic-git.
+    Backend is only used for AI/distillation features that require server-side processing.
 */
 
 import { API_BASE_URL } from "../../config";
+import { GitService } from "./git-service";
 
 console.log(`[API] Using backend URL: ${API_BASE_URL}`);
 
@@ -181,112 +183,72 @@ export class GrokiAPI {
         this.baseUrl = url;
     }
 
+    // ========================================================================
+    // Git Operations (Frontend-only using isomorphic-git)
+    // ========================================================================
+
     /**
-     * Get all commits that modified .kicad_sch files in a repository
+     * Get all commits with a flag indicating if they modify .kicad_sch files.
+     * Uses isomorphic-git in the browser - no backend required.
      */
     static async getCommits(repo: string): Promise<CommitInfo[]> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/commits`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch commits: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: RepoCommitsResponse = await response.json();
-            return data.commits;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
+        return GitService.getAllCommits(repo);
     }
 
     /**
-     * Get all .kicad_sch files at a specific commit
+     * Get all .kicad_sch files at a specific commit.
+     * Uses isomorphic-git in the browser - no backend required.
      */
     static async getCommitFiles(
         repo: string,
         commit: string,
     ): Promise<SchematicFile[]> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/commit/files`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch commit files: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: CommitFilesResponse = await response.json();
-            return data.files;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
+        return GitService.getSchematicFiles(repo, commit);
     }
 
     /**
-     * Get detailed information about a specific commit
+     * Get detailed information about a specific commit.
+     * Uses isomorphic-git in the browser - no backend required.
      */
     static async getCommitInfo(
         repo: string,
         commit: string,
     ): Promise<CommitInfoResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/commit/info`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit }),
-            });
+        const [commitInfo, changedFiles] = await Promise.all([
+            GitService.getCommitInfo(repo, commit),
+            GitService.getChangedSchematicFiles(repo, commit),
+        ]);
 
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch commit info: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            return await response.json();
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
+        return {
+            repo,
+            commit,
+            commit_date: commitInfo.commit_date,
+            message: commitInfo.message,
+            blurb: null, // No backend storage for blurbs anymore
+            description: null, // No backend storage for descriptions anymore
+            changed_files: changedFiles,
+        };
     }
+
+    /**
+     * Get the latest commit hash for a repository.
+     * Uses isomorphic-git in the browser - no backend required.
+     */
+    static async getLatestCommit(repo: string): Promise<string> {
+        return GitService.getLatestCommit(repo);
+    }
+
+    /**
+     * Invalidate the local git cache for a repository.
+     * This clears the in-memory clone and forces a fresh fetch.
+     */
+    static invalidateGitCache(repo: string): void {
+        GitService.invalidateCache(repo);
+    }
+
+    // ========================================================================
+    // Backend API Methods (still require server for AI/distillation)
+    // ========================================================================
 
     /**
      * Get distilled schematic data for a specific commit

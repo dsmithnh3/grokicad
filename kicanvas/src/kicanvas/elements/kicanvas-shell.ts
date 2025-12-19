@@ -14,6 +14,7 @@ import { FetchFileSystem, type VirtualFileSystem } from "../services/vfs";
 import { CommitFileSystem } from "../services/commit-vfs";
 import { GrokiAPI } from "../services/api";
 import { GitService, GitServiceError, type CachedRepoInfo } from "../services/git-service";
+import { xaiSettings } from "../services/xai-settings";
 import { KCBoardAppElement } from "./kc-board/app";
 import { KCSchematicAppElement } from "./kc-schematic/app";
 import kc_ui_styles from "../../kc-ui/kc-ui.css";
@@ -63,6 +64,14 @@ class KiCanvasShellElement extends KCUIElement {
     #current_commit: string | null = null;
     #cached_repos: CachedRepoInfo[] = [];
     #eventListeners: Array<{ element: Element; event: string; handler: EventListener }> = [];
+    
+    // API Settings state
+    #apiSettingsExpanded: boolean = false;
+    #apiKeyInput: string = "";
+    #apiBaseUrlInput: string = "";
+    #apiStatusMessage: string = "";
+    #apiStatusType: "success" | "error" | "info" | "" = "";
+    #isTestingConnection: boolean = false;
 
     constructor() {
         super();
@@ -161,6 +170,13 @@ class KiCanvasShellElement extends KCUIElement {
         // Setup example buttons and cached repo buttons
         this.setupExampleButtons();
         this.setupCachedRepoListeners();
+        
+        // Setup API settings listeners
+        this.setupApiSettingsListeners();
+        
+        // Initialize API settings inputs from stored values
+        this.#apiKeyInput = xaiSettings.apiKey ?? "";
+        this.#apiBaseUrlInput = xaiSettings.baseUrl;
     }
 
     /**
@@ -170,12 +186,8 @@ class KiCanvasShellElement extends KCUIElement {
         try {
             this.#cached_repos = await GitService.getCachedRepos();
             this.update();
-            // Re-setup listeners after update (both example and cached repo buttons)
-            later(() => {
-                this.cleanupEventListeners();
-                this.setupExampleButtons();
-                this.setupCachedRepoListeners();
-            });
+            // Re-setup listeners after update (all interactive elements)
+            later(() => this.reattachAllListeners());
         } catch (e) {
             console.error("Failed to load cached repos:", e);
         }
@@ -189,6 +201,16 @@ class KiCanvasShellElement extends KCUIElement {
             element.removeEventListener(event, handler);
         }
         this.#eventListeners = [];
+    }
+
+    /**
+     * Re-setup all interactive element listeners after a DOM update
+     */
+    private reattachAllListeners(): void {
+        this.cleanupEventListeners();
+        this.setupExampleButtons();
+        this.setupCachedRepoListeners();
+        this.setupApiSettingsListeners();
     }
 
     /**
@@ -295,6 +317,171 @@ class KiCanvasShellElement extends KCUIElement {
                 handler,
             });
         }
+    }
+
+    /**
+     * Setup event listeners for API settings panel
+     */
+    private setupApiSettingsListeners(): void {
+        // Toggle API settings panel
+        const apiHeader = this.renderRoot.querySelector(".api-settings-header");
+        if (apiHeader) {
+            const handler = () => {
+                this.#apiSettingsExpanded = !this.#apiSettingsExpanded;
+                this.update();
+                later(() => this.reattachAllListeners());
+            };
+            apiHeader.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: apiHeader,
+                event: "click",
+                handler,
+            });
+        }
+
+        // API Key input
+        const apiKeyInput = this.renderRoot.querySelector("#api-key-input") as HTMLInputElement;
+        if (apiKeyInput) {
+            const handler = (e: Event) => {
+                this.#apiKeyInput = (e.target as HTMLInputElement).value;
+                this.#apiStatusMessage = "";
+                this.#apiStatusType = "";
+            };
+            apiKeyInput.addEventListener("input", handler);
+            this.#eventListeners.push({
+                element: apiKeyInput,
+                event: "input",
+                handler,
+            });
+        }
+
+        // Base URL input
+        const baseUrlInput = this.renderRoot.querySelector("#api-base-url-input") as HTMLInputElement;
+        if (baseUrlInput) {
+            const handler = (e: Event) => {
+                this.#apiBaseUrlInput = (e.target as HTMLInputElement).value;
+                this.#apiStatusMessage = "";
+                this.#apiStatusType = "";
+            };
+            baseUrlInput.addEventListener("input", handler);
+            this.#eventListeners.push({
+                element: baseUrlInput,
+                event: "input",
+                handler,
+            });
+        }
+
+        // Save button
+        const saveBtn = this.renderRoot.querySelector(".api-buttons .save-btn");
+        if (saveBtn) {
+            const handler = () => {
+                this.saveApiSettings();
+            };
+            saveBtn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: saveBtn,
+                event: "click",
+                handler,
+            });
+        }
+
+        // Clear button
+        const clearBtn = this.renderRoot.querySelector(".api-buttons .clear-btn");
+        if (clearBtn) {
+            const handler = () => {
+                this.clearApiSettings();
+            };
+            clearBtn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: clearBtn,
+                event: "click",
+                handler,
+            });
+        }
+
+        // Test button
+        const testBtn = this.renderRoot.querySelector(".api-buttons .test-btn");
+        if (testBtn) {
+            const handler = () => {
+                this.testApiConnection();
+            };
+            testBtn.addEventListener("click", handler);
+            this.#eventListeners.push({
+                element: testBtn,
+                event: "click",
+                handler,
+            });
+        }
+    }
+
+    /**
+     * Save API settings
+     */
+    private saveApiSettings(): void {
+        xaiSettings.setApiKey(this.#apiKeyInput || null);
+        xaiSettings.setBaseUrl(this.#apiBaseUrlInput);
+        xaiSettings.save();
+        
+        this.#apiStatusMessage = "Settings saved successfully!";
+        this.#apiStatusType = "success";
+        this.update();
+        later(() => this.reattachAllListeners());
+    }
+
+    /**
+     * Clear API settings
+     */
+    private clearApiSettings(): void {
+        xaiSettings.clear();
+        this.#apiKeyInput = "";
+        this.#apiBaseUrlInput = xaiSettings.baseUrl;
+        this.#apiStatusMessage = "Settings cleared";
+        this.#apiStatusType = "info";
+        this.update();
+        later(() => this.reattachAllListeners());
+    }
+
+    /**
+     * Test API connection
+     */
+    private async testApiConnection(): Promise<void> {
+        if (!this.#apiKeyInput) {
+            this.#apiStatusMessage = "Please enter an API key first";
+            this.#apiStatusType = "error";
+            this.update();
+            later(() => this.reattachAllListeners());
+            return;
+        }
+
+        this.#isTestingConnection = true;
+        this.#apiStatusMessage = "Testing connection...";
+        this.#apiStatusType = "info";
+        this.update();
+        later(() => this.reattachAllListeners());
+
+        // Temporarily save settings for testing
+        const originalKey = xaiSettings.apiKey;
+        const originalUrl = xaiSettings.baseUrl;
+        
+        xaiSettings.setApiKey(this.#apiKeyInput);
+        xaiSettings.setBaseUrl(this.#apiBaseUrlInput);
+
+        const result = await xaiSettings.testConnection();
+
+        // Restore original settings if not saved
+        xaiSettings.setApiKey(originalKey);
+        xaiSettings.setBaseUrl(originalUrl);
+
+        this.#isTestingConnection = false;
+        if (result.success) {
+            this.#apiStatusMessage = "Connection successful! Click Save to keep these settings.";
+            this.#apiStatusType = "success";
+        } else {
+            this.#apiStatusMessage = result.error || "Connection failed";
+            this.#apiStatusType = "error";
+        }
+        this.update();
+        later(() => this.reattachAllListeners());
     }
 
     /**
@@ -591,6 +778,54 @@ class KiCanvasShellElement extends KCUIElement {
                           `
                         : null}
                     <p class="drop-hint">or drag & drop your KiCAD files</p>
+                    
+                    <!-- API Settings Panel -->
+                    <div class="api-settings ${this.#apiSettingsExpanded ? "expanded" : ""}">
+                        <div class="api-settings-header">
+                            <h3>
+                                <span class="status-indicator ${xaiSettings.isConfigured ? "configured" : ""}"></span>
+                                <span>⚙️ xAI API Settings</span>
+                            </h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="api-settings-body">
+                            <div class="api-field">
+                                <label for="api-key-input">API Key</label>
+                                <input
+                                    type="password"
+                                    id="api-key-input"
+                                    placeholder="Enter your xAI API key..."
+                                    value="${this.#apiKeyInput}"
+                                    autocomplete="off"
+                                />
+                                <span class="field-hint">
+                                    Get your API key from <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a>
+                                </span>
+                            </div>
+                            <div class="api-field">
+                                <label for="api-base-url-input">Base URL (optional)</label>
+                                <input
+                                    type="text"
+                                    id="api-base-url-input"
+                                    placeholder="https://api.x.ai/v1/chat/completions"
+                                    value="${this.#apiBaseUrlInput}"
+                                    autocomplete="off"
+                                />
+                                <span class="field-hint">Leave default unless using a proxy</span>
+                            </div>
+                            ${this.#apiStatusMessage
+                                ? html`<div class="api-status ${this.#apiStatusType}">${this.#apiStatusMessage}</div>`
+                                : null}
+                            <div class="api-buttons">
+                                <button class="test-btn" ?disabled="${this.#isTestingConnection || !this.#apiKeyInput}">
+                                    ${this.#isTestingConnection ? "Testing..." : "Test"}
+                                </button>
+                                <button class="save-btn" ?disabled="${!this.#apiKeyInput}">Save</button>
+                                <button class="clear-btn">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <p class="credits">Made by Clement Hathaway, Ernest Yeung, Evan Hekman, Julian Carrier</p>
 
                 </section>

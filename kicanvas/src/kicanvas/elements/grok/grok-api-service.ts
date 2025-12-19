@@ -1,13 +1,18 @@
 /*
-    Grok API Service - handles streaming communication with the Grok AI backend.
-    Distillation is now performed entirely in the browser.
+    Grok API Service - handles streaming communication with the Grok AI.
+    
+    This service now operates entirely in the browser:
+    - Distillation is performed in the browser
+    - AI queries are sent directly to xAI API (no backend required)
 */
 
 import type { DistilledSchematic, RepoClearCacheResponse } from "../../services/api";
 import { distillService, type DistillResult } from "../../services/distill-service";
 import { createFocusedDistillation } from "../../../kicad/distill";
 import type { SelectedComponent, GrokContext } from "./types";
-import { API_BASE_URL } from "../../../config";
+import { xaiClient, Message } from "../../services/xai-client";
+import { xaiSettings } from "../../services/xai-settings";
+import { SYSTEM_PROMPT } from "../../services/system-prompt";
 
 /** Callback types for streaming events */
 export interface StreamCallbacks {
@@ -35,25 +40,119 @@ export interface InitCallbacks {
     onError?: (error: string) => void;
 }
 
-/** Request payload for the Grok selection stream endpoint */
-export interface GrokStreamRequest {
-    repo: string;
-    commit: string;
-    component_ids: string[];
-    query: string;
-    distilled: DistilledSchematic;
-    thinking_mode: boolean;
+/**
+ * Build semantic context for selected components from distilled data.
+ * This replicates the backend's build_component_context function.
+ */
+function buildComponentContext(
+    distilled: DistilledSchematic,
+    componentIds: string[],
+): { selectedContext: string; schematicSummary: string } {
+    // Filter to selected components
+    const components = distilled.components.filter(
+        (c) => componentIds.includes(c.reference)
+    );
+
+    // Build detailed component descriptions
+    const componentDetails: string[] = [];
+    for (const comp of components) {
+        const category = comp.category || "other";
+        let detail = `**${comp.reference}** (${category})\n  - Type: ${comp.lib_id}\n  - Value: ${comp.value}`;
+
+        if (comp.footprint) {
+            detail += `\n  - Footprint: ${comp.footprint}`;
+        }
+
+        if (comp.sheet_path && comp.sheet_path !== "/") {
+            detail += `\n  - Sheet: ${comp.sheet_path}`;
+        }
+
+        // Add pin connections
+        if (comp.pins && comp.pins.length > 0) {
+            const pinStrs = comp.pins.map((pin) => {
+                const name = pin.name || "";
+                const net = pin.net || "NC";
+                if (!name) {
+                    return `Pin ${pin.number} → ${net}`;
+                }
+                return `Pin ${pin.number} (${name}) → ${net}`;
+            });
+            if (pinStrs.length > 0) {
+                detail += `\n  - Pins:\n    ${pinStrs.join("\n    ")}`;
+            }
+        }
+
+        // Add properties if any
+        if (comp.properties) {
+            const propStrs = Object.entries(comp.properties)
+                .filter(([k]) => !k.startsWith("ki_"))
+                .map(([k, v]) => `${k}: ${v}`);
+            if (propStrs.length > 0) {
+                detail += `\n  - Properties: ${propStrs.join(", ")}`;
+            }
+        }
+
+        componentDetails.push(detail);
+    }
+
+    // Find nearby components from proximities
+    const nearbyRefs = new Set<string>();
+    if (distilled.proximities) {
+        for (const prox of distilled.proximities) {
+            if ((prox.score || 0) > 0.3) {
+                if (componentIds.includes(prox.ref_a) && !componentIds.includes(prox.ref_b)) {
+                    nearbyRefs.add(prox.ref_b);
+                }
+                if (componentIds.includes(prox.ref_b) && !componentIds.includes(prox.ref_a)) {
+                    nearbyRefs.add(prox.ref_a);
+                }
+            }
+        }
+    }
+
+    // Get details for nearby components (limit to 10)
+    const nearbyDetails: string[] = [];
+    const nearbyRefsArray = Array.from(nearbyRefs).slice(0, 10);
+    for (const ref of nearbyRefsArray) {
+        const comp = distilled.components.find((c) => c.reference === ref);
+        if (comp) {
+            nearbyDetails.push(`${comp.reference} (${comp.value}, ${comp.category || "other"})`);
+        }
+    }
+
+    // Build schematic overview
+    const schematicSummary = `The schematic contains ${distilled.components.length} total components and ${Object.keys(distilled.nets).length} nets.`;
+
+    // Build selected context
+    let selectedContext: string;
+    if (componentDetails.length === 0) {
+        selectedContext = "No specific components selected.";
+    } else {
+        selectedContext = `## Selected Components (${componentDetails.length})\n\n${componentDetails.join("\n\n")}`;
+        
+        if (nearbyDetails.length > 0) {
+            selectedContext += `\n\n## Nearby/Related Components\n${nearbyDetails.join(", ")}`;
+        }
+    }
+
+    return { selectedContext, schematicSummary };
 }
 
 /**
- * Service for interacting with the Grok AI backend.
- * Distillation is performed in the browser; only AI queries go to the backend.
+ * Service for interacting with the Grok AI.
+ * All operations are performed in the browser - no backend required.
  */
 export class GrokAPIService {
     private _distillResult: DistillResult | null = null;
     private _currentRepo: string | null = null;
     private _currentCommit: string | null = null;
-    private _abortController: AbortController | null = null;
+
+    /**
+     * Check if the xAI API is configured.
+     */
+    get isConfigured(): boolean {
+        return xaiSettings.isConfigured;
+    }
 
     /**
      * Initialize a repository by distilling its schematic files in the browser.
@@ -181,14 +280,12 @@ export class GrokAPIService {
      * Aborts any in-progress streaming request.
      */
     abort(): void {
-        if (this._abortController) {
-            this._abortController.abort();
-            this._abortController = null;
-        }
+        xaiClient.abort();
     }
 
     /**
-     * Streams a query to the Grok AI backend and processes the response.
+     * Streams a query to the Grok AI and processes the response.
+     * Now communicates directly with xAI API (no backend required).
      *
      * @param context - Repository context (repo and commit)
      * @param components - Selected components to query about
@@ -206,6 +303,14 @@ export class GrokAPIService {
     ): Promise<void> {
         const { repo, commit } = context;
 
+        // Check if API is configured
+        if (!xaiSettings.isConfigured) {
+            callbacks.onError?.(
+                "xAI API key not configured. Please add your API key in the settings panel on the landing page.",
+            );
+            return;
+        }
+
         if (!repo || !commit) {
             callbacks.onError?.(
                 "Repository context not available. Please load a schematic from GitHub.",
@@ -213,21 +318,9 @@ export class GrokAPIService {
             return;
         }
 
-        // Abort any existing request
-        this.abort();
-        const abortController = new AbortController();
-        this._abortController = abortController;
-
-        callbacks.onStart?.();
-
         try {
             // Fetch distilled schematic if needed
             const fullDistilled = await this.getDistilledSchematic(repo, commit);
-
-            // Check if we were aborted during the async operation
-            if (abortController.signal.aborted) {
-                return;
-            }
 
             const componentIds = components.map((c) => c.reference);
 
@@ -242,82 +335,59 @@ export class GrokAPIService {
                 `${Object.keys(distilled.nets).length} nets, ${distilled.proximities.length} proximities`
             );
 
-            const response = await fetch(
-                `${API_BASE_URL}/grok/selection/stream`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "text/event-stream",
-                    },
-                    body: JSON.stringify({
-                        repo,
-                        commit,
-                        component_ids: componentIds,
-                        query,
-                        distilled,
-                        thinking_mode: thinkingMode,
-                    } satisfies GrokStreamRequest),
-                    signal: abortController.signal,
-                },
+            // Build rich semantic context from distilled data
+            const { selectedContext, schematicSummary } = buildComponentContext(distilled, componentIds);
+
+            // Build system and user messages
+            const systemPrompt = `${SYSTEM_PROMPT}\n\n---\n\n## Schematic Context\n${schematicSummary}`;
+            const userPrompt = `${selectedContext}\n\n---\n\n## User's Question\n${query}`;
+
+            console.log(
+                `[GrokAPIService] Using system prompt (${systemPrompt.length} chars), context (${userPrompt.length} chars), thinking_mode: ${thinkingMode}`
             );
 
-            if (!response.ok) {
-                throw new Error(
-                    `HTTP ${response.status}: ${response.statusText}`,
-                );
-            }
+            const messages = [
+                Message.system(systemPrompt),
+                Message.user(userPrompt),
+            ];
 
-            const reader = response.body?.getReader();
-            const decoder = new TextDecoder();
+            // Accumulate full content for the final callback
             let fullContent = "";
+            let thinkingContent = "";
 
-            if (reader) {
-                let done = false;
-                while (!done) {
-                    const result = await reader.read();
-                    done = result.done;
-
-                    if (result.value) {
-                        const chunk = decoder.decode(result.value);
-                        const lines = chunk.split("\n");
-
-                        for (const line of lines) {
-                            if (line.startsWith("data: ")) {
-                                const data = line.slice(6);
-
-                                if (data === "[DONE]") {
-                                    done = true;
-                                    break;
-                                } else if (data.startsWith("[ERROR:")) {
-                                    callbacks.onError?.(data);
-                                    done = true;
-                                    break;
-                                } else {
-                                    fullContent += data;
-                                    callbacks.onChunk?.(fullContent);
-                                }
-                            }
+            // Stream the query using the XAI client
+            await xaiClient.streamChatCompletion(
+                messages,
+                {
+                    onStart: () => {
+                        callbacks.onStart?.();
+                    },
+                    onChunk: (content, isThinking) => {
+                        if (isThinking) {
+                            thinkingContent += content;
+                            // Wrap thinking content in a special marker
+                            callbacks.onChunk?.(`<thinking>${content}</thinking>`);
+                        } else {
+                            fullContent += content;
+                            callbacks.onChunk?.(fullContent);
                         }
-                    }
-                }
-            }
-
-            callbacks.onComplete?.(fullContent);
+                    },
+                    onComplete: () => {
+                        callbacks.onComplete?.(fullContent);
+                    },
+                    onError: (error) => {
+                        callbacks.onError?.(error);
+                    },
+                },
+                thinkingMode,
+            );
         } catch (err) {
-            // Don't report abort errors
-            if (err instanceof Error && err.name === "AbortError") {
-                return;
-            }
-
             console.error("[GrokAPIService] Stream error:", err);
             callbacks.onError?.(
                 err instanceof Error
                     ? err.message
                     : "Failed to connect to Grok AI",
             );
-        } finally {
-            this._abortController = null;
         }
     }
 }

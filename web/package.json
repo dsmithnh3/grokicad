@@ -34,7 +34,7 @@
         "lint:eslint": "eslint --config .eslintrc.cjs src/ --ext .js,.ts",
         "lint:types": "tsc -p tsconfig.json",
         "lint:prettier": "prettier . --check",
-        "lint": "npm run lint:eslint && npm run lint:types && npm run lint:prettier",
+        "lint": "bun run lint:eslint && bun run lint:types && bun run lint:prettier",
         "format": "prettier . --write",
         "serve": "node scripts/serve.js",
         "build:no-check": "node scripts/build.js",

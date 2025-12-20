@@ -6,10 +6,10 @@ on:
     branches:
       - main
     paths:
-      - 'kicanvas/worker/**'
-      - 'kicanvas/config/**'
-      - 'kicanvas/wrangler.jsonc'
-      - 'kicanvas/.github/workflows/deploy-worker.yml'
+      - 'web/worker/**'
+      - 'web/config/**'
+      - 'web/wrangler.jsonc'
+      - '.github/workflows/deploy-worker.yml'
   
   # Manual deployment trigger for production
   workflow_dispatch:
@@ -35,26 +35,24 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: kicanvas
+        working-directory: web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: kicanvas/package-lock.json
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: TypeScript type check (worker)
-        run: npm run worker:types
+        run: bun run worker:types
 
       - name: TypeScript type check (frontend)
-        run: npm run lint:types
+        run: bun run lint:types
 
   # Deploy to beta environment
   deploy-beta:
@@ -70,16 +68,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: kicanvas/package-lock.json
+          bun-version: latest
 
       - name: Install dependencies
-        working-directory: kicanvas
-        run: npm ci
+        working-directory: web
+        run: bun install
 
       - name: Deploy to Cloudflare Workers (Beta)
         uses: cloudflare/wrangler-action@v3
@@ -87,7 +83,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           environment: 'beta'
-          workingDirectory: 'kicanvas'
+          workingDirectory: 'web'
 
       - name: Deployment summary
         run: |
@@ -112,16 +108,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: kicanvas/package-lock.json
+          bun-version: latest
 
       - name: Install dependencies
-        working-directory: kicanvas
-        run: npm ci
+        working-directory: web
+        run: bun install
 
       - name: Deploy to Cloudflare Workers (Production)
         uses: cloudflare/wrangler-action@v3
@@ -129,7 +123,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           environment: 'production'
-          workingDirectory: 'kicanvas'
+          workingDirectory: 'web'
 
       - name: Deployment summary
         run: |
@@ -139,3 +133,4 @@ jobs:
           echo "- **Worker:** grokicad" >> $GITHUB_STEP_SUMMARY
           echo "- **URL:** https://grokicad.com" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+

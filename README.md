@@ -17,7 +17,7 @@ Most people looking at schematics aren’t the original EE, and they need clarit
   - Obsolete-part replacement suggestions
 - **Distill-on-demand API**: `/api/distill` runs or returns cached distillations; `/api/repo/init` primes a repo and reports component/net counts.
 - **Part search**: DigiKey keyword/MPN lookup with graceful fallback when not configured.
-- **Viewer-friendly data**: Works with `kicanvas/` (TypeScript/WebGL KiCad viewer) and includes ready-made KiCad samples for demos.
+- **Viewer-friendly data**: Works with `web/` (TypeScript/WebGL KiCad viewer) and includes ready-made KiCad samples for demos.
 - **Example repos**: Use the provided KiCad projects for instant demos:
   - uBMS-2 battery management system: https://github.com/CwbhX/uBMS-2
   - Grok KiCad Watch: https://github.com/CwbhX/GrokKiCADWatch
@@ -26,12 +26,12 @@ Most people looking at schematics aren’t the original EE, and they need clarit
 - **schematic-distiller/**: Python package + docs; uses `kicad-sch-api` for lossless parsing, connectivity, hierarchy, BOM properties, and MCP tooling.
 - **backend/**: Rust Axum service exposing REST + Swagger UI, SSE endpoints, Grok integrations, DigiKey client, and git helpers.
 - **database/**: PostgreSQL (Docker) plus Rust `kicad-db` crate for storing distilled JSON, schematic blurbs/overviews, and part metadata.
-- **kicanvas/**: Browser-based KiCad viewer (TypeScript/WebGL). Ships with a static debug viewer and docs for embedding.
+- **web/**: Browser-based KiCad viewer (TypeScript/WebGL). Ships with a static debug viewer and docs for embedding.
 - **kicad-example-files/**: Curated KiCad projects (includes uBMS-2 and SmartWatch) for quick demonstrations.
 - **grokprompts/**: System prompt used by Grok selection summaries.
 
 ## Quickstart (judge-friendly)
-Prereqs: Docker (for Postgres), Rust toolchain, Python 3.10+, Node (only if you want to rebuild KiCanvas), env var `XAI_API_KEY` for Grok, optional `DIGIKEY_CLIENT_ID/SECRET`.
+Prereqs: Docker (for Postgres), Rust toolchain, Python 3.10+, Bun (only if you want to rebuild the web frontend), env var `XAI_API_KEY` for Grok, optional `DIGIKEY_CLIENT_ID/SECRET`.
 
 1) Start the database  
 ```bash
@@ -87,7 +87,7 @@ Open `http://localhost:8080/swagger-ui/` to exercise all endpoints.
 
 ## Demo scripts & viewer notes
 - Use `kicad-example-files/BMS` for uBMS-2 and `kicad-example-files/Smart Watch` for the watch project—both mirror the example repos above.
-- `kicanvas/debug/index.html` (or `schematic.html`) can be used to point at distilled outputs or KiCad files if you want an in-browser viewer during judging.
+- `web/debug/index.html` (or `schematic.html`) can be used to point at distilled outputs or KiCad files if you want an in-browser viewer during judging.
 
 ## Developer guide (quick map)
 - `backend/src/controllers/…`: Route handlers for repo, distill, grok (AI summaries + SSE), hook (webhooks/refresh), digikey.  
@@ -95,7 +95,7 @@ Open `http://localhost:8080/swagger-ui/` to exercise all endpoints.
 - `backend/src/openapi.rs`: Swagger/OpenAPI registration.  
 - `database/src`: `kicad-db` crate and scripts to manage Postgres.  
 - `schematic-distiller/docs`: Deep docs: getting started, API reference, hierarchy, MCP setup, known limitations.  
-- `kicanvas/src`: TypeScript viewer core; `docs/` covers embedding and dev setup.  
+- `web/src`: TypeScript viewer core; `docs/` covers embedding and dev setup.  
 - `grokprompts/`: System prompt text used by Grok selection streaming.
 
 ## Tips for demos

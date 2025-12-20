@@ -1,6 +1,0 @@
-{
-  "dependencies": {},
-  "devDependencies": {
-    "wrangler": "^4.56.0"
-  }
-}

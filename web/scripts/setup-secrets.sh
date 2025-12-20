@@ -27,7 +27,7 @@ echo ""
 # Check if wrangler is installed
 if ! command -v wrangler &> /dev/null; then
     echo -e "${RED}Error: wrangler CLI is not installed${NC}"
-    echo "Install it with: npm install -g wrangler"
+    echo "Install it with: bun install -g wrangler"
     exit 1
 fi
 

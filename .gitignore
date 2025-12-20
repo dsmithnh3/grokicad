@@ -23,12 +23,14 @@ Thumbs.db
 **/.env
 .env
 
-# Node (web/)
+# Node/Bun (web/)
 **/node_modules/
 **/.pnp
 .pnp.*
 .yarn/install-state.gz
 **/yarn-error.log
+**/package-lock.json
+!bun.lock
 
 # Docker
 **/.dockerignore  # If added
@@ -49,6 +51,7 @@ dist/
 
 /schematic-distiller/agents
 *.zip
-*.lock
+# Note: *.lock is too broad - we want bun.lock but not package-lock.json
+# package-lock.json is already ignored above
 /schematic-distiller/\#
 /schematic-distiller/create

@@ -25,7 +25,7 @@ echo -e "${GREEN}Deploying to ${YELLOW}$ENVIRONMENT${GREEN} environment...${NC}"
 # Check if wrangler is installed
 if ! command -v wrangler &> /dev/null; then
     echo -e "${RED}Error: wrangler CLI is not installed${NC}"
-    echo "Install it with: npm install -g wrangler"
+    echo "Install it with: bun install -g wrangler"
     exit 1
 fi
 
@@ -37,7 +37,7 @@ fi
 
 # Compile TypeScript for worker
 echo -e "${GREEN}Compiling TypeScript...${NC}"
-npx tsc -p worker/tsconfig.json --noEmit || {
+bunx tsc -p worker/tsconfig.json --noEmit || {
     echo -e "${RED}TypeScript compilation failed!${NC}"
     exit 1
 }

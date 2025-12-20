@@ -736,31 +736,30 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             // Ensure the custom element is defined before creating it
             await customElements.whenDefined("kc-chat-panel");
 
-            // Create or get the chat panel
-            if (!this._chatPanel || !this._chatPanel.isConnected) {
-                // Remove any stale panels
-                document.querySelectorAll("kc-chat-panel").forEach(el => el.remove());
+            // Find the existing chat panel from the main app instead of creating a new one
+            if (!this._chatPanel) {
+                // Look for existing chat panel in the DOM
+                this._chatPanel = document.querySelector("kc-chat-panel") as KCChatPanelElement;
 
-                this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
-
-                // Only append if not already in DOM
-                if (!this._chatPanel.isConnected) {
+                // If no existing panel found, create one (fallback for edge cases)
+                if (!this._chatPanel) {
+                    console.warn("[DigiKey] No existing chat panel found, creating new one");
+                    this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
                     document.body.appendChild(this._chatPanel);
-                }
 
-                // Wait for element to be fully initialized
-                // The chat panel sets _isInitialized = true in requestAnimationFrame
-                await new Promise(resolve => {
-                    const checkInitialized = () => {
-                        // Check if the element has the configure method (indicates it's upgraded)
-                        if (typeof (this._chatPanel as any).configure === 'function') {
-                            resolve(void 0);
-                        } else {
-                            requestAnimationFrame(checkInitialized);
-                        }
-                    };
-                    requestAnimationFrame(checkInitialized);
-                });
+                    // Wait for element to be fully initialized
+                    await new Promise(resolve => {
+                        const checkInitialized = () => {
+                            // Check if the element has the configure method (indicates it's upgraded)
+                            if (typeof (this._chatPanel as any).configure === 'function') {
+                                resolve(void 0);
+                            } else {
+                                requestAnimationFrame(checkInitialized);
+                            }
+                        };
+                        requestAnimationFrame(checkInitialized);
+                    });
+                }
 
                 // Configure the panel
                 if (typeof this._chatPanel.configure === 'function') {

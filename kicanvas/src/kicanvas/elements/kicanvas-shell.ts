@@ -109,7 +109,7 @@ class KiCanvasShellElement extends KCUIElement {
     @attribute({ type: String })
     public src: string;
 
-    @query(`input[name="link"]`, true)
+    @query(`#main-link-input`, true)
     public link_input: HTMLInputElement;
 
     override initialContentCallback() {
@@ -154,34 +154,6 @@ class KiCanvasShellElement extends KCUIElement {
             });
         });
 
-        // Clear error when user types
-        this.link_input.addEventListener("input", () => {
-            this.clearError();
-        });
-
-        // Load on Enter key
-        this.link_input.addEventListener("keydown", async (e) => {
-            if (e.key !== "Enter") {
-                return;
-            }
-            e.preventDefault();
-
-            const link = this.link_input.value;
-
-            // Extract repo from the link
-            const repo = GrokiAPI.extractRepoFromUrl(link);
-            if (!repo) {
-                return;
-            }
-
-            this.#current_repo = repo;
-            await this.loadFromGitHub(repo);
-
-            const location = new URL(window.location.href);
-            location.searchParams.set("github", link);
-            window.history.pushState(null, "", location);
-        });
-
         // Listen for commit selection events from the history panel
         this.addEventListener("commit-select", async (e: Event) => {
             const detail = (e as CustomEvent).detail;
@@ -191,6 +163,7 @@ class KiCanvasShellElement extends KCUIElement {
         // Wait a tick for initial render, then setup button listeners
         // This ensures they're set up after the DOM is ready
         later(() => {
+            this.setupInputListeners();
             this.setupExampleButtons();
             this.setupCachedRepoListeners();
             this.setupApiSettingsListeners();
@@ -343,10 +316,61 @@ class KiCanvasShellElement extends KCUIElement {
      */
     private reattachAllListeners(): void {
         this.cleanupEventListeners();
+        this.setupInputListeners();
         this.setupExampleButtons();
         this.setupCachedRepoListeners();
         this.setupApiSettingsListeners();
         this.setupGitHubAuthListeners();
+    }
+    
+    /**
+     * Setup event listeners for the main input field
+     */
+    private setupInputListeners(): void {
+        const input = this.renderRoot.querySelector("#main-link-input") as HTMLInputElement;
+        if (!input) {
+            console.warn("[KiCanvasShell] Main input not found");
+            return;
+        }
+        
+        // Clear error when user types
+        const inputHandler = () => {
+            this.clearError();
+        };
+        input.addEventListener("input", inputHandler);
+        this.#eventListeners.push({ element: input, event: "input", handler: inputHandler });
+        
+        // Load on Enter key
+        const keydownHandler = async (e: Event) => {
+            const keyEvent = e as KeyboardEvent;
+            if (keyEvent.key !== "Enter") {
+                return;
+            }
+            keyEvent.preventDefault();
+
+            const link = input.value.trim();
+
+            if (!link) {
+                this.showError("Please enter a GitHub repository URL.");
+                return;
+            }
+
+            // Extract repo from the link
+            const repo = GrokiAPI.extractRepoFromUrl(link);
+            if (!repo) {
+                this.showError("Invalid GitHub URL. Please enter a valid repository link (e.g., https://github.com/user/repo).");
+                return;
+            }
+
+            this.#current_repo = repo;
+            await this.loadFromGitHub(repo);
+
+            const location = new URL(window.location.href);
+            location.searchParams.set("github", link);
+            window.history.pushState(null, "", location);
+        };
+        input.addEventListener("keydown", keydownHandler);
+        this.#eventListeners.push({ element: input, event: "keydown", handler: keydownHandler });
     }
 
     /**
@@ -1059,6 +1083,7 @@ class KiCanvasShellElement extends KCUIElement {
                         <div class="action-section">
                             <!-- Main Input -->
                             <input
+                                id="main-link-input"
                                 name="link"
                                 type="text"
                                 placeholder="Paste a GitHub link to your schematic..."

@@ -926,6 +926,8 @@ section.overlay .feature:hover img.feature-icon {
     align-items: center;
     width: 100%;
     gap: 20px;
+    position: relative;
+    z-index: 10;
 }
 
 /* Main Input */
@@ -940,6 +942,8 @@ section.overlay input[name="link"] {
     width: 100%;
     max-width: 480px;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
 }
 
 section.overlay input[name="link"]:focus {

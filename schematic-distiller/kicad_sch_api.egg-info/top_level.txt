@@ -1,2 +1,0 @@
-kicad_sch_api
-mcp_server

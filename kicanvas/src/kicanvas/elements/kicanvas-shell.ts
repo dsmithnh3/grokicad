@@ -858,188 +858,292 @@ class KiCanvasShellElement extends KCUIElement {
                 <section class="overlay">
                     <div class="hero-glow"></div>
                     <div class="circuit-pattern"></div>
-                    <h1>
-                        <img
-                            class="logo-icon"
-                            src="images/Grok_Logomark_Light.png"
-                            alt="Grok" />
-                        <span class="logo-text">groki</span>
-                    </h1>
-                    <p class="tagline">
-                        <strong>AI-powered</strong> schematic intelligence
-                    </p>
-                    <p class="description">
-                        An <strong>interactive</strong> viewer for KiCAD
-                        schematics with <strong>Grok-powered</strong> component
-                        analysis. Get instant summaries, understand circuit
-                        blocks, and explore your designs like never before.
-                    </p>
-                    <div class="features">
-                        <div class="feature">
-                            <span class="feature-icon">🔍</span>
-                            <span>Component Analysis</span>
-                        </div>
-                        <div class="feature">
-                            <span class="feature-icon">💡</span>
-                            <span>Circuit Summaries</span>
-                        </div>
-                        <div class="feature">
-                            <img
-                                class="feature-icon"
-                                src="images/xAI_Logomark_Light.png"
-                                alt="xAI" />
-                            <span>Powered by Grok</span>
-                        </div>
-                    </div>
                     
-                    <!-- GitHub Authentication Section -->
-                    <div class="github-auth">
-                        ${this.#githubUser
-                            ? html`
-                                <div class="github-user">
-                                    <img 
-                                        class="github-avatar" 
-                                        src="${this.#githubUser.avatar_url}" 
-                                        alt="${this.#githubUser.login}" />
-                                    <div class="github-user-info">
-                                        <span class="github-username">${this.#githubUser.name || this.#githubUser.login}</span>
-                                        <span class="github-rate-limit">
-                                            ${this.#githubRateLimit
-                                                ? `${this.#githubRateLimit.remaining}/${this.#githubRateLimit.limit} API calls`
-                                                : "Authenticated"}
+                    <!-- Top Navigation Bar -->
+                    <nav class="top-nav">
+                        <!-- Credits Dropdown - Left -->
+                        <div class="credits-dropdown">
+                            <div class="credits-trigger">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                <span>Credits</span>
+                            </div>
+                            <div class="credits-content">
+                                <div class="credits-title">Created by</div>
+                                <a href="https://x.com/cwbhx" target="_blank" rel="noopener" class="credit-person">
+                                    <div class="credit-avatar">C</div>
+                                    <div class="credit-info">
+                                        <div class="credit-name">Clement Hathaway</div>
+                                        <div class="credit-handle">@cwbhx</div>
+                                    </div>
+                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://x.com/ernestyeung" target="_blank" rel="noopener" class="credit-person">
+                                    <div class="credit-avatar">E</div>
+                                    <div class="credit-info">
+                                        <div class="credit-name">Ernest Yeung</div>
+                                        <div class="credit-handle">@ernestyeung</div>
+                                    </div>
+                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://x.com/evanhekman" target="_blank" rel="noopener" class="credit-person">
+                                    <div class="credit-avatar">E</div>
+                                    <div class="credit-info">
+                                        <div class="credit-name">Evan Hekman</div>
+                                        <div class="credit-handle">@evanhekman</div>
+                                    </div>
+                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://x.com/juliancarrier" target="_blank" rel="noopener" class="credit-person">
+                                    <div class="credit-avatar">J</div>
+                                    <div class="credit-info">
+                                        <div class="credit-name">Julian Carrier</div>
+                                        <div class="credit-handle">@juliancarrier</div>
+                                    </div>
+                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Side: API Settings + GitHub -->
+                        <div class="nav-right">
+                            <!-- xAI API Settings Dropdown -->
+                            <div class="api-dropdown">
+                                <div class="api-dropdown-trigger">
+                                    <span class="api-status-dot ${xaiSettings.isConfigured ? "configured" : ""}"></span>
+                                    <img src="images/xAI_Logomark_Light.png" alt="xAI" class="api-logo" />
+                                    <span class="api-label">API</span>
+                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="api-dropdown-content">
+                                    <div class="api-dropdown-title">xAI API Configuration</div>
+                                    <div class="api-field">
+                                        <label for="api-key-input">API Key</label>
+                                        <input
+                                            type="password"
+                                            id="api-key-input"
+                                            placeholder="Enter your xAI API key..."
+                                            value="${this.#apiKeyInput}"
+                                            autocomplete="off"
+                                        />
+                                        <span class="field-hint">
+                                            Get your key from <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a>
                                         </span>
                                     </div>
-                                    <button id="github-logout-btn" class="github-logout-btn" title="Sign out">
-                                        ✕
+                                    <div class="api-field">
+                                        <label for="api-base-url-input">Base URL</label>
+                                        <input
+                                            type="text"
+                                            id="api-base-url-input"
+                                            placeholder="https://api.x.ai/v1/chat/completions"
+                                            value="${this.#apiBaseUrlInput}"
+                                            autocomplete="off"
+                                        />
+                                        <span class="field-hint">Leave default unless using a proxy</span>
+                                    </div>
+                                    ${this.#apiStatusMessage
+                                        ? html`<div class="api-status-msg ${this.#apiStatusType}">${this.#apiStatusMessage}</div>`
+                                        : null}
+                                    <div class="api-buttons">
+                                        <button class="test-btn" ?disabled="${this.#isTestingConnection || !this.#apiKeyInput}">
+                                            ${this.#isTestingConnection ? "Testing..." : "Test"}
+                                        </button>
+                                        <button class="save-btn" ?disabled="${!this.#apiKeyInput}">Save</button>
+                                        <button class="clear-btn">Clear</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- GitHub Auth -->
+                            <div class="github-dropdown">
+                                ${this.#githubUser
+                                    ? html`
+                                        <div class="github-user-trigger">
+                                            <img 
+                                                class="github-avatar" 
+                                                src="${this.#githubUser.avatar_url}" 
+                                                alt="${this.#githubUser.login}" />
+                                            <div class="github-user-info">
+                                                <span class="github-username">${this.#githubUser.name || this.#githubUser.login}</span>
+                                                <span class="github-rate-limit">
+                                                    ${this.#githubRateLimit
+                                                        ? `${this.#githubRateLimit.remaining}/${this.#githubRateLimit.limit}`
+                                                        : "✓"}
+                                                </span>
+                                            </div>
+                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="github-dropdown-content">
+                                            <div class="github-dropdown-info">
+                                                <span>Signed in as <strong>${this.#githubUser.login}</strong></span>
+                                                ${this.#githubRateLimit
+                                                    ? html`<span class="rate-detail">${this.#githubRateLimit.remaining} / ${this.#githubRateLimit.limit} API calls remaining</span>`
+                                                    : null}
+                                            </div>
+                                            <button id="github-logout-btn" class="github-logout-btn">
+                                                Sign out
+                                            </button>
+                                        </div>
+                                    `
+                                    : html`
+                                        <button 
+                                            id="github-login-btn" 
+                                            class="github-login-btn"
+                                            ?disabled="${this.#githubAuthLoading}">
+                                            <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                            </svg>
+                                            ${this.#githubAuthLoading ? "..." : "Sign in"}
+                                        </button>
+                                    `}
+                            </div>
+                        </div>
+                    </nav>
+                    
+                    <!-- Main Content Container -->
+                    <div class="main-content">
+                        <!-- Hero Section -->
+                        <div class="hero-section">
+                            <h1>
+                                <img
+                                    class="logo-icon"
+                                    src="images/Grok_Logomark_Light.png"
+                                    alt="Grok" />
+                                <span class="logo-text">groki</span>
+                            </h1>
+                            <p class="tagline">
+                                AI-powered schematic intelligence
+                            </p>
+                            <p class="description">
+                                Interactive KiCAD viewer with Grok-powered component analysis.
+                                Get instant summaries, understand circuit blocks, and explore your designs.
+                            </p>
+                        </div>
+                        
+                        <!-- Features Grid -->
+                        <div class="features">
+                            <div class="feature">
+                                <span class="feature-icon">🔍</span>
+                                <span>Component Analysis</span>
+                            </div>
+                            <div class="feature">
+                                <span class="feature-icon">💡</span>
+                                <span>Circuit Summaries</span>
+                            </div>
+                            <div class="feature">
+                                <img
+                                    class="feature-icon"
+                                    src="images/xAI_Logomark_Light.png"
+                                    alt="xAI" />
+                                <span>Powered by Grok</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Section -->
+                        <div class="action-section">
+                            <!-- Main Input -->
+                            <input
+                                name="link"
+                                type="text"
+                                placeholder="Paste a GitHub link to your schematic..."
+                                autofocus />
+                            <div class="error-bar">${this.error}</div>
+                        </div>
+                        
+                        <!-- Content Grid: Examples & Recent Repos -->
+                        <div class="content-grid">
+                            <!-- Examples Card -->
+                            <div class="content-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-title-icon">⚡</span>
+                                        Quick Start
+                                    </div>
+                                </div>
+                                <div class="examples">
+                                    <button
+                                        id="grok-watch-btn"
+                                        data-repo="https://github.com/CwbhX/GrokKiCADWatch">
+                                        Smart Watch
+                                    </button>
+                                    <button
+                                        id="ubms-btn"
+                                        data-repo="https://github.com/CwbhX/uBMS-2">
+                                        Battery Management System
                                     </button>
                                 </div>
-                            `
-                            : html`
-                                <button 
-                                    id="github-login-btn" 
-                                    class="github-login-btn"
-                                    ?disabled="${this.#githubAuthLoading}">
-                                    <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                    </svg>
-                                    ${this.#githubAuthLoading 
-                                        ? "Signing in..." 
-                                        : "Sign in with GitHub"}
-                                </button>
-                                <span class="github-hint">
-                                    Access private repos & get 5,000 API calls/hour
-                                </span>
-                            `}
-                    </div>
-                    
-                    <input
-                        name="link"
-                        type="text"
-                        placeholder="Paste a GitHub link to your schematic..."
-                        autofocus />
-                    <div class="error-bar">${this.error}</div>
-                    <div class="examples">
-                        <h3>Examples</h3>
-                        <button
-                            id="grok-watch-btn"
-                            data-repo="https://github.com/CwbhX/GrokKiCADWatch">
-                            Smart Watch
-                        </button>
-                        <button
-                            id="ubms-btn"
-                            data-repo="https://github.com/CwbhX/uBMS-2">
-                            Battery System
-                        </button>
-                    </div>
-                    ${this.#cached_repos.length > 0
-                        ? html`
-                              <div class="cached-repos">
-                                  <h3>
-                                      <span>📂 Recent Repositories</span>
-                                      <button
-                                          id="clear-cache-btn"
-                                          class="clear-cache-btn"
-                                          title="Clear history">
-                                          🗑️ Clear
-                                      </button>
-                                  </h3>
-                                  <div class="cached-repo-list">
-                                      ${this.#cached_repos.map(
-                                          (repo) => html`
-                                              <div class="cached-repo-item">
-                                                  <button
-                                                      class="cached-repo-btn"
-                                                      data-slug="${repo.slug}"
-                                                      title="Load ${repo.slug}">
-                                                      <span class="repo-name"
-                                                          >${repo.slug}</span
-                                                      >
-                                                      <span class="repo-date"
-                                                          >${this.formatRelativeDate(
-                                                              repo.lastAccessed,
-                                                          )}</span
-                                                      >
-                                                  </button>
-                                                  <button
-                                                      class="delete-repo-btn"
-                                                      data-slug="${repo.slug}"
-                                                      title="Remove from history">
-                                                      ✕
-                                                  </button>
-                                              </div>
-                                          `,
-                                      )}
-                                  </div>
-                              </div>
-                          `
-                        : null}
-                    <p class="drop-hint">or drag & drop your KiCAD files</p>
-                    
-                    <!-- API Settings Panel -->
-                    <div class="api-settings ${this.#apiSettingsExpanded ? "expanded" : ""}">
-                        <div class="api-settings-header">
-                            <h3>
-                                <span class="status-indicator ${xaiSettings.isConfigured ? "configured" : ""}"></span>
-                                <span>⚙️ xAI API Settings</span>
-                            </h3>
-                            <span class="toggle-icon">▼</span>
-                        </div>
-                        <div class="api-settings-body">
-                            <div class="api-field">
-                                <label for="api-key-input">API Key</label>
-                                <input
-                                    type="password"
-                                    id="api-key-input"
-                                    placeholder="Enter your xAI API key..."
-                                    value="${this.#apiKeyInput}"
-                                    autocomplete="off"
-                                />
-                                <span class="field-hint">
-                                    Get your API key from <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a>
-                                </span>
                             </div>
-                            <div class="api-field">
-                                <label for="api-base-url-input">Base URL (optional)</label>
-                                <input
-                                    type="text"
-                                    id="api-base-url-input"
-                                    placeholder="https://api.x.ai/v1/chat/completions"
-                                    value="${this.#apiBaseUrlInput}"
-                                    autocomplete="off"
-                                />
-                                <span class="field-hint">Leave default unless using a proxy</span>
-                            </div>
-                            ${this.#apiStatusMessage
-                                ? html`<div class="api-status ${this.#apiStatusType}">${this.#apiStatusMessage}</div>`
-                                : null}
-                            <div class="api-buttons">
-                                <button class="test-btn" ?disabled="${this.#isTestingConnection || !this.#apiKeyInput}">
-                                    ${this.#isTestingConnection ? "Testing..." : "Test"}
-                                </button>
-                                <button class="save-btn" ?disabled="${!this.#apiKeyInput}">Save</button>
-                                <button class="clear-btn">Clear</button>
+                            
+                            <!-- Recent Repositories Card -->
+                            <div class="content-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-title-icon">📂</span>
+                                        Recent Projects
+                                    </div>
+                                    ${this.#cached_repos.length > 0
+                                        ? html`
+                                            <button
+                                                id="clear-cache-btn"
+                                                class="clear-cache-btn"
+                                                title="Clear history">
+                                                Clear
+                                            </button>
+                                        `
+                                        : null}
+                                </div>
+                                ${this.#cached_repos.length > 0
+                                    ? html`
+                                        <div class="cached-repos">
+                                            <div class="cached-repo-list">
+                                                ${this.#cached_repos.map(
+                                                    (repo) => html`
+                                                        <div class="cached-repo-item">
+                                                            <button
+                                                                class="cached-repo-btn"
+                                                                data-slug="${repo.slug}"
+                                                                title="Load ${repo.slug}">
+                                                                <span class="repo-name">${repo.slug}</span>
+                                                                <span class="repo-date">${this.formatRelativeDate(repo.lastAccessed)}</span>
+                                                            </button>
+                                                            <button
+                                                                class="delete-repo-btn"
+                                                                data-slug="${repo.slug}"
+                                                                title="Remove from history">
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                    `,
+                                                )}
+                                            </div>
+                                        </div>
+                                    `
+                                    : html`
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">📁</div>
+                                            <div class="empty-state-text">No recent projects yet</div>
+                                        </div>
+                                    `}
                             </div>
                         </div>
+                        
+                        <p class="drop-hint">or drag & drop your KiCAD files</p>
                     </div>
                     
                     <p class="credits">Made by Clement Hathaway, Ernest Yeung, Evan Hekman, Julian Carrier</p>

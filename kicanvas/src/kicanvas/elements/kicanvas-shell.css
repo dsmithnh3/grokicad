@@ -1,3 +1,10 @@
+/* ============================================
+   GROKI - Midjourney-Inspired Monochrome Design
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
+
 *,
 *::before,
 *::after {
@@ -12,6 +19,22 @@
     width: 100%;
     height: 100%;
     color: var(--fg);
+    --accent: #fff;
+    --accent-dim: rgba(255, 255, 255, 0.6);
+    --surface-1: rgba(255, 255, 255, 0.02);
+    --surface-2: rgba(255, 255, 255, 0.04);
+    --surface-3: rgba(255, 255, 255, 0.08);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-medium: rgba(255, 255, 255, 0.15);
+    --border-strong: rgba(255, 255, 255, 0.25);
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --text-tertiary: #666666;
+    --text-muted: #444444;
+    --success: #4ade80;
+    --error: #ff6b6b;
+    --warning: #fbbf24;
+    --info: #60a5fa;
 }
 
 :host([loaded]) section.overlay,
@@ -19,7 +42,10 @@
     display: none;
 }
 
-/* Loading overlay - shown during repo clone/parse */
+/* ============================================
+   LOADING OVERLAY
+   ============================================ */
+
 section.loading-overlay {
     display: none;
 }
@@ -62,81 +88,66 @@ section.loading-overlay {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 3px solid transparent;
-    border-top-color: rgba(255, 255, 255, 0.8);
-    border-right-color: rgba(255, 255, 255, 0.4);
-    animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    border: 2px solid transparent;
+    border-top-color: rgba(255, 255, 255, 0.9);
+    border-right-color: rgba(255, 255, 255, 0.3);
+    animation: spin 1s linear infinite;
 }
 
 .loading-spinner::after {
     content: "";
     position: absolute;
-    width: 85%;
-    height: 85%;
+    width: 80%;
+    height: 80%;
     border-radius: 50%;
-    border: 2px solid transparent;
-    border-bottom-color: rgba(255, 255, 255, 0.5);
-    border-left-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid transparent;
+    border-bottom-color: rgba(255, 255, 255, 0.4);
     animation: spin-reverse 1.5s linear infinite;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @keyframes spin-reverse {
-    0% {
-        transform: rotate(360deg);
-    }
-    100% {
-        transform: rotate(0deg);
-    }
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
 }
 
 .loading-logo {
-    width: 60px;
+    width: 48px;
     height: auto;
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
     animation: logo-pulse 2s ease-in-out infinite;
 }
 
 @keyframes logo-pulse {
-    0%,
-    100% {
-        opacity: 0.8;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
 }
 
 .loading-title {
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 1.5em;
+    font-family: "Syne", sans-serif;
+    font-size: 1.4em;
     font-weight: 600;
     color: #ffffff;
     margin: 0 0 0.5em 0;
-    text-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.02em;
 }
 
 .loading-message {
-    font-size: 1.1em;
-    color: #888888;
+    font-family: "DM Mono", monospace;
+    font-size: 0.9em;
+    color: var(--text-secondary);
     margin: 0 0 1.5em 0;
 }
 
 .loading-progress {
-    width: 300px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
+    width: 280px;
+    height: 2px;
+    background: var(--surface-2);
+    border-radius: 1px;
     overflow: hidden;
     margin-bottom: 1.5em;
 }
@@ -144,37 +155,30 @@ section.loading-overlay {
 .loading-progress-bar {
     height: 100%;
     width: 30%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.6),
-        transparent
-    );
-    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
     animation: progress-sweep 1.5s ease-in-out infinite;
-    transition: width 0.3s ease;
 }
 
 .loading-progress-bar.determinate {
-    background: linear-gradient(90deg, #4ade80, #3b82f6);
+    background: var(--accent);
     animation: none;
-    width: 0%;
 }
 
 @keyframes progress-sweep {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(400%);
-    }
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
 }
 
 .loading-hint {
-    font-size: 0.9em;
-    color: #555555;
+    font-family: "DM Mono", monospace;
+    font-size: 0.8em;
+    color: var(--text-tertiary);
     margin: 0;
 }
+
+/* ============================================
+   MAIN OVERLAY - HOMEPAGE
+   ============================================ */
 
 :host main {
     display: contents;
@@ -191,123 +195,678 @@ section.overlay {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 5vh;
-    padding-bottom: 2em;
-    background: #000000;
+    background: #0a0a0a;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
+/* Background Effects */
 .hero-glow {
-    position: absolute;
-    width: 800px;
-    height: 800px;
+    position: fixed;
+    width: 1000px;
+    height: 1000px;
     background: radial-gradient(
-        circle,
-        rgba(255, 255, 255, 0.08) 0%,
-        transparent 60%
+        ellipse at center,
+        rgba(255, 255, 255, 0.03) 0%,
+        rgba(255, 255, 255, 0.01) 40%,
+        transparent 70%
     );
-    top: 50%;
+    top: -200px;
     left: 50%;
-    transform: translate(-50%, -55%);
+    transform: translateX(-50%);
     pointer-events: none;
-    animation: pulse 5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 0.5;
-        transform: translate(-50%, -55%) scale(1);
-    }
-    50% {
-        opacity: 0.8;
-        transform: translate(-50%, -55%) scale(1.05);
-    }
 }
 
 .circuit-pattern {
-    position: absolute;
+    position: fixed;
     width: 100%;
     height: 100%;
-    opacity: 0.04;
-    background-image: linear-gradient(
-            rgba(255, 255, 255, 0.5) 1px,
-            transparent 1px
-        ),
+    opacity: 0.015;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
-    background-size: 60px 60px;
+    background-size: 80px 80px;
     pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 80%);
+}
+
+/* ============================================
+   TOP NAVIGATION BAR
+   ============================================ */
+
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0.95) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.top-nav > * {
+    pointer-events: auto;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* ============================================
+   CREDITS DROPDOWN - TOP LEFT
+   ============================================ */
+
+.credits-dropdown {
+    position: relative;
+}
+
+.credits-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.credits-trigger:hover {
+    background: var(--surface-3);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+}
+
+.credits-trigger svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.6;
+}
+
+.credits-content {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 260px;
+    background: #111111;
+    border: 1px solid var(--border-medium);
+    border-radius: 12px;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.credits-dropdown:hover .credits-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.credits-title {
+    font-family: "Syne", sans-serif;
+    font-size: 0.75em;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.credit-person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.credit-person:hover {
+    background: var(--surface-3);
+    color: var(--text-primary);
+}
+
+.credit-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Syne", sans-serif;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--text-primary);
+}
+
+.credit-info {
+    flex: 1;
+}
+
+.credit-name {
+    font-family: "Syne", sans-serif;
+    font-weight: 500;
+    font-size: 0.95em;
+    color: inherit;
+}
+
+.credit-handle {
+    font-family: "DM Mono", monospace;
+    font-size: 0.8em;
+    color: var(--text-tertiary);
+}
+
+.credit-x-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+
+.credit-person:hover .credit-x-icon {
+    opacity: 1;
+}
+
+/* ============================================
+   API DROPDOWN - TOP RIGHT
+   ============================================ */
+
+.api-dropdown {
+    position: relative;
+}
+
+.api-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.api-dropdown-trigger:hover {
+    background: var(--surface-3);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+}
+
+.api-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: all 0.3s ease;
+}
+
+.api-status-dot.configured {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+}
+
+.api-logo {
+    height: 16px;
+    width: auto;
+    opacity: 0.7;
+}
+
+.api-label {
+    font-weight: 500;
+}
+
+.dropdown-arrow {
+    width: 14px;
+    height: 14px;
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+}
+
+.api-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.api-dropdown-content {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 320px;
+    background: #111111;
+    border: 1px solid var(--border-medium);
+    border-radius: 12px;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.api-dropdown:hover .api-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.api-dropdown-title {
+    font-family: "Syne", sans-serif;
+    font-size: 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.api-dropdown-content .api-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.api-dropdown-content .api-field label {
+    font-family: "Syne", sans-serif;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.api-dropdown-content .api-field input {
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 10px 12px;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.api-dropdown-content .api-field input:focus {
+    outline: none;
+    border-color: var(--border-medium);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.api-dropdown-content .api-field input::placeholder {
+    color: var(--text-muted);
+}
+
+.api-dropdown-content .field-hint {
+    font-family: "DM Mono", monospace;
+    font-size: 0.7em;
+    color: var(--text-muted);
+}
+
+.api-dropdown-content .field-hint a {
+    color: var(--text-tertiary);
+    text-decoration: underline;
+}
+
+.api-dropdown-content .field-hint a:hover {
+    color: var(--text-primary);
+}
+
+.api-dropdown-content .api-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.api-dropdown-content .api-buttons button {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: "Syne", sans-serif;
+    font-size: 0.8em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.api-dropdown-content .test-btn {
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    color: var(--info);
+}
+
+.api-dropdown-content .test-btn:hover {
+    background: rgba(96, 165, 250, 0.2);
+}
+
+.api-dropdown-content .test-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.api-dropdown-content .save-btn {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: var(--success);
+}
+
+.api-dropdown-content .save-btn:hover {
+    background: rgba(74, 222, 128, 0.2);
+}
+
+.api-dropdown-content .save-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.api-dropdown-content .clear-btn {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.25);
+    color: var(--error);
+}
+
+.api-dropdown-content .clear-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.api-status-msg {
+    font-family: "DM Mono", monospace;
+    font-size: 0.75em;
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.api-status-msg.success {
+    background: rgba(74, 222, 128, 0.08);
+    color: var(--success);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.api-status-msg.error {
+    background: rgba(255, 107, 107, 0.08);
+    color: var(--error);
+    border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.api-status-msg.info {
+    background: rgba(96, 165, 250, 0.08);
+    color: var(--info);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+/* ============================================
+   GITHUB DROPDOWN - TOP RIGHT
+   ============================================ */
+
+.github-dropdown {
+    position: relative;
+}
+
+.github-login-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: "Syne", sans-serif;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.github-login-btn:hover {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+}
+
+.github-login-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.github-login-btn .github-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.github-user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px 6px 6px;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.github-user-trigger:hover {
+    background: rgba(74, 222, 128, 0.12);
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.github-user-trigger .github-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 222, 128, 0.3);
+}
+
+.github-user-trigger .github-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.github-user-trigger .github-username {
+    font-family: "Syne", sans-serif;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.github-user-trigger .github-rate-limit {
+    font-family: "DM Mono", monospace;
+    font-size: 0.7em;
+    color: var(--success);
+    line-height: 1.2;
+}
+
+.github-user-trigger .dropdown-arrow {
+    width: 14px;
+    height: 14px;
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+}
+
+.github-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.github-dropdown-content {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: #111111;
+    border: 1px solid var(--border-medium);
+    border-radius: 10px;
+    padding: 14px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.github-dropdown:hover .github-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.github-dropdown-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: "DM Mono", monospace;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+}
+
+.github-dropdown-info strong {
+    color: var(--text-primary);
+}
+
+.github-dropdown-info .rate-detail {
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+
+.github-dropdown-content .github-logout-btn {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.25);
+    border-radius: 6px;
+    color: var(--error);
+    font-family: "Syne", sans-serif;
+    font-size: 0.85em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.github-dropdown-content .github-logout-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: rgba(255, 107, 107, 0.4);
+}
+
+/* ============================================
+   MAIN CONTENT CONTAINER
+   ============================================ */
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    padding: 80px 40px 60px;
+    z-index: 2;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 48px;
 }
 
 section.overlay h1 {
     display: flex;
-    margin: 0 auto 0.2em;
+    margin: 0 0 16px;
     align-items: center;
     justify-content: center;
-    gap: 0.2em;
-    z-index: 2;
-    font-size: 6rem;
+    gap: 12px;
 }
 
 section.overlay h1 .logo-icon {
-    height: 1.4em;
+    height: 72px;
     width: auto;
-    filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.6));
-    animation: flicker 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.3));
+    animation: subtle-float 4s ease-in-out infinite;
 }
 
-@keyframes flicker {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.85;
-    }
-    75% {
-        opacity: 1;
-    }
-    80% {
-        opacity: 0.9;
-    }
+@keyframes subtle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
 }
 
 section.overlay h1 .logo-text {
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 1em;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: "Syne", sans-serif;
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
     color: #ffffff;
-    text-shadow: 0 0 80px rgba(255, 255, 255, 0.4);
+    text-shadow: 0 0 60px rgba(255, 255, 255, 0.15);
 }
 
 section.overlay p.tagline {
-    font-size: 1.8em;
-    color: #888888;
-    margin-bottom: 0.5em;
-    z-index: 2;
+    font-family: "Syne", sans-serif;
+    font-size: 1.5em;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin: 0 0 12px;
+    letter-spacing: 0.02em;
 }
 
 section.overlay p.description {
+    font-family: "DM Mono", monospace;
     text-align: center;
-    font-size: 1.2em;
-    max-width: 600px;
-    color: #aaaaaa;
-    line-height: 1.6;
-    z-index: 2;
+    font-size: 0.95em;
+    max-width: 520px;
+    color: var(--text-tertiary);
+    line-height: 1.7;
+    margin: 0;
 }
 
 section.overlay strong {
-    color: #ffffff;
-    font-weight: 600;
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
+/* ============================================
+   FEATURES GRID
+   ============================================ */
+
 section.overlay .features {
-    display: flex;
-    gap: 2em;
-    margin: 2em 0;
-    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 32px 0 40px;
+    width: 100%;
+    max-width: 600px;
 }
 
 section.overlay .feature {
@@ -315,109 +874,375 @@ section.overlay .feature {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5em;
-    padding: 1em 1.5em;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    color: #aaaaaa;
-    font-size: 0.95em;
-    transition: all 0.3s ease;
-    min-height: 140px;
+    gap: 12px;
+    padding: 24px 16px;
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    color: var(--text-tertiary);
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
 }
 
 section.overlay .feature:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    color: #ffffff;
+    background: var(--surface-2);
+    border-color: var(--border-medium);
+    transform: translateY(-4px);
+    color: var(--text-primary);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
 }
 
-section.overlay .feature-icon {
-    font-size: 2em;
-    line-height: 1;
-    filter: grayscale(1) brightness(1.5);
-}
-
-/* Make emojis bigger */
 section.overlay span.feature-icon {
-    font-size: 3.6em;
+    font-size: 2.2em;
+    line-height: 1;
+    filter: grayscale(1) brightness(1.8);
+    transition: filter 0.3s ease;
+}
+
+section.overlay .feature:hover span.feature-icon {
+    filter: grayscale(0.3) brightness(1.2);
 }
 
 section.overlay img.feature-icon {
-    height: 2em;
+    height: 32px;
     width: auto;
-    filter: none;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
 }
 
-section.overlay a {
-    color: #ffffff;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: opacity 0.2s ease;
+section.overlay .feature:hover img.feature-icon {
+    opacity: 1;
 }
 
-section.overlay a:hover {
-    opacity: 0.7;
-}
+/* ============================================
+   ACTION SECTION - GITHUB & INPUT
+   ============================================ */
 
-section.overlay input {
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 1.1em;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 1em 1.5em;
+.action-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
-    max-width: 500px;
-    z-index: 2;
+    gap: 20px;
+}
+
+/* Main Input */
+section.overlay input[name="link"] {
+    font-family: "DM Mono", monospace;
+    font-size: 1em;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border-medium);
+    border-radius: 12px;
+    padding: 18px 24px;
+    width: 100%;
+    max-width: 480px;
     transition: all 0.3s ease;
 }
 
-section.overlay input:focus {
+section.overlay input[name="link"]:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
 }
 
-section.overlay input::placeholder {
-    color: #555555;
+section.overlay input[name="link"]::placeholder {
+    color: var(--text-muted);
 }
 
-/* Override Chrome autofill styling */
+/* Autofill Override */
 section.overlay input:-webkit-autofill,
 section.overlay input:-webkit-autofill:hover,
 section.overlay input:-webkit-autofill:focus,
 section.overlay input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px rgba(20, 20, 20, 1) inset !important;
+    -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset !important;
     -webkit-text-fill-color: #ffffff !important;
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
     caret-color: #ffffff !important;
 }
 
-section.overlay p.drop-hint {
-    font-size: 1em;
-    color: #555555;
-    margin-top: 1em;
-    z-index: 2;
+/* Error Bar */
+.error-bar {
+    width: 100%;
+    max-width: 480px;
+    min-height: 0;
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+    color: var(--error);
+    text-align: center;
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
+
+:host([error]:not([error=""])) .error-bar {
+    opacity: 1;
+}
+
+.error-bar:empty {
+    display: none;
+}
+
+:host([error]:not([error=""])) section.overlay input[name="link"] {
+    border-color: rgba(255, 107, 107, 0.4);
+    background: rgba(255, 107, 107, 0.05);
+}
+
+/* ============================================
+   CONTENT GRID - EXAMPLES & RECENTS
+   ============================================ */
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.content-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.content-card:hover {
+    border-color: var(--border-medium);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-title {
+    font-family: "Syne", sans-serif;
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-title-icon {
+    font-size: 1.1em;
+    opacity: 0.7;
+}
+
+/* Examples Section */
+section.overlay .examples {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+section.overlay .examples button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-family: "Syne", sans-serif;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+}
+
+section.overlay .examples button::before {
+    content: "⚡";
+    font-size: 1.1em;
+}
+
+section.overlay .examples button:hover {
+    background: var(--surface-3);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+    transform: translateX(4px);
+}
+
+/* Cached Repos Section */
+section.overlay .cached-repos {
+    display: flex;
+    flex-direction: column;
+}
+
+.cached-repo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.cached-repo-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cached-repo-list::-webkit-scrollbar-track {
+    background: var(--surface-1);
+    border-radius: 2px;
+}
+
+.cached-repo-list::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 2px;
+}
+
+section.overlay .cached-repo-item {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+}
+
+section.overlay .cached-repo-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    color: var(--text-secondary);
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+section.overlay .cached-repo-btn:hover {
+    background: var(--surface-3);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+}
+
+section.overlay .cached-repo-btn .repo-name {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
+}
+
+section.overlay .cached-repo-btn .repo-date {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+section.overlay .delete-repo-btn {
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-left: 1px solid var(--border-subtle);
+    border-radius: 0 8px 8px 0;
+    color: var(--text-muted);
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section.overlay .delete-repo-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.3);
+    color: var(--error);
+}
+
+section.overlay .clear-cache-btn {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    border-radius: 6px;
+    font-family: "DM Mono", monospace;
+    font-size: 0.75em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section.overlay .clear-cache-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.3);
+    color: var(--error);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 2em;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+
+.empty-state-text {
+    font-family: "DM Mono", monospace;
+    font-size: 0.85em;
+}
+
+/* ============================================
+   DROP HINT
+   ============================================ */
+
+section.overlay p.drop-hint {
+    font-family: "DM Mono", monospace;
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+section.overlay p.drop-hint::before {
+    content: "↓";
+    font-size: 1.2em;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
 
 section.overlay p.credits {
-    font-size: 0.95em;
-    color: #454545;
-    margin-top: 0.5em;
-    z-index: 2;
+    display: none; /* Hidden, using dropdown instead */
 }
 
-section.overlay p.note {
-    color: #444444;
-    font-size: 0.9em;
-    margin-top: 2em;
-    z-index: 2;
-}
+/* ============================================
+   VIEWER ELEMENTS
+   ============================================ */
 
 kc-board-viewer,
 kc-schematic-viewer {
@@ -443,8 +1268,6 @@ kc-schematic-viewer {
     overflow: hidden;
 }
 
-/*                                         */
-
 kc-board-app,
 kc-schematic-app {
     width: 100%;
@@ -459,569 +1282,10 @@ kc-ui-app {
     height: 100%;
 }
 
-/* Error state - input styling (only when error attribute has a non-empty value) */
-:host([error]:not([error=""])) section.overlay input {
-    border-color: rgba(255, 107, 107, 0.5);
-    background: rgba(255, 107, 107, 0.1);
-}
+/* ============================================
+   CORNER LOADER - COMMIT SWITCHING
+   ============================================ */
 
-:host([error]:not([error=""])) section.overlay input:focus {
-    border-color: rgba(255, 107, 107, 0.7);
-    box-shadow: 0 0 30px rgba(255, 107, 107, 0.15);
-    background: rgba(255, 107, 107, 0.15);
-}
-
-/* Error bar styles */
-.error-bar {
-    width: 100%;
-    max-width: 500px;
-    min-height: 0;
-    margin-top: 0.75em;
-    padding: 0;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 0.9em;
-    color: #ff6b6b;
-    text-align: center;
-    line-height: 1.5;
-    z-index: 2;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-:host([error]:not([error=""])) .error-bar {
-    opacity: 1;
-}
-
-.error-bar:empty {
-    display: none;
-}
-
-/* Examples section */
-section.overlay .examples {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    margin-top: 1em;
-    z-index: 2;
-    width: 100%;
-    max-width: 500px;
-    gap: 1em;
-}
-
-section.overlay .examples h3 {
-    color: #ffffff;
-    font-size: 1.1em;
-    margin: 0 0.5em 0 0;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-section.overlay .examples button {
-    flex: 1;
-    max-width: 180px;
-    padding: 0.75em 1em;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #cccccc;
-    border-radius: 6px;
-    font-size: 0.95em;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin: 0;
-}
-
-section.overlay .examples button:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-}
-
-/* Cached repositories section */
-section.overlay .cached-repos {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 1.5em;
-    z-index: 2;
-    width: 100%;
-    max-width: 500px;
-}
-
-section.overlay .cached-repos h3 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    color: #888888;
-    font-size: 0.95em;
-    margin: 0 0 0.75em 0;
-    font-weight: 500;
-}
-
-section.overlay .cached-repos h3 span {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-}
-
-section.overlay .clear-cache-btn {
-    padding: 0.4em 0.8em;
-    background: rgba(255, 107, 107, 0.1);
-    border: 1px solid rgba(255, 107, 107, 0.3);
-    color: #ff6b6b;
-    border-radius: 4px;
-    font-size: 0.85em;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-section.overlay .clear-cache-btn:hover {
-    background: rgba(255, 107, 107, 0.2);
-    border-color: rgba(255, 107, 107, 0.5);
-    color: #ff8a8a;
-}
-
-section.overlay .cached-repo-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-    width: 100%;
-}
-
-section.overlay .cached-repo-item {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    width: 100%;
-}
-
-section.overlay .cached-repo-btn {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6em 1em;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-right: none;
-    border-radius: 6px 0 0 6px;
-    color: #aaaaaa;
-    font-size: 0.9em;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-}
-
-section.overlay .cached-repo-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-}
-
-section.overlay .cached-repo-btn .repo-name {
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-section.overlay .cached-repo-btn .repo-date {
-    font-size: 0.85em;
-    color: #666666;
-    flex-shrink: 0;
-    margin-left: 1em;
-}
-
-section.overlay .delete-repo-btn {
-    padding: 0.6em 0.8em;
-    background: rgba(255, 107, 107, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0 6px 6px 0;
-    color: #666666;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-section.overlay .delete-repo-btn:hover {
-    background: rgba(255, 107, 107, 0.15);
-    border-color: rgba(255, 107, 107, 0.4);
-    color: #ff6b6b;
-}
-
-/* Storage Indicator */
-section.overlay .storage-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-    width: 100%;
-    padding: 1em;
-    margin-top: 1em;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-}
-
-section.overlay .storage-info .storage-label {
-    font-size: 0.85em;
-    color: #888888;
-}
-
-section.overlay .storage-info .storage-value {
-    font-size: 0.9em;
-    color: #ffffff;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-}
-
-section.overlay .storage-bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 0.25em;
-}
-
-section.overlay .storage-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #4ade80, #3b82f6);
-    border-radius: 3px;
-    transition: width 0.3s ease, background 0.3s ease;
-}
-
-section.overlay .storage-bar-fill.warning {
-    background: linear-gradient(90deg, #fbbf24, #f97316);
-}
-
-section.overlay .storage-percent {
-    font-size: 0.85em;
-    color: #666666;
-    align-self: flex-end;
-}
-
-/* API Settings Panel */
-section.overlay .api-settings {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 2em;
-    z-index: 2;
-    width: 100%;
-    max-width: 500px;
-}
-
-section.overlay .api-settings-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    cursor: pointer;
-    padding: 0.75em 1em;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-section.overlay .api-settings-header:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.25);
-}
-
-section.overlay .api-settings-header h3 {
-    display: flex;
-    align-items: center;
-    gap: 0.6em;
-    margin: 0;
-    font-size: 0.95em;
-    font-weight: 500;
-    color: #888888;
-}
-
-section.overlay .api-settings-header .status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #666666;
-    transition: background 0.3s ease;
-}
-
-section.overlay .api-settings-header .status-indicator.configured {
-    background: #4ade80;
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
-}
-
-section.overlay .api-settings-header .toggle-icon {
-    color: #666666;
-    font-size: 0.9em;
-    transition: transform 0.2s ease;
-}
-
-section.overlay .api-settings.expanded .api-settings-header {
-    border-radius: 8px 8px 0 0;
-    border-bottom: none;
-}
-
-section.overlay .api-settings.expanded .api-settings-header .toggle-icon {
-    transform: rotate(180deg);
-}
-
-section.overlay .api-settings-body {
-    display: none;
-    width: 100%;
-    padding: 1em;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-}
-
-section.overlay .api-settings.expanded .api-settings-body {
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-}
-
-section.overlay .api-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4em;
-}
-
-section.overlay .api-field label {
-    font-size: 0.85em;
-    color: #888888;
-    font-weight: 500;
-}
-
-section.overlay .api-field input {
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 0.95em;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-    padding: 0.75em 1em;
-    width: 100%;
-    transition: all 0.2s ease;
-}
-
-section.overlay .api-field input:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(0, 0, 0, 0.4);
-}
-
-section.overlay .api-field input::placeholder {
-    color: #555555;
-}
-
-section.overlay .api-field .field-hint {
-    font-size: 0.8em;
-    color: #555555;
-    margin-top: 0.2em;
-}
-
-section.overlay .api-buttons {
-    display: flex;
-    gap: 0.75em;
-    margin-top: 0.5em;
-}
-
-section.overlay .api-buttons button {
-    flex: 1;
-    padding: 0.7em 1em;
-    border-radius: 6px;
-    font-size: 0.9em;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-section.overlay .api-buttons .save-btn {
-    background: rgba(74, 222, 128, 0.15);
-    border: 1px solid rgba(74, 222, 128, 0.4);
-    color: #4ade80;
-}
-
-section.overlay .api-buttons .save-btn:hover {
-    background: rgba(74, 222, 128, 0.25);
-    border-color: rgba(74, 222, 128, 0.6);
-}
-
-section.overlay .api-buttons .save-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-section.overlay .api-buttons .clear-btn {
-    background: rgba(255, 107, 107, 0.1);
-    border: 1px solid rgba(255, 107, 107, 0.3);
-    color: #ff6b6b;
-}
-
-section.overlay .api-buttons .clear-btn:hover {
-    background: rgba(255, 107, 107, 0.2);
-    border-color: rgba(255, 107, 107, 0.5);
-}
-
-section.overlay .api-buttons .test-btn {
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.4);
-    color: #3b82f6;
-}
-
-section.overlay .api-buttons .test-btn:hover {
-    background: rgba(59, 130, 246, 0.25);
-    border-color: rgba(59, 130, 246, 0.6);
-}
-
-section.overlay .api-buttons .test-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-section.overlay .api-status {
-    font-size: 0.85em;
-    padding: 0.6em 0.8em;
-    border-radius: 6px;
-    text-align: center;
-}
-
-section.overlay .api-status.success {
-    background: rgba(74, 222, 128, 0.1);
-    color: #4ade80;
-    border: 1px solid rgba(74, 222, 128, 0.3);
-}
-
-section.overlay .api-status.error {
-    background: rgba(255, 107, 107, 0.1);
-    color: #ff6b6b;
-    border: 1px solid rgba(255, 107, 107, 0.3);
-}
-
-section.overlay .api-status.info {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-/* GitHub Authentication Section */
-section.overlay .github-auth {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75em;
-    margin-bottom: 1.5em;
-    z-index: 2;
-    width: 100%;
-    max-width: 500px;
-}
-
-section.overlay .github-login-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75em;
-    width: 100%;
-    padding: 0.9em 1.5em;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 8px;
-    color: #ffffff;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 1em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-section.overlay .github-login-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
-}
-
-section.overlay .github-login-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-section.overlay .github-login-btn .github-icon {
-    width: 1.3em;
-    height: 1.3em;
-}
-
-section.overlay .github-hint {
-    font-size: 0.85em;
-    color: #666666;
-}
-
-section.overlay .github-user {
-    display: flex;
-    align-items: center;
-    gap: 1em;
-    width: 100%;
-    padding: 0.75em 1em;
-    background: rgba(74, 222, 128, 0.08);
-    border: 1px solid rgba(74, 222, 128, 0.25);
-    border-radius: 8px;
-}
-
-section.overlay .github-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid rgba(74, 222, 128, 0.4);
-}
-
-section.overlay .github-user-info {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    gap: 0.2em;
-}
-
-section.overlay .github-username {
-    font-size: 0.95em;
-    font-weight: 500;
-    color: #ffffff;
-}
-
-section.overlay .github-rate-limit {
-    font-size: 0.8em;
-    color: #4ade80;
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-}
-
-section.overlay .github-logout-btn {
-    padding: 0.5em 0.75em;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    color: #888888;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-section.overlay .github-logout-btn:hover {
-    background: rgba(255, 107, 107, 0.1);
-    border-color: rgba(255, 107, 107, 0.4);
-    color: #ff6b6b;
-}
-
-/* Corner loading indicator - shown when switching commits */
 .corner-loader {
     position: fixed;
     top: 16px;
@@ -1030,12 +1294,12 @@ section.overlay .github-logout-btn:hover {
     display: none;
     align-items: center;
     gap: 10px;
-    padding: 10px 16px;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
+    padding: 12px 18px;
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid var(--border-medium);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
     animation: corner-loader-fade-in 0.2s ease-out;
 }
 
@@ -1055,32 +1319,94 @@ section.overlay .github-logout-btn:hover {
 }
 
 .corner-loader-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-top-color: rgba(255, 255, 255, 0.9);
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-subtle);
+    border-top-color: var(--text-primary);
     border-radius: 50%;
     animation: corner-spin 0.8s linear infinite;
 }
 
 @keyframes corner-spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .corner-loader-text {
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 0.85em;
-    color: rgba(255, 255, 255, 0.9);
+    font-family: "DM Mono", monospace;
+    font-size: 0.8em;
+    color: var(--text-secondary);
     white-space: nowrap;
 }
 
 .corner-loader-commit {
-    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-    font-size: 0.8em;
-    color: rgba(255, 206, 84, 0.9);
-    background: rgba(255, 206, 84, 0.15);
-    padding: 2px 6px;
+    font-family: "DM Mono", monospace;
+    font-size: 0.75em;
+    color: var(--warning);
+    background: rgba(251, 191, 36, 0.1);
+    padding: 2px 8px;
     border-radius: 4px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 12px 16px;
+    }
+    
+    .nav-right {
+        gap: 8px;
+    }
+    
+    .api-label {
+        display: none;
+    }
+    
+    .api-dropdown-trigger {
+        padding: 8px 10px;
+    }
+    
+    .github-login-btn span:not(.github-icon) {
+        display: none;
+    }
+    
+    .github-user-trigger .github-user-info {
+        display: none;
+    }
+    
+    .api-dropdown-content {
+        width: 280px;
+        right: -60px;
+    }
+    
+    .main-content {
+        padding: 80px 20px 40px;
+    }
+    
+    section.overlay h1 .logo-text {
+        font-size: 2.5rem;
+    }
+    
+    section.overlay h1 .logo-icon {
+        height: 40px;
+    }
+    
+    section.overlay .features {
+        grid-template-columns: 1fr;
+        max-width: 280px;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .credits-content {
+        min-width: 220px;
+    }
+    
+    .credits-trigger span {
+        display: none;
+    }
 }

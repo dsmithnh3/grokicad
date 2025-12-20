@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0");
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
 
 *,
 *::before,
@@ -15,12 +15,14 @@
 html,
 body {
     height: 100vh;
-    font-family: "Nunito", ui-rounded, "Hiragino Maru Gothic ProN", Quicksand,
+    font-family: "Syne", ui-rounded, "Hiragino Maru Gothic ProN", Quicksand,
         Comfortaa, Manjari, "Arial Rounded MT Bold", Calibri, source-sans-pro,
         sans-serif;
     line-height: 1.5;
     width: 100%;
     margin: 0 auto;
+    background: #0a0a0a;
+    color: #ffffff;
 }
 
 img,
@@ -49,7 +51,7 @@ kicanvas-embed {
     width: 100%;
     max-height: 100%;
     aspect-ratio: 1.414;
-    background-color: aqua;
+    background-color: #0a0a0a;
     margin-bottom: 1rem;
     margin-top: 1rem;
 }

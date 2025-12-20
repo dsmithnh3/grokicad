@@ -67,8 +67,12 @@ export class CustomElement extends HTMLElement {
      * renderRoot.
      */
     connectedCallback(): void | undefined {
-        this.#renderInitialContent();
+        if (!this.#initial_content_rendered) {
+            this.#renderInitialContent();
+        }
     }
+
+    #initial_content_rendered = false;
 
     disconnectedCallback(): void | undefined {
         this.disposables.dispose();
@@ -103,10 +107,14 @@ export class CustomElement extends HTMLElement {
     }
 
     #renderInitialContent() {
+        this.#initial_content_rendered = true;
         const static_this = this.constructor as typeof CustomElement;
         this.updateComplete = new DeferredPromise<boolean>();
 
-        if ((this.constructor as typeof CustomElement).useShadowRoot) {
+        if (
+            (this.constructor as typeof CustomElement).useShadowRoot &&
+            !this.shadowRoot
+        ) {
             this.attachShadow({ mode: "open" });
         }
 

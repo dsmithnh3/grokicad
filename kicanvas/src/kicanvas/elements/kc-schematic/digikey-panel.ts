@@ -728,56 +728,88 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
      */
     private async show_replacement_chat() {
         if (!this.search_result?.parts?.[0]) return;
-        
+
         const part = this.search_result.parts[0];
         const reference = this.selected_item?.reference;
-        
-        // Ensure the custom element is defined before creating it
-        await customElements.whenDefined("kc-chat-panel");
-        
-        // Create or get the chat panel
-        if (!this._chatPanel || !this._chatPanel.isConnected) {
-            // Remove any stale panels
-            document.querySelectorAll("kc-chat-panel").forEach(el => el.remove());
-            
-            this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
-            document.body.appendChild(this._chatPanel);
-            
-            // Wait for element to be upgraded and ready
-            await new Promise(resolve => requestAnimationFrame(resolve));
-            
-            this._chatPanel.configure({
-                title: "Find Replacement",
-                logoSrc: "./images/Grok_Logomark_Light.png",
-                draggable: true,
-                dockable: true,
-                showThinkingToggle: true,
-                showPresets: true,
-                showContextItems: false,
-                placeholder: "Ask about replacement options...",
-            });
-            
-            this._chatPanelInitialized = false;
+
+        try {
+            // Ensure the custom element is defined before creating it
+            await customElements.whenDefined("kc-chat-panel");
+
+            // Create or get the chat panel
+            if (!this._chatPanel || !this._chatPanel.isConnected) {
+                // Remove any stale panels
+                document.querySelectorAll("kc-chat-panel").forEach(el => el.remove());
+
+                this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
+
+                // Only append if not already in DOM
+                if (!this._chatPanel.isConnected) {
+                    document.body.appendChild(this._chatPanel);
+                }
+
+                // Wait for element to be fully initialized
+                // The chat panel sets _isInitialized = true in requestAnimationFrame
+                await new Promise(resolve => {
+                    const checkInitialized = () => {
+                        // Check if the element has the configure method (indicates it's upgraded)
+                        if (typeof (this._chatPanel as any).configure === 'function') {
+                            resolve(void 0);
+                        } else {
+                            requestAnimationFrame(checkInitialized);
+                        }
+                    };
+                    requestAnimationFrame(checkInitialized);
+                });
+
+                // Configure the panel
+                if (typeof this._chatPanel.configure === 'function') {
+                    this._chatPanel.configure({
+                        title: "Find Replacement",
+                        logoSrc: "./images/Grok_Logomark_Light.png",
+                        draggable: true,
+                        dockable: true,
+                        showThinkingToggle: true,
+                        showPresets: true,
+                        showContextItems: false,
+                        placeholder: "Ask about replacement options...",
+                    });
+                }
+
+                this._chatPanelInitialized = false;
+            }
+
+            // Set up the extension with part context
+            const context = createPartContextFromDigiKey(part, reference);
+
+            if (!this._chatPanelInitialized) {
+                if (typeof this._chatPanel.setExtension === 'function') {
+                    await this._chatPanel.setExtension(partReplacementExtension, context);
+                    this._chatPanelInitialized = true;
+                }
+            } else {
+                // Update context for the current part
+                if (typeof this._chatPanel.updateContext === 'function') {
+                    this._chatPanel.updateContext(context);
+                }
+                if (typeof this._chatPanel.clearConversation === 'function') {
+                    this._chatPanel.clearConversation();
+                }
+            }
+
+            // Update presets based on the extension
+            if (typeof this._chatPanel.setPresets === 'function') {
+                const presets = partReplacementExtension.getPresets(context);
+                this._chatPanel.setPresets(presets);
+            }
+
+            // Show the panel
+            if (typeof this._chatPanel.show === 'function') {
+                this._chatPanel.show();
+            }
+        } catch (error) {
+            console.error("[DigiKey] Failed to show replacement chat:", error);
         }
-
-        // Set up the extension with part context
-        const context = createPartContextFromDigiKey(part, reference);
-        
-        if (!this._chatPanelInitialized) {
-            await this._chatPanel.setExtension(partReplacementExtension, context);
-            this._chatPanelInitialized = true;
-        } else {
-            // Update context for the current part
-            this._chatPanel.updateContext(context);
-            this._chatPanel.clearConversation();
-        }
-
-        // Update presets based on the extension
-        const presets = partReplacementExtension.getPresets(context);
-        this._chatPanel.setPresets(presets);
-
-        // Show the panel
-        this._chatPanel.show();
     }
 
     /**

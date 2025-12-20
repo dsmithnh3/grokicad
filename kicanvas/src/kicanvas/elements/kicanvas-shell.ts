@@ -898,41 +898,41 @@ class KiCanvasShellElement extends KCUIElement {
                             </div>
                             <div class="credits-content">
                                 <div class="credits-title">Created by</div>
-                                <a href="https://x.com/cwbhx" target="_blank" rel="noopener" class="credit-person">
+                                <a href="https://x.com/KodaClement" target="_blank" rel="noopener" class="credit-person">
                                     <div class="credit-avatar">C</div>
                                     <div class="credit-info">
                                         <div class="credit-name">Clement Hathaway</div>
-                                        <div class="credit-handle">@cwbhx</div>
+                                        <div class="credit-handle">@KodaClement</div>
                                     </div>
                                     <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                                     </svg>
                                 </a>
-                                <a href="https://x.com/ernestyeung" target="_blank" rel="noopener" class="credit-person">
-                                    <div class="credit-avatar">E</div>
-                                    <div class="credit-info">
-                                        <div class="credit-name">Ernest Yeung</div>
-                                        <div class="credit-handle">@ernestyeung</div>
-                                    </div>
-                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                    </svg>
-                                </a>
-                                <a href="https://x.com/evanhekman" target="_blank" rel="noopener" class="credit-person">
-                                    <div class="credit-avatar">E</div>
-                                    <div class="credit-info">
-                                        <div class="credit-name">Evan Hekman</div>
-                                        <div class="credit-handle">@evanhekman</div>
-                                    </div>
-                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                    </svg>
-                                </a>
-                                <a href="https://x.com/juliancarrier" target="_blank" rel="noopener" class="credit-person">
+                                <a href="https://x.com/juliankc" target="_blank" rel="noopener" class="credit-person">
                                     <div class="credit-avatar">J</div>
                                     <div class="credit-info">
                                         <div class="credit-name">Julian Carrier</div>
-                                        <div class="credit-handle">@juliancarrier</div>
+                                        <div class="credit-handle">@juliankc</div>
+                                    </div>
+                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://x.com/unhinged_evan" target="_blank" rel="noopener" class="credit-person">
+                                    <div class="credit-avatar">E</div>
+                                    <div class="credit-info">
+                                        <div class="credit-name">Evan Hekman</div>
+                                        <div class="credit-handle">@unhinged_evan</div>
+                                    </div>
+                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="https://x.com/ernestyalumni" target="_blank" rel="noopener" class="credit-person">
+                                    <div class="credit-avatar">E</div>
+                                    <div class="credit-info">
+                                        <div class="credit-name">Ernest Yeung</div>
+                                        <div class="credit-handle">@ernestyalumni</div>
                                     </div>
                                     <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>

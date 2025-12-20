@@ -1,136 +1,63 @@
-name: Deploy Worker to Cloudflare
+name: Deploy Worker
 
 on:
-  # Automatic deployment to beta on push to main
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'web/worker/**'
-      - 'web/config/**'
-      - 'web/wrangler.jsonc'
-      - '.github/workflows/deploy-worker.yml'
-  
-  # Manual deployment trigger for production
+      - "web/**"
+      - ".github/workflows/deploy-worker.yml"
+
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'beta'
+        default: "beta"
         type: choice
         options:
           - beta
           - production
 
-# Ensure only one deployment runs at a time per environment
 concurrency:
-  group: deploy-worker-${{ github.event.inputs.environment || 'beta' }}
+  group: deploy-${{ github.event.inputs.environment || 'beta' }}
   cancel-in-progress: false
 
 jobs:
-  # Type check before deploying
-  validate:
-    name: Validate Code
+  deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: TypeScript type check (worker)
-        run: bun run worker:types
-
-      - name: TypeScript type check (frontend)
-        run: bun run lint:types
-
-  # Deploy to beta environment
-  deploy-beta:
-    name: Deploy to Beta
-    needs: validate
-    runs-on: ubuntu-latest
-    # Only run on push to main, or if manually triggered with beta
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'beta')
     environment:
-      name: beta
-      url: https://beta.grokicad.com
+      name: ${{ github.event.inputs.environment || 'beta' }}
+      url: ${{ github.event.inputs.environment == 'production' && 'https://grokicad.com' || 'https://beta.grokicad.com' }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.1"
 
-      - name: Install dependencies
+      - name: Install & validate
         working-directory: web
-        run: bun install
+        run: |
+          bun install --frozen-lockfile
+          bun run worker:types
+          bun run lint:types
 
-      - name: Deploy to Cloudflare Workers (Beta)
+      - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          environment: 'beta'
-          workingDirectory: 'web'
+          environment: ${{ github.event.inputs.environment || 'beta' }}
+          workingDirectory: web
 
-      - name: Deployment summary
+      - name: Summary
         run: |
-          echo "## ✅ Beta Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment:** Beta" >> $GITHUB_STEP_SUMMARY
-          echo "- **Worker:** grokicad-beta" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** https://beta.grokicad.com" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-
-  # Deploy to production environment (manual only)
-  deploy-production:
-    name: Deploy to Production
-    needs: validate
-    runs-on: ubuntu-latest
-    # Only run if manually triggered with production
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
-    environment:
-      name: production
-      url: https://grokicad.com
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        working-directory: web
-        run: bun install
-
-      - name: Deploy to Cloudflare Workers (Production)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          environment: 'production'
-          workingDirectory: 'web'
-
-      - name: Deployment summary
-        run: |
-          echo "## 🚀 Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment:** Production" >> $GITHUB_STEP_SUMMARY
-          echo "- **Worker:** grokicad" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL:** https://grokicad.com" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-
+          ENV="${{ github.event.inputs.environment || 'beta' }}"
+          if [ "$ENV" = "production" ]; then
+            echo "## 🚀 Production Deployment" >> $GITHUB_STEP_SUMMARY
+            echo "- **URL:** https://grokicad.com" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ✅ Beta Deployment" >> $GITHUB_STEP_SUMMARY
+            echo "- **URL:** https://beta.grokicad.com" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY

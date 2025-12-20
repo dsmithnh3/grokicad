@@ -1,37 +1,29 @@
-name: Build, lint, & test
+name: CI
 
 on:
   push:
-    branches: main
+    branches: [main]
   pull_request:
-    branches: main
+    branches: [main]
+
+defaults:
+  run:
+    working-directory: web
 
 jobs:
-  lint:
+  ci:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - run: bun install
-      - run: bun run lint:eslint
-      - run: bun run lint:prettier
-      - run: bun run lint:types
-  test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - run: bun install
-      - run: bun run build
-      - run: bun run test
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.1"
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run lint
+
+      - run: bun run build
+
+      - run: bun run test

@@ -14,6 +14,7 @@ import { FetchFileSystem, type VirtualFileSystem } from "../services/vfs";
 import { CommitFileSystem } from "../services/commit-vfs";
 import { GrokiAPI } from "../services/api";
 import { GitService, GitServiceError, type CachedRepoInfo } from "../services/git-service";
+import { GitHubAuthService, type GitHubUser } from "../services/github-auth";
 import { xaiSettings } from "../services/xai-settings";
 import { KCBoardAppElement } from "./kc-board/app";
 import { KCSchematicAppElement } from "./kc-schematic/app";
@@ -69,6 +70,11 @@ class KiCanvasShellElement extends KCUIElement {
     #cloneProgress: { phase: string; loaded: number; total: number } | null = null;
     #storageInfo: { usage: number; quota: number; usagePercent: number } | null = null;
     
+    // GitHub Auth state
+    #githubUser: GitHubUser | null = null;
+    #githubAuthLoading: boolean = false;
+    #githubRateLimit: { remaining: number; limit: number; reset: Date } | null = null;
+    
     // API Settings state
     #apiSettingsExpanded: boolean = false;
     #apiKeyInput: string = "";
@@ -106,7 +112,13 @@ class KiCanvasShellElement extends KCUIElement {
         const github_paths = url_params.getAll("github");
 
         later(async () => {
-            // Load cached repos from IndexedDB
+            // Initialize GitHub auth and load configuration
+            await this.initializeGitHubAuth();
+            
+            // Handle GitHub OAuth callback
+            await this.handleGitHubOAuthCallback();
+            
+            // Load cached repos
             await this.refreshCachedRepos();
             
             // Load storage info (don't trigger update, will be included in next render)
@@ -180,11 +192,124 @@ class KiCanvasShellElement extends KCUIElement {
             this.setupExampleButtons();
             this.setupCachedRepoListeners();
             this.setupApiSettingsListeners();
+            this.setupGitHubAuthListeners();
         });
         
         // Initialize API settings inputs from stored values
         this.#apiKeyInput = xaiSettings.apiKey ?? "";
         this.#apiBaseUrlInput = xaiSettings.baseUrl;
+        
+        // Subscribe to GitHub auth state changes
+        GitHubAuthService.subscribe(() => {
+            this.#githubUser = GitHubAuthService.getUser();
+            this.update();
+            later(() => this.reattachAllListeners());
+        });
+    }
+    
+    /**
+     * Initialize GitHub auth - loads saved state and handles OAuth callback
+     */
+    private async initializeGitHubAuth(): Promise<void> {
+        try {
+            // Load saved auth state
+            this.#githubUser = GitHubAuthService.getUser();
+            
+            // Fetch rate limit info if authenticated
+            if (GitHubAuthService.isAuthenticated()) {
+                await this.refreshGitHubRateLimit();
+            }
+        } catch (e) {
+            console.warn("[KiCanvasShell] Failed to initialize GitHub auth:", e);
+        }
+    }
+    
+    /**
+     * Handle GitHub OAuth callback if present in URL (PKCE flow)
+     */
+    private async handleGitHubOAuthCallback(): Promise<void> {
+        // Check if we're returning from GitHub OAuth
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has("code") && !urlParams.has("error")) {
+            return; // Not an OAuth callback
+        }
+        
+        this.#githubAuthLoading = true;
+        this.update();
+        
+        try {
+            const success = await GitHubAuthService.handleOAuthCallback();
+            if (success) {
+                this.#githubUser = GitHubAuthService.getUser();
+                await this.refreshGitHubRateLimit();
+            }
+        } catch (e) {
+            console.error("[KiCanvasShell] GitHub callback error:", e);
+            this.showError(e instanceof Error ? e.message : "Failed to complete GitHub authentication");
+        } finally {
+            this.#githubAuthLoading = false;
+            this.update();
+            later(() => this.reattachAllListeners());
+        }
+    }
+    
+    /**
+     * Refresh GitHub rate limit info
+     */
+    private async refreshGitHubRateLimit(): Promise<void> {
+        const rateLimit = await GitHubAuthService.getRateLimit();
+        if (rateLimit) {
+            this.#githubRateLimit = {
+                remaining: rateLimit.remaining,
+                limit: rateLimit.limit,
+                reset: rateLimit.reset,
+            };
+        }
+    }
+    
+    /**
+     * Setup GitHub auth button listeners
+     */
+    private setupGitHubAuthListeners(): void {
+        const loginBtn = this.renderRoot.querySelector("#github-login-btn");
+        if (loginBtn) {
+            const handler = async () => {
+                if (!GitHubAuthService.isConfigured()) {
+                    this.showError("GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID in config.ts");
+                    return;
+                }
+                
+                this.#githubAuthLoading = true;
+                this.update();
+                later(() => this.reattachAllListeners());
+                
+                try {
+                    // This will redirect to GitHub
+                    await GitHubAuthService.startLogin();
+                } catch (e) {
+                    console.error("[KiCanvasShell] GitHub login error:", e);
+                    this.showError(e instanceof Error ? e.message : "Failed to start GitHub authentication");
+                    this.#githubAuthLoading = false;
+                    this.update();
+                    later(() => this.reattachAllListeners());
+                }
+            };
+            loginBtn.addEventListener("click", handler);
+            this.#eventListeners.push({ element: loginBtn, event: "click", handler });
+        }
+        
+        const logoutBtn = this.renderRoot.querySelector("#github-logout-btn");
+        if (logoutBtn) {
+            const handler = () => {
+                GitHubAuthService.logout();
+                this.#githubUser = null;
+                this.#githubRateLimit = null;
+                this.update();
+                later(() => this.reattachAllListeners());
+            };
+            logoutBtn.addEventListener("click", handler);
+            this.#eventListeners.push({ element: logoutBtn, event: "click", handler });
+        }
     }
 
     /**
@@ -221,6 +346,7 @@ class KiCanvasShellElement extends KCUIElement {
         this.setupExampleButtons();
         this.setupCachedRepoListeners();
         this.setupApiSettingsListeners();
+        this.setupGitHubAuthListeners();
     }
 
     /**
@@ -560,38 +686,53 @@ class KiCanvasShellElement extends KCUIElement {
             if (e instanceof GitServiceError) {
                 // Use typed error codes for precise error handling
                 switch (e.code) {
-                    case "TIMEOUT":
-                        errorMessage =
-                            "Request timed out. The repository may be too large. Please try a smaller repository.";
-                        break;
                     case "NOT_FOUND":
+                        if (!GitHubAuthService.isAuthenticated()) {
+                            errorMessage =
+                                "Repository not found. If this is a private repository, please sign in with GitHub.";
+                        } else {
+                            errorMessage =
+                                "Repository not found. Please check that the repository exists and you have access.";
+                        }
+                        break;
+                    case "RATE_LIMITED":
+                        if (!GitHubAuthService.isAuthenticated()) {
+                            errorMessage =
+                                "GitHub API rate limit exceeded. Sign in with GitHub to get 5,000 requests/hour.";
+                        } else {
+                            errorMessage = e.message;
+                        }
+                        break;
+                    case "UNAUTHORIZED":
                         errorMessage =
-                            "Repository not found. Please check that the repository exists and is public.";
+                            "Authentication expired. Please sign in with GitHub again.";
+                        GitHubAuthService.logout();
+                        this.#githubUser = null;
+                        this.update();
+                        later(() => this.reattachAllListeners());
+                        break;
+                    case "FORBIDDEN":
+                        if (!GitHubAuthService.isAuthenticated()) {
+                            errorMessage =
+                                "Access denied. This may be a private repository - try signing in with GitHub.";
+                        } else {
+                            errorMessage =
+                                "Access denied. You may not have permission to access this repository.";
+                        }
                         break;
                     case "NETWORK_ERROR":
                         errorMessage =
                             "Network error. Please check your internet connection and try again.";
                         break;
-                    case "DB_ERROR":
-                        errorMessage =
-                            "Storage quota exceeded. Please clear some cached repositories and try again.";
-                        break;
                     case "INVALID_REPO":
                         errorMessage = e.message;
                         break;
-                    case "CLONE_FAILED":
                     default:
-                        errorMessage = `${e.message}. Please check that the repository exists and is public.`;
+                        errorMessage = `${e.message}. Please check that the repository exists.`;
                         break;
                 }
             } else if (e instanceof Error) {
-                // Fallback for non-GitServiceError exceptions
-                if (e.message.includes("quota") || e.message.includes("QuotaExceededError")) {
-                    errorMessage =
-                        "Storage quota exceeded. Please clear some cached repositories and try again.";
-                } else {
-                    errorMessage = `${e.message}. Please check that the repository exists and is public.`;
-                }
+                errorMessage = `${e.message}. Please check that the repository exists.`;
             }
 
             this.showError(errorMessage);
@@ -748,6 +889,47 @@ class KiCanvasShellElement extends KCUIElement {
                             <span>Powered by Grok</span>
                         </div>
                     </div>
+                    
+                    <!-- GitHub Authentication Section -->
+                    <div class="github-auth">
+                        ${this.#githubUser
+                            ? html`
+                                <div class="github-user">
+                                    <img 
+                                        class="github-avatar" 
+                                        src="${this.#githubUser.avatar_url}" 
+                                        alt="${this.#githubUser.login}" />
+                                    <div class="github-user-info">
+                                        <span class="github-username">${this.#githubUser.name || this.#githubUser.login}</span>
+                                        <span class="github-rate-limit">
+                                            ${this.#githubRateLimit
+                                                ? `${this.#githubRateLimit.remaining}/${this.#githubRateLimit.limit} API calls`
+                                                : "Authenticated"}
+                                        </span>
+                                    </div>
+                                    <button id="github-logout-btn" class="github-logout-btn" title="Sign out">
+                                        ✕
+                                    </button>
+                                </div>
+                            `
+                            : html`
+                                <button 
+                                    id="github-login-btn" 
+                                    class="github-login-btn"
+                                    ?disabled="${this.#githubAuthLoading}">
+                                    <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                    ${this.#githubAuthLoading 
+                                        ? "Signing in..." 
+                                        : "Sign in with GitHub"}
+                                </button>
+                                <span class="github-hint">
+                                    Access private repos & get 5,000 API calls/hour
+                                </span>
+                            `}
+                    </div>
+                    
                     <input
                         name="link"
                         type="text"
@@ -771,12 +953,12 @@ class KiCanvasShellElement extends KCUIElement {
                         ? html`
                               <div class="cached-repos">
                                   <h3>
-                                      <span>📦 Cached Repositories</span>
+                                      <span>📂 Recent Repositories</span>
                                       <button
                                           id="clear-cache-btn"
                                           class="clear-cache-btn"
-                                          title="Clear all cached repositories">
-                                          🗑️ Clear All
+                                          title="Clear history">
+                                          🗑️ Clear
                                       </button>
                                   </h3>
                                   <div class="cached-repo-list">
@@ -799,29 +981,13 @@ class KiCanvasShellElement extends KCUIElement {
                                                   <button
                                                       class="delete-repo-btn"
                                                       data-slug="${repo.slug}"
-                                                      title="Remove from cache">
+                                                      title="Remove from history">
                                                       ✕
                                                   </button>
                                               </div>
                                           `,
                                       )}
                                   </div>
-                                  ${this.#storageInfo
-                                      ? html`
-                                            <div class="storage-info">
-                                                <span class="storage-label">Storage Used:</span>
-                                                <span class="storage-value"
-                                                    >${this.formatBytes(this.#storageInfo.usage)} / ${this.formatBytes(this.#storageInfo.quota)}</span
-                                                >
-                                                <div class="storage-bar">
-                                                    <div
-                                                        class="storage-bar-fill ${this.#storageInfo.usagePercent > 80 ? "warning" : ""}"
-                                                        style="width: ${Math.min(this.#storageInfo.usagePercent, 100)}%"></div>
-                                                </div>
-                                                <span class="storage-percent">${this.#storageInfo.usagePercent.toFixed(1)}%</span>
-                                            </div>
-                                        `
-                                      : null}
                               </div>
                           `
                         : null}
@@ -888,12 +1054,12 @@ class KiCanvasShellElement extends KCUIElement {
                                 alt="Grok" />
                         </div>
                         <h2 class="loading-title">
-                            ${this.#cloneProgress ? "Cloning Repository" : "Loading Repository"}
+                            ${this.#cloneProgress ? "Loading Repository" : "Loading Repository"}
                         </h2>
                         <p class="loading-message">
                             ${this.#cloneProgress
-                                ? `${this.#cloneProgress.phase}: ${this.#cloneProgress.loaded} / ${this.#cloneProgress.total} objects`
-                                : "Cloning and parsing your schematic files..."}
+                                ? `${this.#cloneProgress.phase}: ${this.#cloneProgress.loaded} / ${this.#cloneProgress.total} commits`
+                                : "Fetching and parsing your schematic files..."}
                         </p>
                         <div class="loading-progress">
                             <div

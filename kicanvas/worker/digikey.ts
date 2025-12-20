@@ -1,39 +1,46 @@
 /**
- * DigiKey OAuth 3-Legged Flow Cloudflare Worker
+ * GrokiCAD Cloudflare Worker
  *
- * This worker implements the DigiKey OAuth 2.0 3-legged authorization flow,
- * allowing users to authenticate with their own DigiKey accounts to query
- * the DigiKey API directly.
- *
- * Flow:
- * 1. User clicks "Connect DigiKey" → redirected to /auth/digikey/login
- * 2. Worker redirects to DigiKey authorization page
- * 3. User authorizes → DigiKey redirects to /auth/digikey/callback
- * 4. Worker exchanges code for tokens, stores in KV, sets session cookie
- * 5. Frontend can now call /api/digikey/* endpoints using session cookie
+ * This worker handles:
+ * 1. DigiKey OAuth 3-Legged Flow
+ * 2. GitHub OAuth token exchange (CORS proxy for PKCE flow)
  *
  * Required environment bindings:
  * - DIGIKEY_CLIENT_ID: DigiKey OAuth client ID
  * - DIGIKEY_CLIENT_SECRET: DigiKey OAuth client secret
- * - DIGIKEY_SESSIONS: KV namespace for storing user sessions/tokens
+ * - DIGIKEY_SESSIONS: KV namespace for storing DigiKey sessions
  */
 
 export interface Env {
     DIGIKEY_CLIENT_ID: string;
     DIGIKEY_CLIENT_SECRET: string;
     DIGIKEY_SESSIONS: KVNamespace;
+    ASSETS: Fetcher;
+    // GitHub OAuth (optional - only needed if using OAuth App, not GitHub App)
+    GITHUB_CLIENT_SECRET?: string;
 }
 
-// DigiKey API endpoints
+// ============================================================================
+// DigiKey Configuration
+// ============================================================================
+
 const DIGIKEY_AUTH_URL = "https://api.digikey.com/v1/oauth2/authorize";
 const DIGIKEY_TOKEN_URL = "https://api.digikey.com/v1/oauth2/token";
 const DIGIKEY_SEARCH_URL = "https://api.digikey.com/products/v4/search/keyword";
 
-// Cookie/session configuration
 const SESSION_COOKIE_NAME = "digikey_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
+// ============================================================================
+// GitHub Configuration
+// ============================================================================
+
+const GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token";
+
+// ============================================================================
 // Types
+// ============================================================================
+
 interface TokenResponse {
     access_token: string;
     refresh_token: string;
@@ -44,7 +51,7 @@ interface TokenResponse {
 interface SessionData {
     access_token: string;
     refresh_token: string;
-    expires_at: number; // Unix timestamp
+    expires_at: number;
 }
 
 interface KeywordSearchRequest {
@@ -82,7 +89,10 @@ interface DigiKeySearchResponse {
     ExactDigiKeyProduct?: DigiKeyProduct;
 }
 
-// Utility functions
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
 function generateSessionId(): string {
     const bytes = new Uint8Array(32);
     crypto.getRandomValues(bytes);
@@ -135,16 +145,17 @@ function jsonResponse(
     });
 }
 
-// Convert DigiKey product to our normalized format
+// ============================================================================
+// DigiKey Functions
+// ============================================================================
+
 function convertProduct(product: DigiKeyProduct) {
     const digikeyPartNumber =
         product.ProductVariations?.[0]?.DigiKeyProductNumber ?? null;
 
     const status = product.ProductStatus?.Status ?? null;
     const isObsolete = status
-        ? /obsolete|discontinued|not for new designs|last time buy/i.test(
-              status,
-          )
+        ? /obsolete|discontinued|not for new designs|last time buy/i.test(status)
         : false;
 
     return {
@@ -171,20 +182,12 @@ function convertProduct(product: DigiKeyProduct) {
     };
 }
 
-// Session management
-async function getSession(
-    env: Env,
-    sessionId: string,
-): Promise<SessionData | null> {
+async function getSession(env: Env, sessionId: string): Promise<SessionData | null> {
     const data = await env.DIGIKEY_SESSIONS.get(sessionId, "json");
     return data as SessionData | null;
 }
 
-async function saveSession(
-    env: Env,
-    sessionId: string,
-    session: SessionData,
-): Promise<void> {
+async function saveSession(env: Env, sessionId: string, session: SessionData): Promise<void> {
     await env.DIGIKEY_SESSIONS.put(sessionId, JSON.stringify(session), {
         expirationTtl: SESSION_TTL_SECONDS,
     });
@@ -194,7 +197,6 @@ async function deleteSession(env: Env, sessionId: string): Promise<void> {
     await env.DIGIKEY_SESSIONS.delete(sessionId);
 }
 
-// Token management
 async function exchangeCodeForTokens(
     env: Env,
     code: string,
@@ -210,9 +212,7 @@ async function exchangeCodeForTokens(
 
     const response = await fetch(DIGIKEY_TOKEN_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
     });
 
@@ -224,10 +224,7 @@ async function exchangeCodeForTokens(
     return response.json();
 }
 
-async function refreshAccessToken(
-    env: Env,
-    refreshToken: string,
-): Promise<TokenResponse> {
+async function refreshAccessToken(env: Env, refreshToken: string): Promise<TokenResponse> {
     const params = new URLSearchParams({
         refresh_token: refreshToken,
         client_id: env.DIGIKEY_CLIENT_ID,
@@ -237,9 +234,7 @@ async function refreshAccessToken(
 
     const response = await fetch(DIGIKEY_TOKEN_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
     });
 
@@ -251,21 +246,18 @@ async function refreshAccessToken(
     return response.json();
 }
 
-// Get a valid access token, refreshing if necessary
 async function getValidAccessToken(
     env: Env,
     sessionId: string,
     session: SessionData,
 ): Promise<string | null> {
     const now = Date.now();
-    const bufferMs = 60 * 1000; // 1 minute buffer
+    const bufferMs = 60 * 1000;
 
-    // Token is still valid
     if (session.expires_at > now + bufferMs) {
         return session.access_token;
     }
 
-    // Need to refresh
     try {
         const tokens = await refreshAccessToken(env, session.refresh_token);
         const newSession: SessionData = {
@@ -277,20 +269,19 @@ async function getValidAccessToken(
         return tokens.access_token;
     } catch (error) {
         console.error("Failed to refresh token:", error);
-        // Delete invalid session
         await deleteSession(env, sessionId);
         return null;
     }
 }
 
-// Route handlers
-async function handleLogin(request: Request, env: Env): Promise<Response> {
-    const url = new URL(request.url);
-    const returnUrl =
-        url.searchParams.get("return_url") || url.origin + "/debug/";
-    const redirectUri = `${url.origin}/auth/digikey/callback`;
+// ============================================================================
+// DigiKey Route Handlers
+// ============================================================================
 
-    // Store return URL in state parameter (base64 encoded)
+async function handleDigiKeyLogin(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    const returnUrl = url.searchParams.get("return_url") || url.origin + "/debug/";
+    const redirectUri = `${url.origin}/auth/digikey/callback`;
     const state = btoa(JSON.stringify({ return_url: returnUrl }));
 
     const authUrl = new URL(DIGIKEY_AUTH_URL);
@@ -302,17 +293,15 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     return Response.redirect(authUrl.toString(), 302);
 }
 
-async function handleCallback(request: Request, env: Env): Promise<Response> {
+async function handleDigiKeyCallback(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
     const error = url.searchParams.get("error");
     const errorDescription = url.searchParams.get("error_description");
 
-    // Default return URL
     let returnUrl = url.origin + "/debug/";
 
-    // Parse state to get return URL
     if (state) {
         try {
             const stateData = JSON.parse(atob(state));
@@ -320,38 +309,29 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
                 returnUrl = stateData.return_url;
             }
         } catch {
-            // Ignore parse errors, use default
+            // Ignore parse errors
         }
     }
 
-    // Handle OAuth errors
     if (error) {
         const redirectUrl = new URL(returnUrl);
         redirectUrl.searchParams.set("digikey_error", error);
         if (errorDescription) {
-            redirectUrl.searchParams.set(
-                "digikey_error_description",
-                errorDescription,
-            );
+            redirectUrl.searchParams.set("digikey_error_description", errorDescription);
         }
         return Response.redirect(redirectUrl.toString(), 302);
     }
 
     if (!code) {
         const redirectUrl = new URL(returnUrl);
-        redirectUrl.searchParams.set(
-            "digikey_error",
-            "missing_code",
-        );
+        redirectUrl.searchParams.set("digikey_error", "missing_code");
         return Response.redirect(redirectUrl.toString(), 302);
     }
 
     try {
-        // Exchange code for tokens
         const redirectUri = `${url.origin}/auth/digikey/callback`;
         const tokens = await exchangeCodeForTokens(env, code, redirectUri);
 
-        // Create session
         const sessionId = generateSessionId();
         const session: SessionData = {
             access_token: tokens.access_token,
@@ -360,7 +340,6 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
         };
         await saveSession(env, sessionId, session);
 
-        // Redirect back with session cookie
         const redirectUrl = new URL(returnUrl);
         redirectUrl.searchParams.set("digikey_connected", "true");
 
@@ -384,7 +363,7 @@ async function handleCallback(request: Request, env: Env): Promise<Response> {
     }
 }
 
-async function handleLogout(request: Request, env: Env): Promise<Response> {
+async function handleDigiKeyLogout(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("Origin");
     const sessionId = getSessionIdFromRequest(request);
 
@@ -396,22 +375,19 @@ async function handleLogout(request: Request, env: Env): Promise<Response> {
         status: 200,
         headers: {
             "Content-Type": "application/json",
-            "Set-Cookie": createSessionCookie("", 0), // Clear cookie
+            "Set-Cookie": createSessionCookie("", 0),
             ...corsHeaders(origin),
         },
     });
 }
 
-async function handleStatus(request: Request, env: Env): Promise<Response> {
+async function handleDigiKeyStatus(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("Origin");
     const sessionId = getSessionIdFromRequest(request);
 
     if (!sessionId) {
         return jsonResponse(
-            {
-                connected: false,
-                message: "Not connected to DigiKey",
-            },
+            { connected: false, message: "Not connected to DigiKey" },
             200,
             corsHeaders(origin),
         );
@@ -420,34 +396,25 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
     const session = await getSession(env, sessionId);
     if (!session) {
         return jsonResponse(
-            {
-                connected: false,
-                message: "Session expired",
-            },
+            { connected: false, message: "Session expired" },
             200,
-            {
-                "Set-Cookie": createSessionCookie("", 0), // Clear invalid cookie
-                ...corsHeaders(origin),
-            },
+            { "Set-Cookie": createSessionCookie("", 0), ...corsHeaders(origin) },
         );
     }
 
-    // Check if token is still valid (or can be refreshed)
     const accessToken = await getValidAccessToken(env, sessionId, session);
 
     return jsonResponse(
         {
             connected: !!accessToken,
-            message: accessToken
-                ? "Connected to DigiKey"
-                : "Session expired, please reconnect",
+            message: accessToken ? "Connected to DigiKey" : "Session expired, please reconnect",
         },
         200,
         corsHeaders(origin),
     );
 }
 
-async function handleSearch(request: Request, env: Env): Promise<Response> {
+async function handleDigiKeySearch(request: Request, env: Env): Promise<Response> {
     const origin = request.headers.get("Origin");
     const sessionId = getSessionIdFromRequest(request);
 
@@ -474,10 +441,7 @@ async function handleSearch(request: Request, env: Env): Promise<Response> {
                 total_count: 0,
             },
             401,
-            {
-                "Set-Cookie": createSessionCookie("", 0),
-                ...corsHeaders(origin),
-            },
+            { "Set-Cookie": createSessionCookie("", 0), ...corsHeaders(origin) },
         );
     }
 
@@ -491,46 +455,29 @@ async function handleSearch(request: Request, env: Env): Promise<Response> {
                 total_count: 0,
             },
             401,
-            {
-                "Set-Cookie": createSessionCookie("", 0),
-                ...corsHeaders(origin),
-            },
+            { "Set-Cookie": createSessionCookie("", 0), ...corsHeaders(origin) },
         );
     }
 
-    // Parse request body
     let query: string;
     try {
-        const body = await request.json();
+        const body = await request.json() as { query?: string; mpn?: string };
         query = body.query || body.mpn || "";
         if (!query) {
             return jsonResponse(
-                {
-                    query: "",
-                    success: false,
-                    error: "Missing search query",
-                    parts: [],
-                    total_count: 0,
-                },
+                { query: "", success: false, error: "Missing search query", parts: [], total_count: 0 },
                 400,
                 corsHeaders(origin),
             );
         }
     } catch {
         return jsonResponse(
-            {
-                query: "",
-                success: false,
-                error: "Invalid request body",
-                parts: [],
-                total_count: 0,
-            },
+            { query: "", success: false, error: "Invalid request body", parts: [], total_count: 0 },
             400,
             corsHeaders(origin),
         );
     }
 
-    // Make DigiKey API request
     const searchRequest: KeywordSearchRequest = {
         Keywords: query,
         RecordCount: 10,
@@ -555,13 +502,7 @@ async function handleSearch(request: Request, env: Env): Promise<Response> {
             const errorText = await response.text();
             console.error("DigiKey search failed:", response.status, errorText);
             return jsonResponse(
-                {
-                    query,
-                    success: false,
-                    error: `DigiKey API error: ${response.status}`,
-                    parts: [],
-                    total_count: 0,
-                },
+                { query, success: false, error: `DigiKey API error: ${response.status}`, parts: [], total_count: 0 },
                 502,
                 corsHeaders(origin),
             );
@@ -569,11 +510,9 @@ async function handleSearch(request: Request, env: Env): Promise<Response> {
 
         const searchResponse: DigiKeySearchResponse = await response.json();
 
-        // Build results, prioritizing exact matches
         const parts: ReturnType<typeof convertProduct>[] = [];
         const seenMpns = new Set<string>();
 
-        // First, add exact DigiKey product if found
         if (searchResponse.ExactDigiKeyProduct) {
             const converted = convertProduct(searchResponse.ExactDigiKeyProduct);
             if (converted.manufacturer_part_number) {
@@ -582,29 +521,21 @@ async function handleSearch(request: Request, env: Env): Promise<Response> {
             parts.push(converted);
         }
 
-        // Then add exact manufacturer matches
         if (searchResponse.ExactManufacturerProducts) {
             for (const product of searchResponse.ExactManufacturerProducts) {
                 const converted = convertProduct(product);
-                if (
-                    converted.manufacturer_part_number &&
-                    !seenMpns.has(converted.manufacturer_part_number)
-                ) {
+                if (converted.manufacturer_part_number && !seenMpns.has(converted.manufacturer_part_number)) {
                     seenMpns.add(converted.manufacturer_part_number);
                     parts.push(converted);
                 }
             }
         }
 
-        // Finally add general keyword matches if we don't have enough
         if (parts.length < 5 && searchResponse.Products) {
             for (const product of searchResponse.Products) {
                 if (parts.length >= 10) break;
                 const converted = convertProduct(product);
-                if (
-                    converted.manufacturer_part_number &&
-                    !seenMpns.has(converted.manufacturer_part_number)
-                ) {
+                if (converted.manufacturer_part_number && !seenMpns.has(converted.manufacturer_part_number)) {
                     seenMpns.add(converted.manufacturer_part_number);
                     parts.push(converted);
                 }
@@ -612,40 +543,123 @@ async function handleSearch(request: Request, env: Env): Promise<Response> {
         }
 
         return jsonResponse(
-            {
-                query,
-                success: true,
-                error: null,
-                parts,
-                total_count: parts.length,
-            },
+            { query, success: true, error: null, parts, total_count: parts.length },
             200,
             corsHeaders(origin),
         );
     } catch (err) {
         console.error("DigiKey search error:", err);
         return jsonResponse(
-            {
-                query,
-                success: false,
-                error:
-                    err instanceof Error ? err.message : "Unknown error",
-                parts: [],
-                total_count: 0,
-            },
+            { query, success: false, error: err instanceof Error ? err.message : "Unknown error", parts: [], total_count: 0 },
             500,
             corsHeaders(origin),
         );
     }
 }
 
-// Main request handler
+// ============================================================================
+// GitHub Token Exchange (CORS proxy for PKCE flow)
+// ============================================================================
+
+/**
+ * Proxy the GitHub token exchange to work around CORS restrictions.
+ * The browser handles the PKCE flow, we proxy this request and add the client_secret.
+ * 
+ * Note: GitHub OAuth Apps require client_secret even with PKCE.
+ * PKCE adds security but doesn't replace the secret.
+ * If GITHUB_CLIENT_SECRET is not set, we try without it (works for GitHub Apps).
+ */
+async function handleGitHubTokenExchange(request: Request, env: Env): Promise<Response> {
+    const origin = request.headers.get("Origin");
+
+    interface TokenRequestBody {
+        client_id?: string;
+        code?: string;
+        code_verifier?: string;
+        redirect_uri?: string;
+    }
+
+    let body: TokenRequestBody;
+
+    try {
+        body = await request.json() as TokenRequestBody;
+        if (!body.client_id || !body.code || !body.code_verifier) {
+            return jsonResponse(
+                { error: "invalid_request", error_description: "Missing required parameters" },
+                400,
+                corsHeaders(origin),
+            );
+        }
+    } catch {
+        return jsonResponse(
+            { error: "invalid_request", error_description: "Invalid request body" },
+            400,
+            corsHeaders(origin),
+        );
+    }
+
+    try {
+        // Build token exchange params
+        const params = new URLSearchParams({
+            client_id: body.client_id!,
+            code: body.code!,
+            code_verifier: body.code_verifier!,
+        });
+
+        // GitHub OAuth Apps require client_secret even with PKCE
+        // If not set, try without (works for GitHub Apps which don't require it)
+        if (env.GITHUB_CLIENT_SECRET) {
+            params.set("client_secret", env.GITHUB_CLIENT_SECRET);
+        }
+
+        if (body.redirect_uri) {
+            params.set("redirect_uri", body.redirect_uri);
+        }
+
+        const response = await fetch(GITHUB_TOKEN_URL, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: params.toString(),
+        });
+
+        // GitHub may return JSON or URL-encoded depending on Accept header
+        // Try JSON first, fall back to parsing URL-encoded response
+        const contentType = response.headers.get("Content-Type") || "";
+        let tokenResponse: Record<string, string>;
+
+        if (contentType.includes("application/json")) {
+            tokenResponse = await response.json();
+        } else {
+            // Parse URL-encoded response (application/x-www-form-urlencoded)
+            const text = await response.text();
+            tokenResponse = {};
+            const searchParams = new URLSearchParams(text);
+            for (const [key, value] of searchParams.entries()) {
+                tokenResponse[key] = value;
+            }
+        }
+
+        // Pass through the response (success or error)
+        return jsonResponse(tokenResponse, response.ok ? 200 : 400, corsHeaders(origin));
+    } catch (err) {
+        console.error("GitHub token exchange error:", err);
+        return jsonResponse(
+            { error: "server_error", error_description: err instanceof Error ? err.message : "Unknown error" },
+            500,
+            corsHeaders(origin),
+        );
+    }
+}
+
+// ============================================================================
+// Main Request Handler
+// ============================================================================
+
 export default {
-    async fetch(
-        request: Request,
-        env: Env,
-        _ctx: ExecutionContext,
-    ): Promise<Response> {
+    async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
         const url = new URL(request.url);
         const path = url.pathname;
         const method = request.method;
@@ -659,36 +673,45 @@ export default {
             });
         }
 
-        // Route requests
         try {
-            // Auth routes
+            // ============================================================
+            // API Routes - Handle these BEFORE falling back to assets
+            // ============================================================
+            
+            // DigiKey Auth Routes
             if (path === "/auth/digikey/login" && method === "GET") {
-                return handleLogin(request, env);
+                return handleDigiKeyLogin(request, env);
             }
             if (path === "/auth/digikey/callback" && method === "GET") {
-                return handleCallback(request, env);
+                return handleDigiKeyCallback(request, env);
             }
             if (path === "/auth/digikey/logout" && method === "POST") {
-                return handleLogout(request, env);
+                return handleDigiKeyLogout(request, env);
             }
 
-            // API routes
+            // DigiKey API Routes
             if (path === "/api/digikey/status" && method === "GET") {
-                return handleStatus(request, env);
+                return handleDigiKeyStatus(request, env);
             }
             if (path === "/api/digikey/search" && method === "POST") {
-                return handleSearch(request, env);
+                return handleDigiKeySearch(request, env);
             }
 
-            // Not found - pass through to static assets
-            return new Response(null, { status: 404 });
+            // GitHub Token Exchange (CORS proxy for PKCE)
+            if (path === "/api/github/token" && method === "POST") {
+                return handleGitHubTokenExchange(request, env);
+            }
+
+            // ============================================================
+            // Static Assets - Fallback to serving files from /debug
+            // ============================================================
+            return env.ASSETS.fetch(request);
         } catch (err) {
             console.error("Worker error:", err);
             return jsonResponse(
                 {
                     error: "Internal server error",
-                    message:
-                        err instanceof Error ? err.message : "Unknown error",
+                    message: err instanceof Error ? err.message : "Unknown error",
                 },
                 500,
                 corsHeaders(origin),
@@ -696,4 +719,3 @@ export default {
         }
     },
 };
-

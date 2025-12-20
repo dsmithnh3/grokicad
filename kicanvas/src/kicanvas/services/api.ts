@@ -1,7 +1,7 @@
 /*
-    API service for communicating with the groki backend.
-    Git operations are handled entirely in the frontend using isomorphic-git.
-    Distillation is now handled in the browser (see distill-service.ts).
+    API service for GrokiCAD.
+    Git operations are handled via GitHub REST API.
+    Distillation is handled in the browser (see distill-service.ts).
     DigiKey integration uses OAuth 3-legged flow via Cloudflare Worker (see digikey-client.ts).
 */
 
@@ -77,20 +77,34 @@ export class GrokiAPI {
     // Import { DigiKeyClient } from "./digikey-client" for DigiKey integration.
 
     // ========================================================================
-    // Git Operations (Frontend-only using isomorphic-git)
+    // Git Operations (via GitHub REST API - lazy loading)
     // ========================================================================
 
     /**
-     * Get all commits with a flag indicating if they modify .kicad_sch files.
-     * Uses isomorphic-git in the browser - no backend required.
+     * Get initial commits (first page only for fast loading).
+     * For more commits, use getCommitsPage().
      */
     static async getCommits(repo: string, onProgress?: (progress: { phase: string; loaded: number; total: number }) => void): Promise<CommitInfo[]> {
         return GitService.getAllCommits(repo, onProgress);
     }
 
     /**
+     * Get a page of commits (for lazy loading / infinite scroll).
+     * @param repo - Repository slug (owner/repo)
+     * @param page - Page number (1-indexed)
+     * @param perPage - Commits per page (default 20)
+     * @returns Commits and whether there are more pages
+     */
+    static async getCommitsPage(
+        repo: string,
+        page: number = 1,
+        perPage: number = 20,
+    ): Promise<{ commits: CommitInfo[]; hasMore: boolean }> {
+        return GitService.getCommitsPage(repo, page, perPage);
+    }
+
+    /**
      * Get all .kicad_sch files at a specific commit.
-     * Uses isomorphic-git in the browser - no backend required.
      */
     static async getCommitFiles(
         repo: string,
@@ -101,7 +115,6 @@ export class GrokiAPI {
 
     /**
      * Get detailed information about a specific commit.
-     * Uses isomorphic-git in the browser - no backend required.
      */
     static async getCommitInfo(
         repo: string,
@@ -117,23 +130,21 @@ export class GrokiAPI {
             commit,
             commit_date: commitInfo.commit_date,
             message: commitInfo.message,
-            blurb: null, // No backend storage for blurbs anymore
-            description: null, // No backend storage for descriptions anymore
+            blurb: null,
+            description: null,
             changed_files: changedFiles,
         };
     }
 
     /**
      * Get the latest commit hash for a repository.
-     * Uses isomorphic-git in the browser - no backend required.
      */
     static async getLatestCommit(repo: string): Promise<string> {
         return GitService.getLatestCommit(repo);
     }
 
     /**
-     * Invalidate the local git cache for a repository.
-     * This clears the in-memory clone and forces a fresh fetch.
+     * Invalidate the local cache for a repository.
      */
     static invalidateGitCache(repo: string): void {
         GitService.invalidateCache(repo);

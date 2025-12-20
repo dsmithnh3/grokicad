@@ -913,3 +913,110 @@ section.overlay .api-status.info {
     color: #3b82f6;
     border: 1px solid rgba(59, 130, 246, 0.3);
 }
+
+/* GitHub Authentication Section */
+section.overlay .github-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75em;
+    margin-bottom: 1.5em;
+    z-index: 2;
+    width: 100%;
+    max-width: 500px;
+}
+
+section.overlay .github-login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75em;
+    width: 100%;
+    padding: 0.9em 1.5em;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section.overlay .github-login-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+}
+
+section.overlay .github-login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+section.overlay .github-login-btn .github-icon {
+    width: 1.3em;
+    height: 1.3em;
+}
+
+section.overlay .github-hint {
+    font-size: 0.85em;
+    color: #666666;
+}
+
+section.overlay .github-user {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    width: 100%;
+    padding: 0.75em 1em;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    border-radius: 8px;
+}
+
+section.overlay .github-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 222, 128, 0.4);
+}
+
+section.overlay .github-user-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 0.2em;
+}
+
+section.overlay .github-username {
+    font-size: 0.95em;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+section.overlay .github-rate-limit {
+    font-size: 0.8em;
+    color: #4ade80;
+    font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+}
+
+section.overlay .github-logout-btn {
+    padding: 0.5em 0.75em;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #888888;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+section.overlay .github-logout-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.4);
+    color: #ff6b6b;
+}

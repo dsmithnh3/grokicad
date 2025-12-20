@@ -38,7 +38,8 @@ export const DIGIKEY_WORKER_URL = isLocalDev
  * Note: The callback URL should be your app's base URL. GitHub will redirect
  * back there with ?code=xxx, and the app handles the rest via PKCE.
  */
-export const GITHUB_CLIENT_ID = "Ov23liS2lfsBjHHh74s2";  // TODO: Set your GitHub OAuth App Client ID
+// export const GITHUB_CLIENT_ID = "Ov23liS2lfsBjHHh74s2";
+export const GITHUB_CLIENT_ID = "Ov23lieqDuahNqCy55dC";
 
 /**
  * GitHub OAuth scopes

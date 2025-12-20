@@ -1,0 +1,141 @@
+name: Deploy Worker to Cloudflare
+
+on:
+  # Automatic deployment to beta on push to main
+  push:
+    branches:
+      - main
+    paths:
+      - 'kicanvas/worker/**'
+      - 'kicanvas/config/**'
+      - 'kicanvas/wrangler.jsonc'
+      - 'kicanvas/.github/workflows/deploy-worker.yml'
+  
+  # Manual deployment trigger for production
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - production
+
+# Ensure only one deployment runs at a time per environment
+concurrency:
+  group: deploy-worker-${{ github.event.inputs.environment || 'beta' }}
+  cancel-in-progress: false
+
+jobs:
+  # Type check before deploying
+  validate:
+    name: Validate Code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kicanvas
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: kicanvas/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check (worker)
+        run: npm run worker:types
+
+      - name: TypeScript type check (frontend)
+        run: npm run lint:types
+
+  # Deploy to beta environment
+  deploy-beta:
+    name: Deploy to Beta
+    needs: validate
+    runs-on: ubuntu-latest
+    # Only run on push to main, or if manually triggered with beta
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'beta')
+    environment:
+      name: beta
+      url: https://beta.grokicad.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: kicanvas/package-lock.json
+
+      - name: Install dependencies
+        working-directory: kicanvas
+        run: npm ci
+
+      - name: Deploy to Cloudflare Workers (Beta)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          environment: 'beta'
+          workingDirectory: 'kicanvas'
+
+      - name: Deployment summary
+        run: |
+          echo "## ✅ Beta Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** Beta" >> $GITHUB_STEP_SUMMARY
+          echo "- **Worker:** grokicad-beta" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://beta.grokicad.com" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
+  # Deploy to production environment (manual only)
+  deploy-production:
+    name: Deploy to Production
+    needs: validate
+    runs-on: ubuntu-latest
+    # Only run if manually triggered with production
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://grokicad.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: kicanvas/package-lock.json
+
+      - name: Install dependencies
+        working-directory: kicanvas
+        run: npm ci
+
+      - name: Deploy to Cloudflare Workers (Production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          environment: 'production'
+          workingDirectory: 'kicanvas'
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Worker:** grokicad" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL:** https://grokicad.com" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

@@ -5,37 +5,88 @@
   "compatibility_date": "2025-12-01",
 
   // Static assets served from /debug directory
-  // Note: API routes (/api/* and /auth/*) are handled by the worker, not assets
   "assets": {
     "directory": "./debug",
     "binding": "ASSETS"
   },
 
-  // KV namespace for storing DigiKey OAuth sessions
-  // Create with: wrangler kv namespace create DIGIKEY_SESSIONS
-  "kv_namespaces": [
-    {
-      "binding": "DIGIKEY_SESSIONS",
-      "id": "c70d20e3617e49bd925e405d1803ffd1"
-    }
-  ],
-
-  // Development settings - secrets should be set via wrangler secret put
-  //
-  // Required secrets for DigiKey:
-  //   wrangler secret put DIGIKEY_CLIENT_ID
-  //   wrangler secret put DIGIKEY_CLIENT_SECRET
-  //
-  // Required secret for GitHub OAuth:
-  //   wrangler secret put GITHUB_CLIENT_SECRET
-  //
-  // Note: GitHub OAuth Apps require client_secret even with PKCE.
-  // The client_id is set in src/config.ts (safe for frontend).
-  // The client_secret must be kept server-side in the worker.
-
   // Local development configuration
   "dev": {
     "port": 8787,
     "local_protocol": "http"
+  },
+
+  // ==========================================================================
+  // ENVIRONMENT CONFIGURATIONS
+  // ==========================================================================
+
+  "env": {
+    // Development environment
+    "dev": {
+      "name": "grokicad-dev",
+      "vars": {
+        "ENVIRONMENT": "development"
+      },
+      "kv_namespaces": [
+        {
+          "binding": "DIGIKEY_SESSIONS",
+          "id": "c70d20e3617e49bd925e405d1803ffd1"
+        }
+      ]
+    },
+
+    // Beta/Staging environment
+    "beta": {
+      "name": "grokicad-beta",
+      "vars": {
+        "ENVIRONMENT": "beta"
+      },
+      "routes": [
+        {
+          "pattern": "beta.grokicad.com/*",
+          "zone_name": "grokicad.com"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "DIGIKEY_SESSIONS",
+          "id": "3fe487dbdcd44061aea661a1072f81b0",
+          "preview_id": "3fe487dbdcd44061aea661a1072f81b0"
+        }
+      ]
+    },
+
+    // Production environment
+    "production": {
+      "name": "grokicad",
+      "vars": {
+        "ENVIRONMENT": "production"
+      },
+      "routes": [
+        {
+          "pattern": "grokicad.com/*",
+          "zone_name": "grokicad.com"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "DIGIKEY_SESSIONS",
+          "id": "839b3de95308423a96d372a239c8e3ea",
+          "preview_id": "839b3de95308423a96d372a239c8e3ea"
+        }
+      ]
+    }
   }
+
+  // ==========================================================================
+  // SECRETS (set via CLI, not in this file)
+  // ==========================================================================
+  //
+  // wrangler secret put DIGIKEY_CLIENT_ID --env [dev|beta|production]
+  // wrangler secret put DIGIKEY_CLIENT_SECRET --env [dev|beta|production]
+  // wrangler secret put GITHUB_CLIENT_SECRET --env [dev|beta|production]
+  //
+  // For local development, use .dev.vars file
+  // ==========================================================================
 }
+

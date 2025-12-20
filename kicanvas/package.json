@@ -42,8 +42,11 @@
         "build:sprites": "node scripts/build-sprites.js",
         "build": "tsc -p tsconfig.json && node scripts/build.js && mkdir -p debug/kicanvas && cp build/kicanvas.js debug/kicanvas/kicanvas.js",
         "clean": "rm -rf build && rm -rf debug/kicanvas",
-        "worker:dev": "wrangler dev",
-        "worker:deploy": "wrangler deploy",
+        "worker:dev": "wrangler dev --env dev",
+        "worker:deploy": "wrangler deploy --env dev",
+        "worker:deploy:dev": "./scripts/deploy-worker.sh dev",
+        "worker:deploy:beta": "./scripts/deploy-worker.sh beta",
+        "worker:deploy:production": "./scripts/deploy-worker.sh production",
         "worker:types": "tsc -p worker/tsconfig.json --noEmit"
     },
     "repository": {

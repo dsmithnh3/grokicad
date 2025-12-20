@@ -20,7 +20,7 @@ export interface GitHubAuthConfig {
     /** GitHub OAuth App Client ID */
     clientId: string;
     /** OAuth scopes to request */
-    scopes: string[];
+    scopes: readonly string[];
     /** Storage key for auth data */
     storageKey: string;
     /** PKCE state storage key */

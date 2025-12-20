@@ -1,59 +1,105 @@
 /**
- * Application configuration constants
- * These are non-sensitive frontend constants that can be safely embedded in the bundle
+ * Application Configuration (Frontend)
+ * 
+ * This module provides environment-specific configuration for the frontend application.
+ * Configuration is determined at runtime based on the current hostname.
+ * 
+ * Uses centralized environment definitions from config/environments.ts
  */
 
-// Note: The backend has been fully migrated to the frontend.
-// - Git operations use GitHub REST API directly
-// - Schematic distillation runs in the browser
-// - Grok AI uses xAI API directly from the browser
-// - DigiKey integration uses OAuth 3-legged flow via Cloudflare Worker
-// - GitHub authentication uses PKCE OAuth flow (no server-side secret needed)
+import {
+    type Environment,
+    type EnvironmentDefinition,
+    environments,
+    detectEnvironmentFromHostname,
+    GITHUB_OAUTH_SCOPES,
+    GITHUB_RATE_LIMITS,
+} from "../config/environments";
 
-const isLocalDev = typeof window !== "undefined" && 
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+// Re-export types for convenience
+export type { Environment, EnvironmentDefinition };
+
+// =============================================================================
+// Environment Detection
+// =============================================================================
 
 /**
- * DigiKey Worker URL
- * 
- * In production (when deployed to Cloudflare), leave empty to use same-origin.
- * For local development, set to your deployed worker URL.
+ * Current environment (auto-detected from hostname)
  */
-export const DIGIKEY_WORKER_URL = isLocalDev 
-    ? "https://grokicad.mo0nbase.workers.dev"
+export const ENVIRONMENT: Environment = 
+    typeof window !== "undefined" 
+        ? detectEnvironmentFromHostname(window.location.hostname)
+        : "development";
+
+/**
+ * Current environment configuration
+ */
+const envConfig: EnvironmentDefinition = environments[ENVIRONMENT];
+
+// =============================================================================
+// Exported Configuration Values
+// =============================================================================
+
+/**
+ * API/Worker base URL
+ * Empty string means same-origin (for deployed environments)
+ * Full URL for development (pointing to deployed dev worker)
+ */
+export const API_BASE_URL = ENVIRONMENT === "development" 
+    ? "https://grokicad-dev.mo0nbase.workers.dev"
     : "";
 
 /**
- * GitHub OAuth Client ID
- * 
- * This is safe to expose in frontend code (it's not a secret).
- * PKCE (Proof Key for Code Exchange) is used for secure auth without a client secret.
- * 
- * To set up GitHub OAuth:
- * 1. Go to https://github.com/settings/developers
- * 2. Click "New OAuth App"
- * 3. Set "Authorization callback URL" to your app's URL (e.g., https://your-app.com/)
- * 4. Copy the Client ID here
- * 
- * Note: The callback URL should be your app's base URL. GitHub will redirect
- * back there with ?code=xxx, and the app handles the rest via PKCE.
+ * DigiKey Worker URL (for backward compatibility)
+ * @deprecated Use API_BASE_URL instead
  */
-export const GITHUB_CLIENT_ID = "Ov23liS2lfsBjHHh74s2";
-// export const GITHUB_CLIENT_ID =  "Ov23lieqDuahNqCy55dC";
+export const DIGIKEY_WORKER_URL = API_BASE_URL;
+
+/**
+ * GitHub OAuth Client ID
+ */
+export const GITHUB_CLIENT_ID = envConfig.githubClientId;
 
 /**
  * GitHub OAuth scopes
- * - repo: Access private repositories (read/write)
- * - read:user: Read user profile information
  */
-export const GITHUB_OAUTH_SCOPES = ["repo", "read:user"];
+export { GITHUB_OAUTH_SCOPES };
 
 /**
- * GitHub API rate limits (for reference)
- * - Unauthenticated: 60 requests/hour
- * - Authenticated: 5,000 requests/hour
+ * Enable debug mode
  */
-export const GITHUB_RATE_LIMITS = {
-    unauthenticated: 60,
-    authenticated: 5000,
-};
+export const DEBUG = envConfig.debug;
+
+/**
+ * GitHub API rate limits
+ */
+export { GITHUB_RATE_LIMITS };
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+/**
+ * Get full API URL for an endpoint
+ * @param path API path (e.g., "/api/digikey/search")
+ */
+export function getApiUrl(path: string): string {
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    
+    if (!API_BASE_URL) {
+        return cleanPath;
+    }
+    
+    return `${API_BASE_URL}${cleanPath}`;
+}
+
+// =============================================================================
+// Debug Logging
+// =============================================================================
+
+if (DEBUG && typeof console !== "undefined") {
+    console.log("[Config] Environment:", ENVIRONMENT);
+    console.log("[Config] API Base URL:", API_BASE_URL || "(same-origin)");
+    console.log("[Config] GitHub Client ID:", GITHUB_CLIENT_ID);
+    console.log("[Config] Debug Mode:", DEBUG);
+}

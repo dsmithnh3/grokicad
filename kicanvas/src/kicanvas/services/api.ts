@@ -84,8 +84,8 @@ export class GrokiAPI {
      * Get all commits with a flag indicating if they modify .kicad_sch files.
      * Uses isomorphic-git in the browser - no backend required.
      */
-    static async getCommits(repo: string): Promise<CommitInfo[]> {
-        return GitService.getAllCommits(repo);
+    static async getCommits(repo: string, onProgress?: (progress: { phase: string; loaded: number; total: number }) => void): Promise<CommitInfo[]> {
+        return GitService.getAllCommits(repo, onProgress);
     }
 
     /**

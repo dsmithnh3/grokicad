@@ -21,6 +21,15 @@ import LightningFS from "@isomorphic-git/lightning-fs";
 // Configuration
 // ============================================================================
 
+/** Progress callback for clone operations */
+export interface CloneProgress {
+    phase: 'Counting' | 'Compressing' | 'Receiving';
+    loaded: number;
+    total: number;
+}
+
+export type CloneProgressCallback = (progress: CloneProgress) => void;
+
 /** Configuration options for the GitService */
 export interface GitServiceConfig {
     /** CORS proxy URL for GitHub access */
@@ -237,6 +246,7 @@ export class GitService {
     private static fs: LightningFS | null = null;
     private static cloneInProgress: Map<string, Promise<void>> = new Map();
     private static config: GitServiceConfig = { ...DEFAULT_CONFIG };
+    private static progressCallbacks: Map<string, CloneProgressCallback> = new Map();
 
     /**
      * Initialize the filesystem (lazy initialization)
@@ -380,6 +390,7 @@ export class GitService {
      */
     static async ensureRepo(
         repoSlug: string,
+        onProgress?: CloneProgressCallback,
     ): Promise<{ fs: LightningFS; dir: string }> {
         const sanitizedSlug = this.validateAndSanitizeRepoSlug(repoSlug);
 
@@ -403,6 +414,11 @@ export class GitService {
             // Not cloned yet, need to clone
         }
 
+        // Register progress callback
+        if (onProgress) {
+            this.progressCallbacks.set(sanitizedSlug, onProgress);
+        }
+
         // Check if clone is already in progress (prevents duplicate clones)
         const inProgress = this.cloneInProgress.get(sanitizedSlug);
         if (inProgress) {
@@ -418,6 +434,7 @@ export class GitService {
             await clonePromise;
         } finally {
             this.cloneInProgress.delete(sanitizedSlug);
+            this.progressCallbacks.delete(sanitizedSlug);
         }
 
         return { fs, dir };
@@ -451,6 +468,8 @@ export class GitService {
         });
 
         try {
+            const progressCallback = this.progressCallbacks.get(repoSlug);
+            
             await Promise.race([
                 git.clone({
                     fs,
@@ -461,6 +480,13 @@ export class GitService {
                     singleBranch: true,
                     depth: Math.min(this.config.maxCommitDepth, 100), // Clone depth
                     noTags: true,
+                    onProgress: progressCallback ? (progress) => {
+                        progressCallback({
+                            phase: progress.phase as 'Counting' | 'Compressing' | 'Receiving',
+                            loaded: progress.loaded,
+                            total: progress.total,
+                        });
+                    } : undefined,
                 }),
                 timeoutPromise,
             ]);
@@ -642,10 +668,38 @@ export class GitService {
     }
 
     /**
+     * Get storage quota information (if available)
+     */
+    static async getStorageQuota(): Promise<{
+        usage: number;
+        quota: number;
+        usagePercent: number;
+    } | null> {
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+            try {
+                const estimate = await navigator.storage.estimate();
+                const usage = estimate.usage || 0;
+                const quota = estimate.quota || 0;
+                const usagePercent = quota > 0 ? (usage / quota) * 100 : 0;
+                
+                return {
+                    usage,
+                    quota,
+                    usagePercent,
+                };
+            } catch (e) {
+                console.warn('[GitService] Failed to get storage estimate:', e);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get all commits, with a flag indicating if they modify .kicad_sch files
      */
-    static async getAllCommits(repoSlug: string): Promise<CommitInfo[]> {
-        const { fs, dir } = await this.ensureRepo(repoSlug);
+    static async getAllCommits(repoSlug: string, onProgress?: CloneProgressCallback): Promise<CommitInfo[]> {
+        const { fs, dir } = await this.ensureRepo(repoSlug, onProgress);
 
         this.log(`Getting commits for ${repoSlug}...`);
         const startTime = performance.now();

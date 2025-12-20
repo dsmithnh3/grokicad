@@ -65,6 +65,10 @@ class KiCanvasShellElement extends KCUIElement {
     #cached_repos: CachedRepoInfo[] = [];
     #eventListeners: Array<{ element: Element; event: string; handler: EventListener }> = [];
     
+    // Loading progress state
+    #cloneProgress: { phase: string; loaded: number; total: number } | null = null;
+    #storageInfo: { usage: number; quota: number; usagePercent: number } | null = null;
+    
     // API Settings state
     #apiSettingsExpanded: boolean = false;
     #apiKeyInput: string = "";
@@ -104,6 +108,9 @@ class KiCanvasShellElement extends KCUIElement {
         later(async () => {
             // Load cached repos from IndexedDB
             await this.refreshCachedRepos();
+            
+            // Load storage info (don't trigger update, will be included in next render)
+            await this.refreshStorageInfo();
 
             if (this.src) {
                 const vfs = new FetchFileSystem([this.src]);
@@ -167,12 +174,13 @@ class KiCanvasShellElement extends KCUIElement {
             await this.loadCommit(detail.repo, detail.commit);
         });
 
-        // Setup example buttons and cached repo buttons
-        this.setupExampleButtons();
-        this.setupCachedRepoListeners();
-        
-        // Setup API settings listeners
-        this.setupApiSettingsListeners();
+        // Wait a tick for initial render, then setup button listeners
+        // This ensures they're set up after the DOM is ready
+        later(() => {
+            this.setupExampleButtons();
+            this.setupCachedRepoListeners();
+            this.setupApiSettingsListeners();
+        });
         
         // Initialize API settings inputs from stored values
         this.#apiKeyInput = xaiSettings.apiKey ?? "";
@@ -185,6 +193,8 @@ class KiCanvasShellElement extends KCUIElement {
     private async refreshCachedRepos(): Promise<void> {
         try {
             this.#cached_repos = await GitService.getCachedRepos();
+            // Also refresh storage info when repo list changes
+            await this.refreshStorageInfo();
             this.update();
             // Re-setup listeners after update (all interactive elements)
             later(() => this.reattachAllListeners());
@@ -496,6 +506,15 @@ class KiCanvasShellElement extends KCUIElement {
         location.searchParams.set("github", `https://github.com/${slug}`);
         window.history.pushState(null, "", location);
     }
+    
+    /**
+     * Refresh storage quota information
+     */
+    private async refreshStorageInfo(): Promise<void> {
+        this.#storageInfo = await GitService.getStorageQuota();
+        // Don't call this.update() here - let the caller handle updates
+        // to avoid unnecessary re-renders and listener detachment
+    }
 
     /**
      * Load repository using isomorphic-git in the browser (no backend required)
@@ -504,10 +523,14 @@ class KiCanvasShellElement extends KCUIElement {
         this.loaded = false;
         this.loading = true;
         this.removeAttribute("error");
+        this.#cloneProgress = null;
 
         try {
-            // Clone repo and get commits using isomorphic-git
-            const commits = await GrokiAPI.getCommits(repo);
+            // Clone repo and get commits using isomorphic-git with progress tracking
+            const commits = await GrokiAPI.getCommits(repo, (progress) => {
+                this.#cloneProgress = progress;
+                this.update();
+            });
 
             if (commits.length > 0) {
                 // Load the most recent commit
@@ -522,6 +545,7 @@ class KiCanvasShellElement extends KCUIElement {
                 await this.setup_project(vfs);
 
                 // Refresh cached repos list (repo is now cached in IndexedDB)
+                // This also refreshes storage info
                 await this.refreshCachedRepos();
             } else {
                 throw new Error("No commits with schematic files found");
@@ -669,6 +693,14 @@ class KiCanvasShellElement extends KCUIElement {
         if (diffDays < 7) return `${diffDays}d ago`;
         return date.toLocaleDateString();
     }
+    
+    private formatBytes(bytes: number): string {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
+    }
 
     override render() {
         this.#schematic_app = html`
@@ -774,6 +806,22 @@ class KiCanvasShellElement extends KCUIElement {
                                           `,
                                       )}
                                   </div>
+                                  ${this.#storageInfo
+                                      ? html`
+                                            <div class="storage-info">
+                                                <span class="storage-label">Storage Used:</span>
+                                                <span class="storage-value"
+                                                    >${this.formatBytes(this.#storageInfo.usage)} / ${this.formatBytes(this.#storageInfo.quota)}</span
+                                                >
+                                                <div class="storage-bar">
+                                                    <div
+                                                        class="storage-bar-fill ${this.#storageInfo.usagePercent > 80 ? "warning" : ""}"
+                                                        style="width: ${Math.min(this.#storageInfo.usagePercent, 100)}%"></div>
+                                                </div>
+                                                <span class="storage-percent">${this.#storageInfo.usagePercent.toFixed(1)}%</span>
+                                            </div>
+                                        `
+                                      : null}
                               </div>
                           `
                         : null}
@@ -839,15 +887,23 @@ class KiCanvasShellElement extends KCUIElement {
                                 src="images/Grok_Logomark_Light.png"
                                 alt="Grok" />
                         </div>
-                        <h2 class="loading-title">Loading Repository</h2>
+                        <h2 class="loading-title">
+                            ${this.#cloneProgress ? "Cloning Repository" : "Loading Repository"}
+                        </h2>
                         <p class="loading-message">
-                            Cloning and parsing your schematic files...
+                            ${this.#cloneProgress
+                                ? `${this.#cloneProgress.phase}: ${this.#cloneProgress.loaded} / ${this.#cloneProgress.total} objects`
+                                : "Cloning and parsing your schematic files..."}
                         </p>
                         <div class="loading-progress">
-                            <div class="loading-progress-bar"></div>
+                            <div
+                                class="loading-progress-bar ${this.#cloneProgress ? "determinate" : ""}"
+                                style="${this.#cloneProgress && this.#cloneProgress.total > 0 ? `width: ${(this.#cloneProgress.loaded / this.#cloneProgress.total) * 100}%` : ""}"></div>
                         </div>
                         <p class="loading-hint">
-                            This may take a moment for larger repositories
+                            ${this.#cloneProgress && this.#cloneProgress.total > 0
+                                ? `${Math.round((this.#cloneProgress.loaded / this.#cloneProgress.total) * 100)}% complete`
+                                : "This may take a moment for larger repositories"}
                         </p>
                     </div>
                 </section>

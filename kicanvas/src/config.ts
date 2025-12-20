@@ -39,7 +39,9 @@ export const DIGIKEY_WORKER_URL = isLocalDev
  * back there with ?code=xxx, and the app handles the rest via PKCE.
  */
 // export const GITHUB_CLIENT_ID = "Ov23liS2lfsBjHHh74s2";
-export const GITHUB_CLIENT_ID = "Ov23lieqDuahNqCy55dC";
+export const GITHUB_CLIENT_ID = isLocalDev
+    ? "Ov23liS2lfsBjHHh74s2"
+    : "Ov23lieqDuahNqCy55dC";
 
 /**
  * GitHub OAuth scopes

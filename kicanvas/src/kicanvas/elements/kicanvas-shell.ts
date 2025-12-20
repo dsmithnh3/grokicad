@@ -98,6 +98,12 @@ class KiCanvasShellElement extends KCUIElement {
     @attribute({ type: Boolean })
     public loaded: boolean;
 
+    @attribute({ type: Boolean })
+    public switching: boolean;
+    
+    // Switching commit info for corner loader
+    #switchingCommit: string | null = null;
+
     @attribute({ type: String })
     public error: string;
 
@@ -747,8 +753,20 @@ class KiCanvasShellElement extends KCUIElement {
             return;
         }
 
-        this.loaded = false;
-        this.loading = true;
+        // If we already have content loaded, use the subtle corner loader
+        // Otherwise, show the full loading overlay
+        const wasLoaded = this.loaded;
+        
+        if (wasLoaded) {
+            // Subtle corner loader for switching commits
+            this.switching = true;
+            this.#switchingCommit = commit;
+        } else {
+            // Full overlay for initial load
+            this.loaded = false;
+            this.loading = true;
+        }
+        
         this.removeAttribute("error");
         this.#current_commit = commit;
 
@@ -758,6 +776,8 @@ class KiCanvasShellElement extends KCUIElement {
         } catch (e) {
             console.error("Failed to load commit:", e);
             this.loading = false;
+            this.switching = false;
+            this.#switchingCommit = null;
             this.showError(
                 `Failed to load commit ${commit.substring(0, 7)}: ${e instanceof Error ? e.message : "Unknown error"}`,
             );
@@ -783,8 +803,11 @@ class KiCanvasShellElement extends KCUIElement {
     }
 
     private async setup_project(vfs: VirtualFileSystem) {
-        this.loaded = false;
-        this.loading = true;
+        // Only set full loading overlay if not already switching
+        if (!this.switching) {
+            this.loaded = false;
+            this.loading = true;
+        }
 
         try {
             await this.project.load(vfs);
@@ -797,6 +820,8 @@ class KiCanvasShellElement extends KCUIElement {
             console.error(e);
         } finally {
             this.loading = false;
+            this.switching = false;
+            this.#switchingCommit = null;
         }
     }
 
@@ -1074,6 +1099,15 @@ class KiCanvasShellElement extends KCUIElement {
                     </div>
                 </section>
                 <main>${this.#schematic_app} ${this.#board_app}</main>
+                
+                <!-- Corner loader for commit switching -->
+                <div class="corner-loader">
+                    <div class="corner-loader-spinner"></div>
+                    <span class="corner-loader-text">Loading commit</span>
+                    ${this.#switchingCommit 
+                        ? html`<span class="corner-loader-commit">${this.#switchingCommit.substring(0, 7)}</span>` 
+                        : null}
+                </div>
             </kc-ui-app>
         `;
     }

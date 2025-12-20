@@ -50,6 +50,21 @@ export class CustomElement extends HTMLElement {
     }
 
     addDisposable<T extends IDisposable>(item: T): T {
+        // If the disposables stack was disposed but the element is still connected,
+        // recreate it (this can happen if the element was disconnected and reconnected
+        // before async initialContentCallback completed)
+        if (this.disposables.isDisposed && this.isConnected) {
+            this.disposables = new Disposables();
+        }
+        
+        // Only add disposables if the element is still connected to the DOM
+        // This prevents errors when async initialContentCallback runs after disconnect
+        if (!this.isConnected) {
+            // Silently dispose the item immediately since the element is disconnected
+            item.dispose();
+            return item;
+        }
+        
         return this.disposables.add(item);
     }
 
@@ -67,6 +82,12 @@ export class CustomElement extends HTMLElement {
      * renderRoot.
      */
     connectedCallback(): void | undefined {
+        // Recreate disposables stack if it was disposed (e.g., element was disconnected
+        // and reconnected before async initialContentCallback completed)
+        if (this.disposables.isDisposed) {
+            this.disposables = new Disposables();
+        }
+        
         if (!this.#initial_content_rendered) {
             this.#renderInitialContent();
         }

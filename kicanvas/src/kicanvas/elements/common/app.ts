@@ -93,11 +93,18 @@ export abstract class KCViewerAppElement<
         );
 
         // Handle item selection in the viewers.
-        this.addDisposable(
-            this.viewer.addEventListener(KiCanvasSelectEvent.type, (e) => {
-                this.on_viewer_select(e.detail.item, e.detail.previous);
-            }),
-        );
+        // Wait for viewer to be ready before accessing it
+        (async () => {
+            await this.viewerReady;
+            // Check if element is still connected before adding disposable
+            if (this.isConnected && this.viewer) {
+                this.addDisposable(
+                    this.viewer.addEventListener(KiCanvasSelectEvent.type, (e) => {
+                        this.on_viewer_select(e.detail.item, e.detail.previous);
+                    }),
+                );
+            }
+        })();
     }
 
     protected abstract on_viewer_select(

@@ -1,7 +1,7 @@
 /**
- * GrokiCAD Cloudflare Worker
+ * GrokiCAD Cloudflare Worker - OAuth & API Proxy
  *
- * This worker handles:
+ * This worker handles OAuth flows and API proxying for multiple services:
  * 1. DigiKey OAuth 3-Legged Flow
  * 2. GitHub OAuth token exchange (CORS proxy for PKCE flow)
  *
@@ -9,6 +9,7 @@
  * - DIGIKEY_CLIENT_ID: DigiKey OAuth client ID
  * - DIGIKEY_CLIENT_SECRET: DigiKey OAuth client secret
  * - DIGIKEY_SESSIONS: KV namespace for storing DigiKey sessions
+ * - GITHUB_CLIENT_SECRET: GitHub OAuth client secret (optional - only needed for OAuth Apps)
  */
 
 export interface Env {
@@ -719,3 +720,4 @@ export default {
         }
     },
 };
+

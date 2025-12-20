@@ -4,6 +4,7 @@
     Full text available at: https://opensource.org/licenses/MIT
 */
 
+import { DeferredPromise } from "../../../base/async";
 import { listen } from "../../../base/events";
 import { attribute, html } from "../../../base/web-components";
 import {
@@ -34,6 +35,7 @@ export abstract class KCViewerElement<
     selected: any[] = [];
 
     #tooltip: KCUIComponentTooltip | null = null;
+    #viewerReady: DeferredPromise<void> = new DeferredPromise<void>();
 
     @attribute({ type: Boolean })
     loaded: boolean;
@@ -46,23 +48,39 @@ export abstract class KCViewerElement<
 
     override initialContentCallback() {
         (async () => {
+            // Only initialize if element is still connected
+            if (!this.isConnected) {
+                return;
+            }
+            
             this.viewer = this.addDisposable(this.make_viewer());
 
             await this.viewer.setup();
 
-            this.addDisposable(
-                this.viewer.addEventListener(KiCanvasLoadEvent.type, () => {
-                    this.loaded = true;
-                    this.dispatchEvent(new KiCanvasLoadEvent());
-                }),
-            );
+            // Resolve the viewer ready promise
+            this.#viewerReady.resolve();
 
-            // Set up tooltip handling
-            this.#setupTooltip();
+            // Only add event listeners if element is still connected
+            if (this.isConnected) {
+                this.addDisposable(
+                    this.viewer.addEventListener(KiCanvasLoadEvent.type, () => {
+                        this.loaded = true;
+                        this.dispatchEvent(new KiCanvasLoadEvent());
+                    }),
+                );
+
+                // Set up tooltip handling
+                this.#setupTooltip();
+            }
         })();
     }
 
     #setupTooltip() {
+        // Only set up tooltip if element is still connected
+        if (!this.isConnected || !this.viewer) {
+            return;
+        }
+        
         // Create tooltip element and add to document body for fixed positioning
         this.#tooltip = document.createElement(
             "kc-ui-component-tooltip",
@@ -129,6 +147,9 @@ export abstract class KCViewerElement<
             this.#tooltip.remove();
             this.#tooltip = null;
         }
+        
+        // Reset viewer ready promise for potential reconnection
+        this.#viewerReady = new DeferredPromise<void>();
     }
 
     override async preferenceChangeCallback(preferences: Preferences) {
@@ -155,8 +176,15 @@ export abstract class KCViewerElement<
     protected abstract make_viewer(): ViewerT;
 
     async load(src: ProjectPage) {
-        this.loaded = false;
-        await this.viewer.load(src.document);
+        // Wait for viewer to be initialized if it hasn't been yet
+        // This can happen if load() is called before initialContentCallback completes
+        await this.#viewerReady;
+        
+        // Only proceed if viewer exists and element is still connected
+        if (this.viewer && this.isConnected) {
+            this.loaded = false;
+            await this.viewer.load(src.document);
+        }
     }
 
     override render() {

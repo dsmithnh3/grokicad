@@ -68,7 +68,6 @@ class KiCanvasShellElement extends KCUIElement {
     
     // Loading progress state
     #cloneProgress: { phase: string; loaded: number; total: number } | null = null;
-    #storageInfo: { usage: number; quota: number; usagePercent: number } | null = null;
     
     // GitHub Auth state
     #githubUser: GitHubUser | null = null;
@@ -126,9 +125,6 @@ class KiCanvasShellElement extends KCUIElement {
             
             // Load cached repos
             await this.refreshCachedRepos();
-            
-            // Load storage info (don't trigger update, will be included in next render)
-            await this.refreshStorageInfo();
 
             if (this.src) {
                 const vfs = new FetchFileSystem([this.src]);
@@ -324,8 +320,6 @@ class KiCanvasShellElement extends KCUIElement {
     private async refreshCachedRepos(): Promise<void> {
         try {
             this.#cached_repos = await GitService.getCachedRepos();
-            // Also refresh storage info when repo list changes
-            await this.refreshStorageInfo();
             this.update();
             // Re-setup listeners after update (all interactive elements)
             later(() => this.reattachAllListeners());
@@ -640,15 +634,6 @@ class KiCanvasShellElement extends KCUIElement {
     }
     
     /**
-     * Refresh storage quota information
-     */
-    private async refreshStorageInfo(): Promise<void> {
-        this.#storageInfo = await GitService.getStorageQuota();
-        // Don't call this.update() here - let the caller handle updates
-        // to avoid unnecessary re-renders and listener detachment
-    }
-
-    /**
      * Load repository using isomorphic-git in the browser (no backend required)
      */
     private async loadFromGitHub(repo: string): Promise<void> {
@@ -860,14 +845,6 @@ class KiCanvasShellElement extends KCUIElement {
         return date.toLocaleDateString();
     }
     
-    private formatBytes(bytes: number): string {
-        if (bytes === 0) return "0 B";
-        const k = 1024;
-        const sizes = ["B", "KB", "MB", "GB", "TB"];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
-    }
-
     override render() {
         this.#schematic_app = html`
             <kc-schematic-app controls="full"></kc-schematic-app>

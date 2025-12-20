@@ -110,12 +110,22 @@ export class ChatService {
         callbacks: StreamingCallbacks,
         thinkingMode: boolean = false,
     ): Promise<void> {
+        console.log("[ChatService] streamQuery called", { query, thinkingMode });
+        
+        // Add user message first, before any validation
+        this.addMessage({
+            role: "user",
+            content: query,
+        });
+        
         if (!this._extension) {
+            console.error("[ChatService] No extension configured");
             callbacks.onError?.("No extension configured");
             return;
         }
         
         if (!xaiSettings.isConfigured) {
+            console.error("[ChatService] xAI API key not configured");
             callbacks.onError?.(
                 "xAI API key not configured. Please add your API key in settings.",
             );
@@ -127,13 +137,8 @@ export class ChatService {
         this._abortController = new AbortController();
         
         try {
-            // Add user message to history
-            this.addMessage({
-                role: "user",
-                content: query,
-            });
-            
             // Build context using the extension
+            // Note: user message was already added at the start of this method
             const built = await this._extension.buildContext(
                 this._context,
                 query,

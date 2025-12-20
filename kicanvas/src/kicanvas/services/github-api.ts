@@ -194,7 +194,7 @@ export class GitHubAPI {
 
         const token = GitHubAuthService.getAccessToken();
         if (token) {
-            headers.Authorization = `Bearer ${token}`;
+            (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
         }
 
         return headers;

@@ -203,10 +203,12 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     override initialContentCallback() {
+        console.log("[ChatPanel] initialContentCallback running");
         this._setupEventListeners();
         this._initializeSchematicContext();
         requestAnimationFrame(() => {
             this._isInitialized = true;
+            console.log("[ChatPanel] Initialized");
         });
     }
 
@@ -215,9 +217,11 @@ export class KCChatPanelElement extends KCUIElement {
      * Sets up viewer events and configures the schematic extension.
      */
     private async _initializeSchematicContext(): Promise<void> {
+        console.log("[ChatPanel] _initializeSchematicContext starting");
         try {
             // Get viewer context
             this._viewer = await this.requestLazyContext("viewer") as Viewer;
+            console.log("[ChatPanel] Got viewer, waiting for loaded");
             await this._viewer.loaded;
 
             // Get repo info
@@ -369,6 +373,7 @@ export class KCChatPanelElement extends KCUIElement {
     // =========================================================================
 
     async setExtension(extension: ChatExtension, context?: ChatContext): Promise<void> {
+        console.log("[ChatPanel] setExtension called with:", extension.id, context);
         this._extensionId = extension.id;
         await this._service.setExtension(extension, context);
         
@@ -617,8 +622,10 @@ export class KCChatPanelElement extends KCUIElement {
         requestAnimationFrame(() => {
             if (this._updatePending && this._isInitialized) {
                 this._updatePending = false;
+                console.log("[ChatPanel] Calling super.update()");
                 super.update();
             } else {
+                console.log("[ChatPanel] Skipping update:", { pending: this._updatePending, initialized: this._isInitialized });
                 this._updatePending = false;
             }
         });
@@ -633,8 +640,12 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     private async _submitQuery(overrideQuery?: string): Promise<void> {
+        console.log("[ChatPanel] _submitQuery called with:", overrideQuery ?? this._inputValue);
         const query = (overrideQuery ?? this._inputValue).trim();
-        if (!query || this.streaming || this._isLoading) return;
+        if (!query || this.streaming || this._isLoading) {
+            console.log("[ChatPanel] Query blocked:", { query, streaming: this.streaming, isLoading: this._isLoading });
+            return;
+        }
 
         // Create conversation ID if this is a new conversation
         if (!this._currentConversationId) {
@@ -651,12 +662,15 @@ export class KCChatPanelElement extends KCUIElement {
         
         this._scheduleUpdate();
 
+        console.log("[ChatPanel] About to dispatch chat-send event");
         this.dispatchEvent(new CustomEvent("chat-send", {
             bubbles: true,
             composed: true,
             detail: { query, context: this._service.context },
         }));
 
+        console.log("[ChatPanel] Calling streamQuery with context:", this._service.context);
+        try {
         await this._service.streamQuery(
             query,
             {
@@ -700,6 +714,7 @@ export class KCChatPanelElement extends KCUIElement {
                     }));
                 },
                 onError: (error) => {
+                    console.error("[ChatPanel] streamQuery onError:", error);
                     this._isLoading = false;
                     this.streaming = false;
                     this._error = error;
@@ -714,6 +729,13 @@ export class KCChatPanelElement extends KCUIElement {
             },
             this._thinkingMode,
         );
+        } catch (err) {
+            console.error("[ChatPanel] streamQuery threw exception:", err);
+            this._isLoading = false;
+            this.streaming = false;
+            this._error = err instanceof Error ? err.message : String(err);
+            this._scheduleUpdate();
+        }
     }
 
     private _formatContent(content: string): string {
@@ -825,6 +847,7 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     private _setupEventListeners(): void {
+        console.log("[ChatPanel] Setting up event listeners");
         const root = this.renderRoot;
 
         // Docked tab - click to expand
@@ -942,6 +965,7 @@ export class KCChatPanelElement extends KCUIElement {
         // Send button
         this.addDisposable(
             delegate(root, ".send-button", "click", () => {
+                console.log("[ChatPanel] Send button clicked");
                 this._submitQuery();
             }),
         );
@@ -1007,6 +1031,7 @@ export class KCChatPanelElement extends KCUIElement {
             delegate(root, ".query-input", "input", (e) => {
                 const input = e.target as HTMLTextAreaElement;
                 this._inputValue = input.value;
+                console.log("[ChatPanel] Input changed:", this._inputValue);
                 this._autoResizeInput(input);
             }),
         );
@@ -1015,6 +1040,7 @@ export class KCChatPanelElement extends KCUIElement {
         this.addDisposable(
             delegate(root, ".query-input", "keydown", (e) => {
                 const event = e as KeyboardEvent;
+                console.log("[ChatPanel] Keydown:", event.key);
                 if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
                     this._submitQuery();
@@ -1040,9 +1066,11 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     private _handlePresetClick(presetId: string): void {
+        console.log("[ChatPanel] Preset clicked:", presetId);
         for (const group of this._presets) {
             const preset = group.presets.find(p => p.id === presetId);
             if (preset) {
+                console.log("[ChatPanel] Found preset, query:", preset.query);
                 this._submitQuery(preset.query);
                 break;
             }
@@ -1223,11 +1251,18 @@ export class KCChatPanelElement extends KCUIElement {
 
     private _renderMessages(): ElementOrFragment {
         const allMessages = this._service.messages;
+        console.log("[ChatPanel] _renderMessages:", { 
+            allMessages: allMessages.length, 
+            streaming: this.streaming, 
+            isLoading: this._isLoading, 
+            error: this._error 
+        });
         
         // Filter out messages with no content (including streaming placeholders)
         const messages = allMessages.filter(msg => msg.content && msg.content.trim());
 
-        if (messages.length === 0 && !this.streaming && !this._isLoading) {
+        // Show empty state only if no messages, not loading, not streaming, AND no error
+        if (messages.length === 0 && !this.streaming && !this._isLoading && !this._error) {
             return html`
                 <div class="empty-state">
                     <kc-ui-icon>chat_bubble_outline</kc-ui-icon>

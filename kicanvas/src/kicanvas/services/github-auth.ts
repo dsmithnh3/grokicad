@@ -278,8 +278,8 @@ export class GitHubAuthService {
             redirectUri,
         );
 
-        if (tokenResponse.error) {
-            throw new Error(tokenResponse.error_description || tokenResponse.error);
+        if (tokenResponse.error || !tokenResponse.access_token) {
+            throw new Error(tokenResponse.error_description || tokenResponse.error || "No access token received");
         }
 
         // Fetch user info
@@ -407,13 +407,13 @@ export class GitHubAuthService {
         used: number;
     } | null> {
         try {
-            const headers: HeadersInit = {
+            const headers: Record<string, string> = {
                 Accept: "application/vnd.github+json",
                 "X-GitHub-Api-Version": "2022-11-28",
             };
 
             if (this.authState?.accessToken) {
-                headers.Authorization = `Bearer ${this.authState.accessToken}`;
+                headers["Authorization"] = `Bearer ${this.authState.accessToken}`;
             }
 
             const response = await fetch("https://api.github.com/rate_limit", { headers });

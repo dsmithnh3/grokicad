@@ -1,68 +1,29 @@
 /*
-    API service for communicating with the groki backend.
-    Handles fetching commit history, schematic files at specific commits, etc.
+    API service for GrokiCAD.
+    Git operations are handled via GitHub REST API.
+    Distillation is handled in the browser (see distill-service.ts).
+    DigiKey integration uses OAuth 3-legged flow via Cloudflare Worker (see digikey-client.ts).
 */
 
-import { API_BASE_URL } from "../../config";
+import { GitService } from "./git-service";
 
-console.log(`[API] Using backend URL: ${API_BASE_URL}`);
+// Re-export distillation types from the kicad module
+export type {
+    DistilledSchematic,
+    DistilledComponent,
+    DistilledPin,
+    DistilledNet,
+    ProximityEdge,
+} from "../../kicad/distill";
 
-// ============================================================================
-// DigiKey Types
-// ============================================================================
-
-export interface DigiKeyParameter {
-    name: string;
-    value: string;
-}
-
-export interface DigiKeyPartInfo {
-    digikey_part_number: string | null;
-    manufacturer_part_number: string | null;
-    manufacturer: string | null;
-    description: string | null;
-    detailed_description: string | null;
-    product_url: string | null;
-    datasheet_url: string | null;
-    photo_url: string | null;
-    quantity_available: number | null;
-    unit_price: number | null;
-    product_status: string | null;
-    is_obsolete: boolean;
-    lifecycle_status: string | null;
-    category: string | null;
-    parameters: DigiKeyParameter[];
-}
-
-export interface DigiKeySearchResponse {
-    query: string;
-    success: boolean;
-    error: string | null;
-    parts: DigiKeyPartInfo[];
-    total_count: number;
-}
-
-export interface DigiKeyStatusResponse {
-    configured: boolean;
-    message: string;
-}
-
-export interface GrokObsoleteReplacementRequest {
-    manufacturer_part_number: string;
-    manufacturer: string | null;
-    description: string | null;
-    category: string | null;
-    datasheet_url: string | null;
-    product_url: string | null;
-    parameters: DigiKeyParameter[];
-}
-
-export interface GrokObsoleteReplacementResponse {
-    original_part: string;
-    analysis: string;
-    success: boolean;
-    error: string | null;
-}
+// Re-export DigiKey types and client from the new module
+export type {
+    DigiKeyParameter,
+    DigiKeyPartInfo,
+    DigiKeySearchResponse,
+    DigiKeyStatusResponse,
+} from "./digikey-client";
+export { DigiKeyClient } from "./digikey-client";
 
 export interface CommitInfo {
     commit_hash: string;
@@ -97,71 +58,11 @@ export interface CommitInfoResponse {
     changed_files: string[];
 }
 
-export interface DistillResponse {
-    repo: string;
-    commit: string;
-    cached: boolean;
-    distilled: DistilledSchematic;
-}
-
-export interface RepoInitRequest {
-    repo: string;
-    commit?: string;
-}
-
-export interface RepoInitResponse {
-    repo: string;
-    commit: string;
-    cached: boolean;
-    component_count: number;
-    net_count: number;
-    schematic_files: string[];
-    distilled: DistilledSchematic;
-}
-
-export interface RepoClearCacheRequest {
-    repo: string;
-    commit?: string;
-}
-
+// Cache clear response type (used by grok-api-service for compatibility)
 export interface RepoClearCacheResponse {
     repo: string;
     cleared: boolean;
     message: string;
-}
-
-export interface DistilledSchematic {
-    components: DistilledComponent[];
-    nets: Record<string, Record<string, { Pin: string }[]>>;
-    proximities: ProximityEdge[];
-}
-
-export interface DistilledComponent {
-    reference: string;
-    lib_id: string;
-    value: string;
-    position: { x: number; y: number };
-    footprint: string | null;
-    properties: Record<string, string>;
-    category: string;
-    pins: DistilledPin[];
-    sheet_path?: string;
-}
-
-export interface DistilledPin {
-    number: string;
-    name: string | null;
-    net: string | null;
-}
-
-export interface ProximityEdge {
-    ref_a: string;
-    ref_b: string;
-    distance_mm: number;
-    score: number;
-    category_a: string;
-    category_b: string;
-    weight: number;
 }
 
 export interface GrokSelectionRequest {
@@ -172,265 +73,86 @@ export interface GrokSelectionRequest {
 }
 
 export class GrokiAPI {
-    private static baseUrl = API_BASE_URL;
+    // Note: DigiKey API methods have been moved to DigiKeyClient.
+    // Import { DigiKeyClient } from "./digikey-client" for DigiKey integration.
+
+    // ========================================================================
+    // Git Operations (via GitHub REST API - lazy loading)
+    // ========================================================================
 
     /**
-     * Set the API base URL (useful for testing or different environments)
+     * Get initial commits (first page only for fast loading).
+     * For more commits, use getCommitsPage().
      */
-    static setBaseUrl(url: string): void {
-        this.baseUrl = url;
+    static async getCommits(repo: string, onProgress?: (progress: { phase: string; loaded: number; total: number }) => void): Promise<CommitInfo[]> {
+        return GitService.getAllCommits(repo, onProgress);
     }
 
     /**
-     * Get all commits that modified .kicad_sch files in a repository
+     * Get a page of commits (for lazy loading / infinite scroll).
+     * @param repo - Repository slug (owner/repo)
+     * @param page - Page number (1-indexed)
+     * @param perPage - Commits per page (default 20)
+     * @returns Commits and whether there are more pages
      */
-    static async getCommits(repo: string): Promise<CommitInfo[]> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/commits`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch commits: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: RepoCommitsResponse = await response.json();
-            return data.commits;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
+    static async getCommitsPage(
+        repo: string,
+        page: number = 1,
+        perPage: number = 20,
+    ): Promise<{ commits: CommitInfo[]; hasMore: boolean }> {
+        return GitService.getCommitsPage(repo, page, perPage);
     }
 
     /**
-     * Get all .kicad_sch files at a specific commit
+     * Get all .kicad_sch files at a specific commit.
      */
     static async getCommitFiles(
         repo: string,
         commit: string,
     ): Promise<SchematicFile[]> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/commit/files`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch commit files: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: CommitFilesResponse = await response.json();
-            return data.files;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
+        return GitService.getSchematicFiles(repo, commit);
     }
 
     /**
-     * Get detailed information about a specific commit
+     * Get detailed information about a specific commit.
      */
     static async getCommitInfo(
         repo: string,
         commit: string,
     ): Promise<CommitInfoResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/commit/info`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit }),
-            });
+        const [commitInfo, changedFiles] = await Promise.all([
+            GitService.getCommitInfo(repo, commit),
+            GitService.getChangedSchematicFiles(repo, commit),
+        ]);
 
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch commit info: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            return await response.json();
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * Get distilled schematic data for a specific commit
-     */
-    static async getDistilledSchematic(
-        repo: string,
-        commit: string,
-    ): Promise<DistilledSchematic> {
-        try {
-            const response = await fetch(`${this.baseUrl}/distill`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to fetch distilled schematic: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: DistillResponse = await response.json();
-            return data.distilled;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * Initialize a repository by distilling its schematic files.
-     * This should be called when a user first loads a repository to prepare
-     * the semantic representation for AI analysis.
-     *
-     * @param repo - Repository in "owner/repo" format
-     * @param commit - Optional commit hash (uses latest if not provided)
-     * @returns Initialization response with distilled schematic data
-     */
-    static async initRepository(
-        repo: string,
-        commit?: string,
-    ): Promise<RepoInitResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/init`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit } satisfies RepoInitRequest),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to initialize repository: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: RepoInitResponse = await response.json();
-            console.log(
-                `[API] Repository ${repo} initialized: ${data.component_count} components, ${data.net_count} nets, cached=${data.cached}`,
-            );
-            return data;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
-    }
-
-    /**
-     * Create an EventSource for streaming Grok selection analysis
-     * Returns the URL to connect to - caller manages the EventSource
-     */
-    static getGrokSelectionStreamUrl(
-        repo: string,
-        commit: string,
-        componentIds: string[],
-        query: string,
-    ): string {
-        const params = new URLSearchParams({
+        return {
             repo,
             commit,
-            query,
-            component_ids: componentIds.join(","),
-        });
-        return `${this.baseUrl}/grok/selection/stream?${params.toString()}`;
+            commit_date: commitInfo.commit_date,
+            message: commitInfo.message,
+            blurb: null,
+            description: null,
+            changed_files: changedFiles,
+        };
     }
 
     /**
-     * Clear the cached distilled schematic data for a repository.
-     * This forces a re-distillation on the next init call.
-     *
-     * @param repo - Repository in "owner/repo" format
-     * @param commit - Optional commit hash (clears all commits if not provided)
+     * Get the latest commit hash for a repository.
      */
-    static async clearCache(
-        repo: string,
-        commit?: string,
-    ): Promise<RepoClearCacheResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/repo/clear-cache`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repo, commit } satisfies RepoClearCacheRequest),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                throw new Error(
-                    `Failed to clear cache: ${response.status} ${
-                        response.statusText
-                    }${errorText ? ` - ${errorText}` : ""}`,
-                );
-            }
-
-            const data: RepoClearCacheResponse = await response.json();
-            console.log(`[API] ${data.message}`);
-            return data;
-        } catch (e) {
-            if (e instanceof TypeError && e.message.includes("fetch")) {
-                throw new Error(
-                    `Cannot connect to API at ${this.baseUrl}. Is the backend running?`,
-                );
-            }
-            throw e;
-        }
+    static async getLatestCommit(repo: string): Promise<string> {
+        return GitService.getLatestCommit(repo);
     }
+
+    /**
+     * Invalidate the local cache for a repository.
+     */
+    static invalidateGitCache(repo: string): void {
+        GitService.invalidateCache(repo);
+    }
+
+    // ========================================================================
+    // Utility Methods
+    // ========================================================================
 
     /**
      * Extract repo identifier from a GitHub URL
@@ -447,143 +169,6 @@ export class GrokiAPI {
             return null;
         } catch {
             return null;
-        }
-    }
-
-    // ========================================================================
-    // DigiKey API Methods
-    // ========================================================================
-
-    /**
-     * Check if DigiKey integration is configured on the backend
-     */
-    static async getDigiKeyStatus(): Promise<DigiKeyStatusResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/digikey/status`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (!response.ok) {
-                return {
-                    configured: false,
-                    message: `Failed to check DigiKey status: ${response.status}`,
-                };
-            }
-
-            return await response.json();
-        } catch (e) {
-            return {
-                configured: false,
-                message:
-                    e instanceof Error
-                        ? e.message
-                        : "Failed to connect to backend",
-            };
-        }
-    }
-
-    /**
-     * Search DigiKey for part information
-     * @param query - Search query (part number, keyword, etc.)
-     * @param mpn - Optional manufacturer part number for more precise search
-     */
-    static async searchDigiKey(
-        query: string,
-        mpn?: string,
-    ): Promise<DigiKeySearchResponse> {
-        try {
-            const response = await fetch(`${this.baseUrl}/digikey/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ query, mpn }),
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                return {
-                    query: mpn || query,
-                    success: false,
-                    error: `Search failed: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`,
-                    parts: [],
-                    total_count: 0,
-                };
-            }
-
-            return await response.json();
-        } catch (e) {
-            return {
-                query: mpn || query,
-                success: false,
-                error:
-                    e instanceof Error
-                        ? e.message
-                        : "Failed to connect to backend",
-                parts: [],
-                total_count: 0,
-            };
-        }
-    }
-
-    // ========================================================================
-    // Grok AI Methods
-    // ========================================================================
-
-    /**
-     * Find replacement parts for an obsolete component using Grok AI
-     * @param part - The obsolete DigiKey part information
-     */
-    static async findObsoleteReplacement(
-        part: DigiKeyPartInfo,
-    ): Promise<GrokObsoleteReplacementResponse> {
-        try {
-            const request: GrokObsoleteReplacementRequest = {
-                manufacturer_part_number:
-                    part.manufacturer_part_number || "Unknown",
-                manufacturer: part.manufacturer,
-                description: part.description,
-                category: part.category,
-                datasheet_url: part.datasheet_url,
-                product_url: part.product_url,
-                parameters: part.parameters,
-            };
-
-            const response = await fetch(
-                `${this.baseUrl}/grok/obsolete/replacement`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(request),
-                },
-            );
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => "");
-                return {
-                    original_part: part.manufacturer_part_number || "Unknown",
-                    analysis: "",
-                    success: false,
-                    error: `Request failed: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`,
-                };
-            }
-
-            return await response.json();
-        } catch (e) {
-            return {
-                original_part: part.manufacturer_part_number || "Unknown",
-                analysis: "",
-                success: false,
-                error:
-                    e instanceof Error
-                        ? e.message
-                        : "Failed to connect to backend",
-            };
         }
     }
 }

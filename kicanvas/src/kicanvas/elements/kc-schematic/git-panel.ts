@@ -66,6 +66,45 @@ export class KCSchematicGitPanelElement extends KCUIElement {
                 gap: 0;
             }
 
+            .load-more-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5em;
+                padding: 0.75em 1em;
+                margin: 0.5em;
+                background: rgba(255, 206, 84, 0.1);
+                border: 1px solid rgba(255, 206, 84, 0.3);
+                border-radius: 6px;
+                color: rgb(255, 206, 84);
+                cursor: pointer;
+                font-size: 0.85em;
+                transition: all 0.2s ease;
+            }
+
+            .load-more-btn:hover {
+                background: rgba(255, 206, 84, 0.2);
+                border-color: rgba(255, 206, 84, 0.5);
+            }
+
+            .load-more-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            .load-more-btn .spinner {
+                width: 14px;
+                height: 14px;
+                border: 2px solid rgba(255, 206, 84, 0.3);
+                border-top-color: rgb(255, 206, 84);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
             .commit-item {
                 display: flex;
                 flex-direction: column;
@@ -275,10 +314,13 @@ export class KCSchematicGitPanelElement extends KCUIElement {
     viewer: SchematicViewer;
     commits: CommitInfo[] = [];
     loading = true;
+    loadingMore = false;
     error: string | null = null;
     currentRepo: string | null = null;
     currentCommit: string | null = null;
     expandedGroups: Set<number> = new Set();
+    currentPage = 1;
+    hasMore = false;
 
     override connectedCallback() {
         (async () => {
@@ -344,12 +386,19 @@ export class KCSchematicGitPanelElement extends KCUIElement {
                 this.update();
             }
         });
+
+        // Handle load more button
+        delegate(this.renderRoot, ".load-more-btn", "click", () => {
+            this.loadMoreCommits();
+        });
     }
 
     private async loadGitHistory() {
         if (!this.currentRepo) {
             this.loading = false;
             this.commits = [];
+            this.currentPage = 1;
+            this.hasMore = false;
             this.update();
             return;
         }
@@ -357,15 +406,41 @@ export class KCSchematicGitPanelElement extends KCUIElement {
         this.loading = true;
         this.error = null;
         this.expandedGroups.clear();
+        this.currentPage = 1;
+        this.hasMore = false;
         this.update();
 
         try {
-            this.commits = await GrokiAPI.getCommits(this.currentRepo);
+            const result = await GrokiAPI.getCommitsPage(this.currentRepo, 1);
+            this.commits = result.commits;
+            this.hasMore = result.hasMore;
         } catch (e) {
             this.error = "Failed to load git history";
             console.error("Git history error:", e);
         } finally {
             this.loading = false;
+            this.update();
+        }
+    }
+
+    private async loadMoreCommits() {
+        if (!this.currentRepo || this.loadingMore || !this.hasMore) {
+            return;
+        }
+
+        this.loadingMore = true;
+        this.update();
+
+        try {
+            const nextPage = this.currentPage + 1;
+            const result = await GrokiAPI.getCommitsPage(this.currentRepo, nextPage);
+            this.commits = [...this.commits, ...result.commits];
+            this.currentPage = nextPage;
+            this.hasMore = result.hasMore;
+        } catch (e) {
+            console.error("Failed to load more commits:", e);
+        } finally {
+            this.loadingMore = false;
             this.update();
         }
     }
@@ -578,11 +653,23 @@ export class KCSchematicGitPanelElement extends KCUIElement {
             }
         });
 
+        const loadMoreButton = this.hasMore ? html`
+            <button 
+                class="load-more-btn" 
+                data-action="load-more"
+                ${this.loadingMore ? "disabled" : ""}>
+                ${this.loadingMore 
+                    ? html`<div class="spinner"></div> Loading...`
+                    : html`Load more commits`}
+            </button>
+        ` : null;
+
         return html`
             <kc-ui-panel>
                 <kc-ui-panel-title title="Commit History"></kc-ui-panel-title>
                 <kc-ui-panel-body>
                     <div class="commit-list">${commitItems}</div>
+                    ${loadMoreButton}
                 </kc-ui-panel-body>
             </kc-ui-panel>
         `;

@@ -1,16 +1,16 @@
 /*
     Virtual file system that loads schematic files from a specific git commit
-    via the groki backend API.
+    using isomorphic-git in the browser (no backend required).
 */
 
 import { initiate_download } from "../../base/dom/download";
 import { basename } from "../../base/paths";
-import { GrokiAPI, type SchematicFile } from "./api";
+import { GitService, type SchematicFile } from "./git-service";
 import { VirtualFileSystem } from "./vfs";
 
 /**
  * Virtual file system for loading schematics from a specific git commit.
- * Uses the groki backend API to fetch file contents.
+ * Uses isomorphic-git directly in the browser - no backend required.
  */
 export class CommitFileSystem extends VirtualFileSystem {
     private files: Map<string, SchematicFile> = new Map();
@@ -24,7 +24,7 @@ export class CommitFileSystem extends VirtualFileSystem {
     }
 
     /**
-     * Create a CommitFileSystem and load all files from the API
+     * Create a CommitFileSystem and load all files from git
      */
     static async fromCommit(
         repo: string,
@@ -36,14 +36,14 @@ export class CommitFileSystem extends VirtualFileSystem {
     }
 
     /**
-     * Load all schematic files from the API for this commit
+     * Load all schematic files from the git repository for this commit
      */
     private async loadFiles(): Promise<void> {
         if (this.loaded) {
             return;
         }
 
-        const files = await GrokiAPI.getCommitFiles(this.repo, this.commit);
+        const files = await GitService.getSchematicFiles(this.repo, this.commit);
 
         for (const file of files) {
             const name = basename(file.path) ?? file.path;

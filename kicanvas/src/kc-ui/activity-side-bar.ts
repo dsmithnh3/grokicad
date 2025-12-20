@@ -23,8 +23,8 @@ export class KCUIActivitySideBarElement extends KCUIElement {
                 flex-direction: row;
                 height: 100%;
                 overflow: hidden;
-                min-width: calc(max(20%, 200px));
-                max-width: calc(max(20%, 200px));
+                min-width: calc(max(18%, 350px));
+                max-width: calc(max(18%, 350px));
             }
 
             div {

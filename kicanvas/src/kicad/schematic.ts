@@ -59,6 +59,7 @@ export class KicadSch {
     project?: Project;
     version: number;
     generator?: string;
+    generator_version?: string;
     uuid: string;
     paper?: Paper;
     title_block = new TitleBlock();
@@ -90,6 +91,7 @@ export class KicadSch {
                 P.start("kicad_sch"),
                 P.pair("version", T.number),
                 P.pair("generator", T.string),
+                P.pair("generator_version", T.string),
                 P.pair("uuid", T.string),
                 P.item("paper", Paper),
                 P.item("title_block", TitleBlock),
@@ -599,6 +601,7 @@ export class Text {
     at: At;
     effects = new Effects();
     uuid?: string;
+    exclude_from_sim = false;
 
     constructor(
         expr: Parseable,
@@ -617,6 +620,7 @@ export class Text {
                 P.item("at", At),
                 P.item("effects", Effects),
                 P.pair("uuid", T.string),
+                P.pair("exclude_from_sim", T.boolean),
             ),
         );
 
@@ -678,6 +682,7 @@ export class Label {
     effects = new Effects();
     fields_autoplaced = false;
     uuid?: string;
+    exclude_from_sim = false;
 
     static common_expr_defs = [
         P.positional("text"),
@@ -685,6 +690,7 @@ export class Label {
         P.item("effects", Effects),
         P.atom("fields_autoplaced"),
         P.pair("uuid", T.string),
+        P.pair("exclude_from_sim", T.boolean),
     ];
 
     get shown_text() {
@@ -807,6 +813,7 @@ export class LibSymbol {
     in_bom = false;
     on_board = false;
     exclude_from_sim = false;
+    embedded_fonts = false;
     properties: Map<string, Property> = new Map();
     children: LibSymbol[] = [];
     drawings: Drawing[] = [];
@@ -852,6 +859,7 @@ export class LibSymbol {
                 P.collection("drawings", "rectangle", T.item(Rectangle, this)),
                 P.collection("drawings", "text", T.item(LibText, this)),
                 P.collection("drawings", "textbox", T.item(TextBox, this)),
+                P.pair("embedded_fonts", T.boolean),
             ),
         );
 

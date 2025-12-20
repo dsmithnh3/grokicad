@@ -332,7 +332,7 @@ export class KCGrokButtonElement extends KCUIElement {
         };
     }
 
-    #onClick() {
+    async #onClick() {
         const payload = this.#buildPayload();
 
         // Log the payload to console
@@ -344,6 +344,23 @@ export class KCGrokButtonElement extends KCUIElement {
         );
         console.log("Full Payload:", payload);
         console.log("===========================");
+
+        // Re-fetch repo info to get current commit (may have changed via navigation)
+        try {
+            const currentRepoInfo = (await this.requestLazyContext("repoInfo")) as {
+                repo: string | null;
+                commit: string | null;
+            };
+            // Check if context changed
+            if (currentRepoInfo.repo !== this.#repoInfo.repo || 
+                currentRepoInfo.commit !== this.#repoInfo.commit) {
+                console.log("[GrokButton] Repo context changed:", 
+                    `${this.#repoInfo.commit?.slice(0, 8) ?? 'none'} -> ${currentRepoInfo.commit?.slice(0, 8) ?? 'none'}`);
+                this.#repoInfo = currentRepoInfo;
+            }
+        } catch {
+            // Keep existing repo info if refresh fails
+        }
 
         // Convert payload items to the format expected by chat panel
         // Filter out items without a valid reference (wires, labels, etc.)

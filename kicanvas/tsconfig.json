@@ -42,7 +42,9 @@
         "noPropertyAccessFromIndexSignature": true /* Enforces using indexed accessors for keys declared using an indexed type. */,
         "allowUnusedLabels": false,
         "allowUnreachableCode": false,
+        /* Skip type checking of declaration files from node_modules */
+        "skipLibCheck": true,
     },
     "include": ["./src/**/*", "./test/**/*"],
-    "exclude": ["./node_modules", "./**/node_modules/*", "./scripts/"],
+    "exclude": ["./node_modules", "./**/node_modules/*", "./scripts/", "./worker/"],
 }

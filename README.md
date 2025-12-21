@@ -33,14 +33,6 @@
 - **Edge-deployed**: Globally distributed on Cloudflare Workers for low-latency access
 - **Zero dependencies**: Lightweight TypeScript viewer, no React or heavy frameworks
 
-## 🎨 Interactive Schematic Viewer
-
-Built on KiCanvas with WebGL rendering. Navigate complex multi-sheet designs, highlight nets, and explore your hardware designs in the browser.
-
-<p align="center">
-  <img src="./images/groki-intro.png" alt="GroKi Interactive Viewer" width="700">
-</p>
-
 ## 🚀 Quickstart
 
 ### Prerequisites

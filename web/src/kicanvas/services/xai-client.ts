@@ -100,7 +100,7 @@ export class XAIClient {
 
     /**
      * Make a streaming chat completion request.
-     * 
+     *
      * @param messages - Array of messages in the conversation
      * @param callbacks - Callbacks for streaming events
      * @param thinkingMode - Whether to enable reasoning/thinking mode
@@ -111,7 +111,9 @@ export class XAIClient {
         thinkingMode: boolean = false,
     ): Promise<void> {
         if (!xaiSettings.isConfigured) {
-            callbacks.onError?.("xAI API key not configured. Please add your API key in settings.");
+            callbacks.onError?.(
+                "xAI API key not configured. Please add your API key in settings.",
+            );
             return;
         }
 
@@ -134,7 +136,7 @@ export class XAIClient {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${xaiSettings.apiKey}`,
+                    Authorization: `Bearer ${xaiSettings.apiKey}`,
                 },
                 body: JSON.stringify(request),
                 signal: this.abortController.signal,
@@ -142,18 +144,24 @@ export class XAIClient {
 
             if (!response.ok) {
                 const errorText = await response.text().catch(() => "");
-                
+
                 if (response.status === 401) {
-                    callbacks.onError?.("Invalid API key. Please check your xAI API key in settings.");
+                    callbacks.onError?.(
+                        "Invalid API key. Please check your xAI API key in settings.",
+                    );
                     return;
                 }
                 if (response.status === 429) {
-                    callbacks.onError?.("Rate limited. Please wait a moment and try again.");
+                    callbacks.onError?.(
+                        "Rate limited. Please wait a moment and try again.",
+                    );
                     return;
                 }
-                
+
                 callbacks.onError?.(
-                    `API error: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`
+                    `API error: ${response.status} ${response.statusText}${
+                        errorText ? ` - ${errorText}` : ""
+                    }`,
                 );
                 return;
             }
@@ -198,16 +206,19 @@ export class XAIClient {
 
                         try {
                             const chunk: StreamChunk = JSON.parse(data);
-                            
+
                             if (chunk.choices?.[0]?.delta) {
                                 const delta = chunk.choices[0].delta;
-                                
+
                                 // Handle reasoning/thinking content
                                 if (delta.reasoning_content) {
                                     thinkingContent += delta.reasoning_content;
-                                    callbacks.onChunk?.(delta.reasoning_content, true);
+                                    callbacks.onChunk?.(
+                                        delta.reasoning_content,
+                                        true,
+                                    );
                                 }
-                                
+
                                 // Handle regular content
                                 if (delta.content) {
                                     fullContent += delta.content;
@@ -216,7 +227,10 @@ export class XAIClient {
                             }
                         } catch (e) {
                             // Skip invalid JSON chunks (keep-alive messages, etc.)
-                            console.debug("[XAIClient] Skipping non-JSON chunk:", data);
+                            console.debug(
+                                "[XAIClient] Skipping non-JSON chunk:",
+                                data,
+                            );
                         }
                     }
                 }
@@ -231,7 +245,7 @@ export class XAIClient {
 
             console.error("[XAIClient] Stream error:", e);
             callbacks.onError?.(
-                e instanceof Error ? e.message : "Failed to connect to xAI API"
+                e instanceof Error ? e.message : "Failed to connect to xAI API",
             );
         } finally {
             this.abortController = null;
@@ -240,7 +254,7 @@ export class XAIClient {
 
     /**
      * Make a non-streaming chat completion request.
-     * 
+     *
      * @param messages - Array of messages in the conversation
      * @returns The assistant's response content
      */
@@ -259,14 +273,18 @@ export class XAIClient {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${xaiSettings.apiKey}`,
+                Authorization: `Bearer ${xaiSettings.apiKey}`,
             },
             body: JSON.stringify(request),
         });
 
         if (!response.ok) {
             const errorText = await response.text().catch(() => "");
-            throw new Error(`API error: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`);
+            throw new Error(
+                `API error: ${response.status} ${response.statusText}${
+                    errorText ? ` - ${errorText}` : ""
+                }`,
+            );
         }
 
         const data = await response.json();
@@ -276,4 +294,3 @@ export class XAIClient {
 
 /** Singleton instance for convenience */
 export const xaiClient = new XAIClient();
-

@@ -121,12 +121,12 @@ class APICache {
     get<T>(key: string): T | null {
         const entry = this.cache.get(key);
         if (!entry) return null;
-        
+
         if (Date.now() - entry.timestamp > this.maxAge) {
             this.cache.delete(key);
             return null;
         }
-        
+
         return entry.data as T;
     }
 
@@ -194,7 +194,9 @@ export class GitHubAPI {
 
         const token = GitHubAuthService.getAccessToken();
         if (token) {
-            (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+            (headers as Record<string, string>)[
+                "Authorization"
+            ] = `Bearer ${token}`;
         }
 
         return headers;
@@ -208,7 +210,7 @@ export class GitHubAPI {
         options: RequestInit = {},
     ): Promise<T> {
         const headers = this.getHeaders();
-        
+
         // Add conditional request headers if we have a cached etag
         const cachedEtag = this.cache.getEtag(url);
         if (cachedEtag) {
@@ -250,7 +252,7 @@ export class GitHubAPI {
             }
 
             const data = await response.json();
-            
+
             // Cache the response
             const etag = response.headers.get("ETag");
             this.cache.set(url, data, etag || undefined);
@@ -261,7 +263,9 @@ export class GitHubAPI {
                 throw error;
             }
             throw new GitHubAPIError(
-                `Network error: ${error instanceof Error ? error.message : String(error)}`,
+                `Network error: ${
+                    error instanceof Error ? error.message : String(error)
+                }`,
                 "NETWORK_ERROR",
                 error,
             );
@@ -271,9 +275,12 @@ export class GitHubAPI {
     /**
      * Handle API error responses
      */
-    private static async handleError(response: Response, url: string): Promise<never> {
+    private static async handleError(
+        response: Response,
+        url: string,
+    ): Promise<never> {
         let errorMessage = `GitHub API error: ${response.status}`;
-        
+
         try {
             const errorBody = await response.json();
             errorMessage = errorBody.message || errorMessage;
@@ -315,7 +322,10 @@ export class GitHubAPI {
      */
     static validateRepoSlug(repoSlug: string): { owner: string; repo: string } {
         if (!repoSlug || typeof repoSlug !== "string") {
-            throw new GitHubAPIError("Repository slug is required", "INVALID_REPO");
+            throw new GitHubAPIError(
+                "Repository slug is required",
+                "INVALID_REPO",
+            );
         }
 
         const sanitized = repoSlug.trim();
@@ -346,13 +356,15 @@ export class GitHubAPI {
     /**
      * Get repository information including default branch
      */
-    static async getRepoInfo(repoSlug: string): Promise<{ default_branch: string }> {
+    static async getRepoInfo(
+        repoSlug: string,
+    ): Promise<{ default_branch: string }> {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
         const url = `https://api.github.com/repos/${owner}/${repo}`;
-        
+
         this.log(`Fetching repo info for ${repoSlug}`);
         const data = await this.fetch<{ default_branch: string }>(url);
-        
+
         // Update metadata
         this.repoMetadata.set(repoSlug, {
             slug: repoSlug,
@@ -374,10 +386,11 @@ export class GitHubAPI {
      * Get list of recently accessed repos
      */
     static getCachedRepos(): CachedRepoInfo[] {
-        return Array.from(this.repoMetadata.values())
-            .sort((a, b) => 
-                new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()
-            );
+        return Array.from(this.repoMetadata.values()).sort(
+            (a, b) =>
+                new Date(b.lastAccessed).getTime() -
+                new Date(a.lastAccessed).getTime(),
+        );
     }
 
     /**
@@ -409,12 +422,15 @@ export class GitHubAPI {
     static async getLatestCommit(repoSlug: string): Promise<string> {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
         const url = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`;
-        
+
         this.log(`Fetching latest commit for ${repoSlug}`);
         const commits = await this.fetch<GitHubCommit[]>(url);
-        
+
         if (commits.length === 0) {
-            throw new GitHubAPIError("No commits found in repository", "NOT_FOUND");
+            throw new GitHubAPIError(
+                "No commits found in repository",
+                "NOT_FOUND",
+            );
         }
 
         // Update metadata
@@ -443,7 +459,9 @@ export class GitHubAPI {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
         const { page = 1, perPage = 20, sha } = options;
 
-        const url = new URL(`https://api.github.com/repos/${owner}/${repo}/commits`);
+        const url = new URL(
+            `https://api.github.com/repos/${owner}/${repo}/commits`,
+        );
         url.searchParams.set("per_page", String(perPage));
         url.searchParams.set("page", String(page));
         if (sha) url.searchParams.set("sha", sha);
@@ -468,7 +486,10 @@ export class GitHubAPI {
     /**
      * Get a single commit's info
      */
-    static async getCommit(repoSlug: string, sha: string): Promise<GitHubCommit> {
+    static async getCommit(
+        repoSlug: string,
+        sha: string,
+    ): Promise<GitHubCommit> {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
         const url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
         return this.fetch<GitHubCommit>(url);
@@ -477,9 +498,12 @@ export class GitHubAPI {
     /**
      * Get commit info for a specific commit
      */
-    static async getCommitInfo(repoSlug: string, commitSha: string): Promise<CommitInfo> {
+    static async getCommitInfo(
+        repoSlug: string,
+        commitSha: string,
+    ): Promise<CommitInfo> {
         const commit = await this.getCommit(repoSlug, commitSha);
-        
+
         return {
             commit_hash: commitSha,
             commit_date: commit.commit.author.date,
@@ -495,7 +519,10 @@ export class GitHubAPI {
     /**
      * Get a tree (directory listing) recursively
      */
-    static async getTree(repoSlug: string, treeSha: string): Promise<GitHubTree> {
+    static async getTree(
+        repoSlug: string,
+        treeSha: string,
+    ): Promise<GitHubTree> {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
         const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`;
         return this.fetch<GitHubTree>(url);
@@ -504,7 +531,10 @@ export class GitHubAPI {
     /**
      * Get tree at a specific commit
      */
-    static async getTreeAtCommit(repoSlug: string, commitSha: string): Promise<GitHubTree> {
+    static async getTreeAtCommit(
+        repoSlug: string,
+        commitSha: string,
+    ): Promise<GitHubTree> {
         const commit = await this.getCommit(repoSlug, commitSha);
         return this.getTree(repoSlug, commit.commit.tree.sha);
     }
@@ -515,14 +545,14 @@ export class GitHubAPI {
     static async getBlob(repoSlug: string, blobSha: string): Promise<string> {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
         const url = `https://api.github.com/repos/${owner}/${repo}/git/blobs/${blobSha}`;
-        
+
         const blob = await this.fetch<GitHubBlob>(url);
-        
+
         if (blob.encoding === "base64") {
             // Decode base64 content
             return atob(blob.content.replace(/\n/g, ""));
         }
-        
+
         return blob.content;
     }
 
@@ -538,15 +568,18 @@ export class GitHubAPI {
         repoSlug: string,
         commitSha: string,
     ): Promise<SchematicFile[]> {
-        this.log(`Getting schematic files for ${repoSlug}@${commitSha.slice(0, 7)}`);
+        this.log(
+            `Getting schematic files for ${repoSlug}@${commitSha.slice(0, 7)}`,
+        );
 
         const tree = await this.getTreeAtCommit(repoSlug, commitSha);
-        
+
         // Filter for KiCad files
         const kicadFiles = tree.tree.filter(
             (entry) =>
                 entry.type === "blob" &&
-                (entry.path.endsWith(".kicad_sch") || entry.path.endsWith(".kicad_pro")),
+                (entry.path.endsWith(".kicad_sch") ||
+                    entry.path.endsWith(".kicad_pro")),
         );
 
         this.log(`Found ${kicadFiles.length} KiCad files`);
@@ -563,7 +596,10 @@ export class GitHubAPI {
                         const content = await this.getBlob(repoSlug, entry.sha);
                         return { path: entry.path, content };
                     } catch (error) {
-                        console.warn(`[GitHubAPI] Failed to fetch ${entry.path}:`, error);
+                        console.warn(
+                            `[GitHubAPI] Failed to fetch ${entry.path}:`,
+                            error,
+                        );
                         return null;
                     }
                 }),
@@ -588,16 +624,16 @@ export class GitHubAPI {
         commitSha: string,
     ): Promise<string[]> {
         const { owner, repo } = this.validateRepoSlug(repoSlug);
-        
+
         // Get the commit with files
         const url = `https://api.github.com/repos/${owner}/${repo}/commits/${commitSha}`;
-        
+
         interface CommitWithFiles extends GitHubCommit {
             files?: Array<{ filename: string; status: string }>;
         }
-        
+
         const commit = await this.fetch<CommitWithFiles>(url);
-        
+
         return (commit.files ?? [])
             .filter((file) => file.filename.endsWith(".kicad_sch"))
             .map((file) => file.filename);
@@ -613,14 +649,24 @@ export class GitHubAPI {
      */
     static async getAllCommits(
         repoSlug: string,
-        onProgress?: (progress: { phase: string; loaded: number; total: number }) => void,
+        onProgress?: (progress: {
+            phase: string;
+            loaded: number;
+            total: number;
+        }) => void,
     ): Promise<CommitInfo[]> {
         onProgress?.({ phase: "Fetching", loaded: 0, total: 0 });
 
         // Just get the first page for initial display
-        const { commits } = await this.getCommitsPage(repoSlug, { perPage: 50 });
-        
-        onProgress?.({ phase: "Processing", loaded: commits.length, total: commits.length });
+        const { commits } = await this.getCommitsPage(repoSlug, {
+            perPage: 50,
+        });
+
+        onProgress?.({
+            phase: "Processing",
+            loaded: commits.length,
+            total: commits.length,
+        });
 
         return commits;
     }

@@ -37,7 +37,11 @@ export {
 
 // API Service
 export { GrokAPIService, grokAPI } from "./grok-api-service";
-export type { StreamCallbacks, InitCallbacks, RepoInitResponse } from "./grok-api-service";
+export type {
+    StreamCallbacks,
+    InitCallbacks,
+    RepoInitResponse,
+} from "./grok-api-service";
 
 // Components
 export { KCGrokChatPanelElement } from "./grok-chat-panel";

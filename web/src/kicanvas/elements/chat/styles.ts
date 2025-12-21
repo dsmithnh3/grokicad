@@ -18,22 +18,22 @@ export const chatCssProperties = css`
         --chat-panel-bg: #000000;
         --chat-panel-border: #333333;
         --chat-panel-radius: 10px;
-        
+
         /* Header */
         --chat-header-bg: transparent;
         --chat-header-border: #333333;
         --chat-header-height: 48px;
-        
+
         /* Accent colors */
         --chat-accent: #ffce54;
         --chat-accent-dim: rgba(255, 206, 84, 0.15);
         --chat-accent-hover: rgba(255, 206, 84, 0.35);
-        
+
         /* Text colors */
         --chat-text-primary: #ffffff;
         --chat-text-secondary: rgba(255, 255, 255, 0.7);
         --chat-text-muted: rgba(255, 255, 255, 0.5);
-        
+
         /* Messages */
         --chat-user-bg: rgba(96, 165, 250, 0.08);
         --chat-user-border: rgba(96, 165, 250, 0.4);
@@ -41,11 +41,11 @@ export const chatCssProperties = css`
         --chat-assistant-border: var(--chat-accent);
         --chat-error-bg: rgba(255, 100, 100, 0.1);
         --chat-error-border: rgba(255, 100, 100, 0.6);
-        
+
         /* Thinking mode */
         --chat-thinking-accent: rgb(147, 51, 234);
         --chat-thinking-bg: rgba(147, 51, 234, 0.15);
-        
+
         /* Transitions */
         --chat-transition-fast: 0.15s ease;
         --chat-transition-normal: 0.25s ease;
@@ -66,7 +66,7 @@ export const hostStyles = css`
     :host(:not([visible])) {
         display: none;
     }
-    
+
     /* Docked tab positioning - always visible at right edge */
     .docked-tab {
         position: fixed;
@@ -87,33 +87,37 @@ export const hostStyles = css`
         transition: all var(--chat-transition-fast);
         box-shadow: -2px 0 12px rgba(0, 0, 0, 0.4);
     }
-    
+
     .docked-tab:hover {
         width: 52px;
         background: linear-gradient(135deg, #252525 0%, #1a1a1a 100%);
         border-color: rgba(255, 206, 84, 0.5);
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 206, 84, 0.15);
+        box-shadow:
+            -4px 0 24px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(255, 206, 84, 0.15);
     }
-    
+
     .docked-logo {
         width: 28px;
         height: 28px;
         object-fit: contain;
         transition: transform var(--chat-transition-fast);
     }
-    
+
     .docked-tab:hover .docked-logo {
         transform: scale(1.1);
     }
-    
+
     .docked-tab kc-ui-icon {
         font-size: 24px;
         color: var(--chat-accent);
     }
-    
+
     :host(.dock-hint) .chat-container {
         border-color: rgba(255, 206, 84, 0.6);
-        box-shadow: 0 0 30px rgba(255, 206, 84, 0.15), 0 8px 32px rgba(0, 0, 0, 0.5);
+        box-shadow:
+            0 0 30px rgba(255, 206, 84, 0.15),
+            0 8px 32px rgba(0, 0, 0, 0.5);
     }
 `;
 
@@ -131,11 +135,12 @@ export const containerStyles = css`
         flex-direction: column;
         overflow: hidden;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-        transition: box-shadow var(--chat-transition-fast), 
-                    border-color var(--chat-transition-fast);
+        transition:
+            box-shadow var(--chat-transition-fast),
+            border-color var(--chat-transition-fast);
         z-index: 1000;
     }
-    
+
     .chat-container.dragging {
         cursor: grabbing;
         user-select: none;
@@ -163,11 +168,11 @@ export const headerStyles = css`
         border-bottom: 1px solid var(--chat-header-border);
         flex-shrink: 0;
     }
-    
+
     .chat-header.draggable {
         cursor: grab;
     }
-    
+
     .chat-header.draggable:active {
         cursor: grabbing;
     }
@@ -314,8 +319,14 @@ export const messageStyles = css`
     }
 
     @keyframes blink {
-        0%, 50% { opacity: 1; }
-        51%, 100% { opacity: 0; }
+        0%,
+        50% {
+            opacity: 1;
+        }
+        51%,
+        100% {
+            opacity: 0;
+        }
     }
 
     /* Empty state */
@@ -489,7 +500,7 @@ export const presetStyles = css`
         padding: 10px 14px;
         border-bottom: 1px solid var(--chat-panel-border);
     }
-    
+
     .presets-section.collapsed {
         padding: 6px 14px;
     }
@@ -500,7 +511,7 @@ export const presetStyles = css`
         justify-content: space-between;
         margin-bottom: 10px;
     }
-    
+
     .presets-section.collapsed .presets-header {
         margin-bottom: 0;
     }
@@ -660,7 +671,7 @@ export const contextStyles = css`
         transition: all var(--chat-transition-fast);
         max-width: 140px;
     }
-    
+
     .context-item-label {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -697,7 +708,7 @@ export const contextStyles = css`
     .context-item-remove kc-ui-icon {
         font-size: 12px;
     }
-    
+
     .context-expand-btn,
     .context-collapse-btn {
         display: inline-flex;
@@ -711,7 +722,7 @@ export const contextStyles = css`
         cursor: pointer;
         transition: all var(--chat-transition-fast);
     }
-    
+
     .context-expand-btn:hover,
     .context-collapse-btn:hover {
         background: rgba(255, 255, 255, 0.1);
@@ -864,7 +875,9 @@ export const statusStyles = css`
     }
 
     @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     .loading-text {
@@ -892,12 +905,19 @@ export const statusStyles = css`
     }
 
     @keyframes thinkingPulse {
-        0%, 100% { opacity: 0.7; }
-        50% { opacity: 1; }
+        0%,
+        100% {
+            opacity: 0.7;
+        }
+        50% {
+            opacity: 1;
+        }
     }
 
     @keyframes thinkingSpin {
-        to { transform: rotate(360deg); }
+        to {
+            transform: rotate(360deg);
+        }
     }
 `;
 

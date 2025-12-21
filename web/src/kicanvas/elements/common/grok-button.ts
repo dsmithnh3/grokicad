@@ -46,10 +46,6 @@ export interface GrokPayload {
 // Singleton reference to the chat panel
 let globalChatPanel: KCGrokChatPanelElement | null = null;
 
-
-
-
-
 export class KCGrokButtonElement extends KCUIElement {
     static override styles = [
         ...KCUIElement.styles,
@@ -242,13 +238,20 @@ export class KCGrokButtonElement extends KCUIElement {
 
                 // Get repo info context
                 try {
-                    this.#repoInfo = (await this.requestLazyContext("repoInfo")) as {
+                    this.#repoInfo = (await this.requestLazyContext(
+                        "repoInfo",
+                    )) as {
                         repo: string | null;
                         commit: string | null;
                     };
-                    console.log("[GrokButton] Got repo context:", this.#repoInfo);
+                    console.log(
+                        "[GrokButton] Got repo context:",
+                        this.#repoInfo,
+                    );
                 } catch {
-                    console.warn("[GrokButton] No repo info available (local file?)");
+                    console.warn(
+                        "[GrokButton] No repo info available (local file?)",
+                    );
                 }
 
                 // Listen for single selection events (for backward compatibility)
@@ -347,15 +350,23 @@ export class KCGrokButtonElement extends KCUIElement {
 
         // Re-fetch repo info to get current commit (may have changed via navigation)
         try {
-            const currentRepoInfo = (await this.requestLazyContext("repoInfo")) as {
+            const currentRepoInfo = (await this.requestLazyContext(
+                "repoInfo",
+            )) as {
                 repo: string | null;
                 commit: string | null;
             };
             // Check if context changed
-            if (currentRepoInfo.repo !== this.#repoInfo.repo || 
-                currentRepoInfo.commit !== this.#repoInfo.commit) {
-                console.log("[GrokButton] Repo context changed:", 
-                    `${this.#repoInfo.commit?.slice(0, 8) ?? 'none'} -> ${currentRepoInfo.commit?.slice(0, 8) ?? 'none'}`);
+            if (
+                currentRepoInfo.repo !== this.#repoInfo.repo ||
+                currentRepoInfo.commit !== this.#repoInfo.commit
+            ) {
+                console.log(
+                    "[GrokButton] Repo context changed:",
+                    `${this.#repoInfo.commit?.slice(0, 8) ?? "none"} -> ${
+                        currentRepoInfo.commit?.slice(0, 8) ?? "none"
+                    }`,
+                );
                 this.#repoInfo = currentRepoInfo;
             }
         } catch {
@@ -365,7 +376,9 @@ export class KCGrokButtonElement extends KCUIElement {
         // Convert payload items to the format expected by chat panel
         // Filter out items without a valid reference (wires, labels, etc.)
         const selectedComponents = payload.selectedItems
-            .filter((item: any) => item.reference && item.reference.trim() !== "")
+            .filter(
+                (item: any) => item.reference && item.reference.trim() !== "",
+            )
             .map((item: any) => ({
                 uuid: item.uuid,
                 reference: item.reference!,
@@ -395,7 +408,10 @@ export class KCGrokButtonElement extends KCUIElement {
                         globalChatPanel.setViewer(this.viewer);
                     }
                     // Pass repo context (panel is outside the normal hierarchy)
-                    globalChatPanel.setContext(this.#repoInfo.repo, this.#repoInfo.commit);
+                    globalChatPanel.setContext(
+                        this.#repoInfo.repo,
+                        this.#repoInfo.commit,
+                    );
                     globalChatPanel.setSelectedComponents(selectedComponents);
                     globalChatPanel.show();
                 }
@@ -427,8 +443,6 @@ export class KCGrokButtonElement extends KCUIElement {
             }),
         );
     }
-
-
 
     override render() {
         return html`

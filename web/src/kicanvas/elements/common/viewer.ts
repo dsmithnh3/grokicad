@@ -52,7 +52,7 @@ export abstract class KCViewerElement<
             if (!this.isConnected) {
                 return;
             }
-            
+
             this.viewer = this.addDisposable(this.make_viewer());
 
             await this.viewer.setup();
@@ -80,7 +80,7 @@ export abstract class KCViewerElement<
         if (!this.isConnected || !this.viewer) {
             return;
         }
-        
+
         // Create tooltip element and add to document body for fixed positioning
         this.#tooltip = document.createElement(
             "kc-ui-component-tooltip",
@@ -147,7 +147,7 @@ export abstract class KCViewerElement<
             this.#tooltip.remove();
             this.#tooltip = null;
         }
-        
+
         // Reset viewer ready promise for potential reconnection
         this.#viewerReady = new DeferredPromise<void>();
     }
@@ -179,7 +179,7 @@ export abstract class KCViewerElement<
         // Wait for viewer to be initialized if it hasn't been yet
         // This can happen if load() is called before initialContentCallback completes
         await this.#viewerReady;
-        
+
         // Only proceed if viewer exists and element is still connected
         if (this.viewer && this.isConnected) {
             this.loaded = false;

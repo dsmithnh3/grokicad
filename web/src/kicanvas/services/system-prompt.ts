@@ -103,4 +103,3 @@ Use everyday language and avoid heavy jargon. When you must use a technical term
 - Use **bold** for component references (e.g., **U1**, **R3**) and important terms.
 - Use \`inline code\` for pin names, net names, and technical values.
 - Keep formatting minimal and readable—plain text with light markdown is best.`;
-

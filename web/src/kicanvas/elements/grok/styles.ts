@@ -30,11 +30,13 @@ export const hostStyles = css`
         pointer-events: none;
         transform: translateX(20px);
     }
-    
+
     /* Dock hint when near edge */
     :host(.dock-hint) .chat-container {
         border-color: rgba(255, 206, 84, 0.6);
-        box-shadow: 0 0 30px rgba(255, 206, 84, 0.15), 0 8px 32px rgba(0, 0, 0, 0.5);
+        box-shadow:
+            0 0 30px rgba(255, 206, 84, 0.15),
+            0 8px 32px rgba(0, 0, 0, 0.5);
     }
 `;
 
@@ -49,9 +51,11 @@ export const containerStyles = css`
         flex-direction: column;
         overflow: hidden;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        transition:
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
     }
-    
+
     .chat-container.dragging {
         cursor: grabbing;
         user-select: none;
@@ -63,7 +67,7 @@ export const containerStyles = css`
     :host([data-search-open]) .chat-container {
         overflow: visible;
     }
-    
+
     /* Docked tab - collapsed state */
     .docked-tab {
         position: fixed;
@@ -83,21 +87,23 @@ export const containerStyles = css`
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
     }
-    
+
     .docked-tab:hover {
         width: 52px;
         background: #1a1a1a;
         border-color: rgba(255, 206, 84, 0.5);
-        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 206, 84, 0.1);
+        box-shadow:
+            -4px 0 24px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(255, 206, 84, 0.1);
     }
-    
+
     .docked-logo {
         width: 26px;
         height: 26px;
         object-fit: contain;
         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     .docked-tab:hover .docked-logo {
         transform: scale(1.15);
     }
@@ -117,11 +123,11 @@ export const headerStyles = css`
         border-bottom: 1px solid #333333;
         flex-shrink: 0;
     }
-    
+
     .chat-header.draggable {
         cursor: grab;
     }
-    
+
     .chat-header.draggable:active {
         cursor: grabbing;
     }
@@ -131,7 +137,7 @@ export const headerStyles = css`
         align-items: center;
         gap: 10px;
     }
-    
+
     .header-actions {
         display: flex;
         align-items: center;
@@ -143,13 +149,13 @@ export const headerStyles = css`
         height: 22px;
         object-fit: contain;
     }
-    
+
     .chat-title {
         font-size: 13px;
         font-weight: 500;
         color: #ffffff;
     }
-    
+
     .dock-button {
         display: flex;
         align-items: center;
@@ -163,16 +169,16 @@ export const headerStyles = css`
         color: #666666;
         transition: all 0.15s ease;
     }
-    
+
     .dock-button:hover {
         background: #1a1a1a;
         color: #ffffff;
     }
-    
+
     .dock-button kc-ui-icon {
         font-size: 16px;
     }
-    
+
     .close-button {
         display: flex;
         align-items: center;
@@ -188,7 +194,7 @@ export const headerStyles = css`
         font-weight: 300;
         transition: all 0.15s ease;
     }
-    
+
     .close-button:hover {
         background: #1a1a1a;
         color: #ffffff;
@@ -585,8 +591,12 @@ export const queryInputStyles = css`
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 
     .assistant-bubble {
@@ -683,13 +693,22 @@ export const queryInputStyles = css`
     }
 
     @keyframes thinking-pulse {
-        0%, 100% { opacity: 0.7; }
-        50% { opacity: 1; }
+        0%,
+        100% {
+            opacity: 0.7;
+        }
+        50% {
+            opacity: 1;
+        }
     }
 
     @keyframes thinking-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Disabled state for input area */
@@ -789,7 +808,7 @@ export const responseStyles = css`
         color: rgba(255, 255, 255, 0.9);
         word-wrap: break-word;
     }
-    
+
     .response-content-static {
         /* Static content in conversation history */
     }
@@ -807,7 +826,7 @@ export const responseStyles = css`
     }
 
     .response-content .thinking-block::before {
-        content: '💭 Thinking...';
+        content: "💭 Thinking...";
         display: block;
         font-weight: 600;
         font-style: normal;
@@ -938,7 +957,6 @@ export const scrollbarStyles = css`
         background: rgba(255, 255, 255, 0.25);
     }
 `;
-
 
 // =============================================================================
 // Combined Styles (for main panel)

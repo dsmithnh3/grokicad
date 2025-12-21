@@ -369,7 +369,9 @@ export class KCCommitHistoryPanelElement extends KCUIElement {
             }
 
             @keyframes spin {
-                to { transform: rotate(360deg); }
+                to {
+                    transform: rotate(360deg);
+                }
             }
         `,
     ];
@@ -693,22 +695,22 @@ export class KCCommitHistoryPanelElement extends KCUIElement {
             }
         });
 
-        const loadMoreButton = this.hasMore ? html`
-            <button 
-                class="load-more-btn"
-                ${this.loadingMore ? "disabled" : ""}>
-                ${this.loadingMore 
-                    ? html`<div class="spinner"></div> Loading...`
-                    : html`Load more commits`}
-            </button>
-        ` : null;
+        const loadMoreButton = this.hasMore
+            ? html`
+                  <button
+                      class="load-more-btn"
+                      ${this.loadingMore ? "disabled" : ""}>
+                      ${this.loadingMore
+                          ? html`<div class="spinner"></div>
+                                Loading...`
+                          : html`Load more commits`}
+                  </button>
+              `
+            : null;
 
         return html`
             ${header}
-            <div class="commit-list">
-                ${commitItems}
-                ${loadMoreButton}
-            </div>
+            <div class="commit-list">${commitItems} ${loadMoreButton}</div>
         `;
     }
 }

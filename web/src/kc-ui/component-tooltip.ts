@@ -298,64 +298,86 @@ export class KCUIComponentTooltip extends KCUIElement {
 
         // Package/Footprint
         if (data.package) {
-            infoRows.push(html`
-                <span class="info-label">Package</span>
-                <span class="info-value">${data.package}</span>
-            ` as HTMLElement);
+            infoRows.push(
+                html`
+                    <span class="info-label">Package</span>
+                    <span class="info-value">${data.package}</span>
+                ` as HTMLElement,
+            );
         }
 
         // Manufacturer
         if (data.manufacturer) {
-            infoRows.push(html`
-                <span class="info-label">Mfr</span>
-                <span class="info-value">${data.manufacturer}</span>
-            ` as HTMLElement);
+            infoRows.push(
+                html`
+                    <span class="info-label">Mfr</span>
+                    <span class="info-value">${data.manufacturer}</span>
+                ` as HTMLElement,
+            );
         }
 
         // Part Number
         if (data.partNumber) {
-            infoRows.push(html`
-                <span class="info-label">P/N</span>
-                <span class="info-value">${data.partNumber}</span>
-            ` as HTMLElement);
+            infoRows.push(
+                html`
+                    <span class="info-label">P/N</span>
+                    <span class="info-value">${data.partNumber}</span>
+                ` as HTMLElement,
+            );
         }
 
         // Datasheet indicator
         if (data.datasheet && data.datasheet !== "~" && data.datasheet !== "") {
-            infoRows.push(html`
-                <span class="info-label">Datasheet</span>
-                <span class="info-value link">Available</span>
-            ` as HTMLElement);
+            infoRows.push(
+                html`
+                    <span class="info-label">Datasheet</span>
+                    <span class="info-value link">Available</span>
+                ` as HTMLElement,
+            );
         }
 
         // Pin count for complex components
         if (data.pinCount !== undefined && data.pinCount > 2) {
-            infoRows.push(html`
-                <span class="info-label">Pins</span>
-                <span class="info-value">${data.pinCount}</span>
-            ` as HTMLElement);
+            infoRows.push(
+                html`
+                    <span class="info-label">Pins</span>
+                    <span class="info-value">${data.pinCount}</span>
+                ` as HTMLElement,
+            );
         }
 
         // Extra properties
         if (data.extras) {
             for (const extra of data.extras) {
-                infoRows.push(html`
-                    <span class="info-label">${extra.key}</span>
-                    <span class="info-value">${extra.value}</span>
-                ` as HTMLElement);
+                infoRows.push(
+                    html`
+                        <span class="info-label">${extra.key}</span>
+                        <span class="info-value">${extra.value}</span>
+                    ` as HTMLElement,
+                );
             }
         }
 
         // Badges
         const badges: HTMLElement[] = [];
         if (data.dnp) {
-            badges.push(html`<span class="badge dnp">DNP</span>` as HTMLElement);
+            badges.push(
+                html`<span class="badge dnp">DNP</span>` as HTMLElement,
+            );
         }
         if (data.inBom === false) {
-            badges.push(html`<span class="badge no-bom">Not in BOM</span>` as HTMLElement);
+            badges.push(
+                html`<span class="badge no-bom"
+                    >Not in BOM</span
+                >` as HTMLElement,
+            );
         }
         if (data.onBoard === false) {
-            badges.push(html`<span class="badge no-board">Not on PCB</span>` as HTMLElement);
+            badges.push(
+                html`<span class="badge no-board"
+                    >Not on PCB</span
+                >` as HTMLElement,
+            );
         }
 
         const hasInfo = infoRows.length > 0;
@@ -364,11 +386,20 @@ export class KCUIComponentTooltip extends KCUIElement {
         return html`
             <div class="tooltip">
                 <div class="header">
-                    ${data.reference ? html`<span class="reference">${data.reference}</span>` : null}
-                    ${data.value ? html`<span class="value">${data.value}</span>` : null}
+                    ${data.reference
+                        ? html`<span class="reference">${data.reference}</span>`
+                        : null}
+                    ${data.value
+                        ? html`<span class="value">${data.value}</span>`
+                        : null}
                 </div>
-                ${data.description ? html`<div class="description">${data.description}</div>` : null}
-                ${hasInfo ? html`<div class="divider"></div><div class="info-grid">${infoRows}</div>` : null}
+                ${data.description
+                    ? html`<div class="description">${data.description}</div>`
+                    : null}
+                ${hasInfo
+                    ? html`<div class="divider"></div>
+                          <div class="info-grid">${infoRows}</div>`
+                    : null}
                 ${hasBadges ? html`<div class="badges">${badges}</div>` : null}
             </div>
         `;

@@ -1,6 +1,6 @@
 /**
  * Centralized Environment Configuration
- * 
+ *
  * Single source of truth for all environment-specific values.
  * Both frontend (src/config.ts) and worker (worker/config.ts) derive from this.
  */
@@ -14,22 +14,22 @@ export type Environment = "development" | "beta" | "production";
 export interface EnvironmentDefinition {
     /** Worker name in Cloudflare */
     workerName: string;
-    
+
     /** Base URL for the application */
     appUrl: string;
-    
+
     /** Allowed CORS origins */
     corsOrigins: string[];
-    
+
     /** GitHub OAuth Client ID (safe for frontend) */
     githubClientId: string;
-    
+
     /** DigiKey API environment (sandbox for dev, production for others) */
     digikeyApiBase: "sandbox-api.digikey.com" | "api.digikey.com";
-    
+
     /** Session TTL in seconds */
     sessionTtl: number;
-    
+
     /** Enable debug logging */
     debug: boolean;
 }
@@ -53,7 +53,7 @@ export const environments: Record<Environment, EnvironmentDefinition> = {
         sessionTtl: 60 * 60 * 24 * 7, // 7 days
         debug: true,
     },
-    
+
     beta: {
         workerName: "grokicad-beta",
         appUrl: "https://beta.grokicad.com",
@@ -66,7 +66,7 @@ export const environments: Record<Environment, EnvironmentDefinition> = {
         sessionTtl: 60 * 60 * 24 * 7, // 7 days
         debug: true,
     },
-    
+
     production: {
         workerName: "grokicad",
         appUrl: "https://grokicad.com",
@@ -101,12 +101,15 @@ export function detectEnvironmentFromHostname(hostname: string): Environment {
     if (hostname === "grokicad.com" || hostname === "www.grokicad.com") {
         return "production";
     }
-    
+
     // Beta
-    if (hostname === "beta.grokicad.com" || hostname.includes("grokicad-beta")) {
+    if (
+        hostname === "beta.grokicad.com" ||
+        hostname.includes("grokicad-beta")
+    ) {
         return "beta";
     }
-    
+
     // Development
     return "development";
 }
@@ -120,11 +123,11 @@ export const OAUTH_URLS = {
         tokenUrl: "https://github.com/login/oauth/access_token",
     },
     digikey: {
-        getAuthUrl: (base: EnvironmentDefinition["digikeyApiBase"]) => 
+        getAuthUrl: (base: EnvironmentDefinition["digikeyApiBase"]) =>
             `https://${base}/v1/oauth2/authorize`,
-        getTokenUrl: (base: EnvironmentDefinition["digikeyApiBase"]) => 
+        getTokenUrl: (base: EnvironmentDefinition["digikeyApiBase"]) =>
             `https://${base}/v1/oauth2/token`,
-        getSearchUrl: (base: EnvironmentDefinition["digikeyApiBase"]) => 
+        getSearchUrl: (base: EnvironmentDefinition["digikeyApiBase"]) =>
             `https://${base}/products/v4/search/keyword`,
     },
 } as const;
@@ -139,4 +142,3 @@ export const GITHUB_RATE_LIMITS = {
     unauthenticated: 60,
     authenticated: 5000,
 } as const;
-

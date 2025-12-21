@@ -62,8 +62,9 @@ export interface GrokComponentEvents {
 }
 
 /** Helper type for creating typed custom events */
-export type GrokCustomEvent<K extends keyof GrokComponentEvents> =
-    CustomEvent<GrokComponentEvents[K]>;
+export type GrokCustomEvent<K extends keyof GrokComponentEvents> = CustomEvent<
+    GrokComponentEvents[K]
+>;
 
 /** Create a typed custom event */
 export function createGrokEvent<K extends keyof GrokComponentEvents>(

@@ -56,7 +56,7 @@ export class CustomElement extends HTMLElement {
         if (this.disposables.isDisposed && this.isConnected) {
             this.disposables = new Disposables();
         }
-        
+
         // Only add disposables if the element is still connected to the DOM
         // This prevents errors when async initialContentCallback runs after disconnect
         if (!this.isConnected) {
@@ -64,7 +64,7 @@ export class CustomElement extends HTMLElement {
             item.dispose();
             return item;
         }
-        
+
         return this.disposables.add(item);
     }
 
@@ -87,7 +87,7 @@ export class CustomElement extends HTMLElement {
         if (this.disposables.isDisposed) {
             this.disposables = new Disposables();
         }
-        
+
         if (!this.#initial_content_rendered) {
             this.#renderInitialContent();
         }

@@ -575,8 +575,13 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             }
 
             @keyframes pulse {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.5; }
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
             }
 
             .connection-text {
@@ -635,7 +640,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
     search_state: SearchState = "idle";
     search_result?: DigiKeySearchResponse;
     connection_state: ConnectionState = "checking";
-    
+
     // Grok replacement chat panel
     private _chatPanel: KCChatPanelElement | null = null;
     private _chatPanelInitialized = false;
@@ -667,7 +672,11 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             if (result.connected) {
                 console.log("[DigiKey] Successfully connected");
             } else if (result.error) {
-                console.error("[DigiKey] OAuth error:", result.error, result.description);
+                console.error(
+                    "[DigiKey] OAuth error:",
+                    result.error,
+                    result.description,
+                );
             }
         }
     }
@@ -678,7 +687,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
 
         const status = await DigiKeyClient.getStatus();
         this.connection_state = status.connected ? "connected" : "disconnected";
-        
+
         if (!status.connected) {
             this.search_state = "not_connected";
         }
@@ -711,15 +720,20 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         }
 
         // Bind disconnect button
-        const disconnectBtn = this.renderRoot.querySelector(".disconnect-button");
+        const disconnectBtn =
+            this.renderRoot.querySelector(".disconnect-button");
         if (disconnectBtn) {
-            disconnectBtn.addEventListener("click", () => this.handle_disconnect());
+            disconnectBtn.addEventListener("click", () =>
+                this.handle_disconnect(),
+            );
         }
 
         // Bind grok replacement button
         const grokBtn = this.renderRoot.querySelector(".grok-button");
         if (grokBtn) {
-            grokBtn.addEventListener("click", () => this.show_replacement_chat());
+            grokBtn.addEventListener("click", () =>
+                this.show_replacement_chat(),
+            );
         }
     }
 
@@ -740,20 +754,30 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             if (!this._chatPanel || !this._chatPanel.isConnected) {
                 // Try to find it in the current shadow root or document
                 const root = this.getRootNode() as ShadowRoot | Document;
-                this._chatPanel = (root.querySelector("kc-chat-panel") || 
-                                   document.querySelector("kc-chat-panel")) as KCChatPanelElement;
+                this._chatPanel = (root.querySelector("kc-chat-panel") ||
+                    document.querySelector(
+                        "kc-chat-panel",
+                    )) as KCChatPanelElement;
 
                 // If no existing panel found, create one (fallback)
                 if (!this._chatPanel) {
-                    console.warn("[DigiKey] No existing chat panel found, creating new one");
-                    this._chatPanel = document.createElement("kc-chat-panel") as KCChatPanelElement;
+                    console.warn(
+                        "[DigiKey] No existing chat panel found, creating new one",
+                    );
+                    this._chatPanel = document.createElement(
+                        "kc-chat-panel",
+                    ) as KCChatPanelElement;
                     document.body.appendChild(this._chatPanel);
                 }
 
                 // Wait for element to be fully initialized and upgraded
-                await new Promise(resolve => {
+                await new Promise((resolve) => {
                     const checkInitialized = () => {
-                        if (this._chatPanel && typeof (this._chatPanel as any).configure === 'function') {
+                        if (
+                            this._chatPanel &&
+                            typeof (this._chatPanel as any).configure ===
+                                "function"
+                        ) {
                             resolve(void 0);
                         } else {
                             requestAnimationFrame(checkInitialized);
@@ -763,7 +787,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                 });
 
                 // Configure the panel if it's newly created or not yet configured
-                if (typeof this._chatPanel.configure === 'function') {
+                if (typeof this._chatPanel.configure === "function") {
                     this._chatPanel.configure({
                         title: "Find Replacement",
                         logoSrc: "./images/Grok_Logomark_Light.png",
@@ -783,28 +807,31 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             const context = createPartContextFromDigiKey(part, reference);
 
             if (!this._chatPanelInitialized) {
-                if (typeof this._chatPanel.setExtension === 'function') {
-                    await this._chatPanel.setExtension(partReplacementExtension, context);
+                if (typeof this._chatPanel.setExtension === "function") {
+                    await this._chatPanel.setExtension(
+                        partReplacementExtension,
+                        context,
+                    );
                     this._chatPanelInitialized = true;
                 }
             } else {
                 // Update context for the current part
-                if (typeof this._chatPanel.updateContext === 'function') {
+                if (typeof this._chatPanel.updateContext === "function") {
                     this._chatPanel.updateContext(context);
                 }
-                if (typeof this._chatPanel.clearConversation === 'function') {
+                if (typeof this._chatPanel.clearConversation === "function") {
                     this._chatPanel.clearConversation();
                 }
             }
 
             // Update presets based on the extension
-            if (typeof this._chatPanel.setPresets === 'function') {
+            if (typeof this._chatPanel.setPresets === "function") {
                 const presets = partReplacementExtension.getPresets(context);
                 this._chatPanel.setPresets(presets);
             }
 
             // Show the panel
-            if (typeof this._chatPanel.show === 'function') {
+            if (typeof this._chatPanel.show === "function") {
                 this._chatPanel.show();
             }
         } catch (error) {
@@ -824,7 +851,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
      */
     private render_grok_button(part: DigiKeyPartInfo) {
         // Show button for obsolete, NRND, or out-of-stock parts
-        const shouldShow = 
+        const shouldShow =
             part.is_obsolete ||
             part.lifecycle_status?.toLowerCase().includes("not recommended") ||
             part.quantity_available === 0;
@@ -836,7 +863,10 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         // If xAI is not configured, show disabled state
         if (!this.is_xai_configured()) {
             return html`
-                <button class="grok-button" disabled title="Configure xAI API key to find replacements">
+                <button
+                    class="grok-button"
+                    disabled
+                    title="Configure xAI API key to find replacements">
                     <kc-ui-icon>find_replace</kc-ui-icon>
                     Find Replacement
                 </button>
@@ -844,7 +874,9 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         }
 
         return html`
-            <button class="grok-button" title="Find AI-powered replacement suggestions">
+            <button
+                class="grok-button"
+                title="Find AI-powered replacement suggestions">
                 <kc-ui-icon>find_replace</kc-ui-icon>
                 Find Replacement
             </button>
@@ -863,9 +895,10 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                 } else {
                     this.selected_item = undefined;
                     this.search_result = undefined;
-                    this.search_state = this.connection_state === "connected"
-                        ? "idle"
-                        : "not_connected";
+                    this.search_state =
+                        this.connection_state === "connected"
+                            ? "idle"
+                            : "not_connected";
                 }
                 this.update();
             }),
@@ -875,16 +908,18 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
             this.viewer.addEventListener(KiCanvasLoadEvent.type, () => {
                 this.selected_item = undefined;
                 this.search_result = undefined;
-                this.search_state = this.connection_state === "connected"
-                    ? "idle"
-                    : "not_connected";
+                this.search_state =
+                    this.connection_state === "connected"
+                        ? "idle"
+                        : "not_connected";
                 this.update();
             }),
         );
     }
 
     private async search_for_part() {
-        if (!this.selected_item || this.connection_state !== "connected") return;
+        if (!this.selected_item || this.connection_state !== "connected")
+            return;
 
         // Try to extract a useful search query from the component
         const mpn = this.extract_mpn(this.selected_item);
@@ -906,8 +941,10 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                 this.search_state = "success";
             } else {
                 // Check if it's an auth error
-                if (this.search_result.error?.includes("Not authenticated") ||
-                    this.search_result.error?.includes("Session expired")) {
+                if (
+                    this.search_result.error?.includes("Not authenticated") ||
+                    this.search_result.error?.includes("Session expired")
+                ) {
                     this.connection_state = "disconnected";
                     this.search_state = "not_connected";
                 } else {
@@ -960,10 +997,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
     private get_status_class(part: DigiKeyPartInfo): string {
         if (part.is_obsolete) return "status-obsolete";
         const status = (part.product_status || "").toLowerCase();
-        if (
-            status.includes("active") ||
-            status.includes("in production")
-        ) {
+        if (status.includes("active") || status.includes("in production")) {
             return "status-active";
         }
         if (
@@ -982,8 +1016,7 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
         if (!status) return "Unknown";
         // Shorten common statuses
         if (status.toLowerCase().includes("active")) return "Active";
-        if (status.toLowerCase().includes("not recommended"))
-            return "NRND";
+        if (status.toLowerCase().includes("not recommended")) return "NRND";
         return status;
     }
 
@@ -1007,8 +1040,12 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
 
     private render_connection_status() {
         const dotClass = this.connection_state;
-        const statusText = this.connection_state === "checking" ? "Checking..." :
-                          this.connection_state === "connected" ? "Connected" : "Not connected";
+        const statusText =
+            this.connection_state === "checking"
+                ? "Checking..."
+                : this.connection_state === "connected"
+                ? "Connected"
+                : "Not connected";
 
         return html`
             <div class="connection-status">
@@ -1018,19 +1055,18 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                 </div>
                 ${this.connection_state === "connected"
                     ? html`
-                        <button class="disconnect-button">
-                            <kc-ui-icon>logout</kc-ui-icon>
-                            Disconnect
-                        </button>
-                    `
+                          <button class="disconnect-button">
+                              <kc-ui-icon>logout</kc-ui-icon>
+                              Disconnect
+                          </button>
+                      `
                     : this.connection_state === "disconnected"
                     ? html`
-                        <button class="connect-button">
-                            Connect DigiKey
-                        </button>
-                    `
-                    : ""
-                }
+                          <button class="connect-button">
+                              Connect DigiKey
+                          </button>
+                      `
+                    : ""}
             </div>
         `;
     }
@@ -1177,7 +1213,8 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                             Connect your DigiKey account to look up part
                             information, check availability, and view pricing.
                         </p>
-                        <p style="font-size: 0.85em; margin-top: 0.75em; opacity: 0.8;">
+                        <p
+                            style="font-size: 0.85em; margin-top: 0.75em; opacity: 0.8;">
                             Your DigiKey credentials are stored securely and
                             used only to access the DigiKey API on your behalf.
                         </p>
@@ -1217,7 +1254,10 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                     content = html`
                         ${this.render_connection_status()}
                         <div class="no-results">
-                            <p>No parts found for "${this.search_result?.query}"</p>
+                            <p>
+                                No parts found for
+                                "${this.search_result?.query}"
+                            </p>
                             <p style="font-size: 0.85em; margin-top: 0.5em;">
                                 Try checking if the part number is correct
                             </p>
@@ -1241,7 +1281,8 @@ export class KCSchematicDigiKeyPanelElement extends KCUIElement {
                             ${this.render_connection_status()}
                             <div class="no-results">
                                 <p>No part number found for this component</p>
-                                <p style="font-size: 0.85em; margin-top: 0.5em;">
+                                <p
+                                    style="font-size: 0.85em; margin-top: 0.5em;">
                                     Add an MPN or Value property to enable
                                     DigiKey lookup
                                 </p>

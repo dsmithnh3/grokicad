@@ -9,14 +9,24 @@
     - Overlay/fullscreen mode for focused interaction
 */
 
-import { attribute, html, type ElementOrFragment } from "../../../base/web-components";
+import {
+    attribute,
+    html,
+    type ElementOrFragment,
+} from "../../../base/web-components";
 import { KCUIElement } from "../../../kc-ui";
 import { delegate } from "../../../base/events";
 import { chatPanelStyles, overlayStyles, historyPanelStyles } from "./styles";
 import { ChatService } from "./chat-service";
 import { formatMarkdown } from "../../services/markdown-formatter";
-import { schematicExtension, createSchematicContextItem } from "./extensions/schematic-extension";
-import { KiCanvasSelectEvent, KiCanvasZoneSelectEvent } from "../../../viewers/base/events";
+import {
+    schematicExtension,
+    createSchematicContextItem,
+} from "./extensions/schematic-extension";
+import {
+    KiCanvasSelectEvent,
+    KiCanvasZoneSelectEvent,
+} from "../../../viewers/base/events";
 import type { Viewer } from "../../../viewers/base/viewer";
 import type { SchematicSymbol } from "../../../kicad/schematic";
 import type {
@@ -69,7 +79,7 @@ function saveHistory(conversations: StoredConversation[]): void {
 
 function deleteConversation(id: string): void {
     const history = loadHistory();
-    const filtered = history.filter(c => c.id !== id);
+    const filtered = history.filter((c) => c.id !== id);
     saveHistory(filtered);
 }
 
@@ -114,7 +124,9 @@ function downloadMarkdown(conversation: StoredConversation): void {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${conversation.title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.md`;
+    a.download = `${conversation.title
+        .replace(/[^a-z0-9]/gi, "-")
+        .toLowerCase()}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -126,7 +138,12 @@ function downloadMarkdown(conversation: StoredConversation): void {
 // =============================================================================
 
 export class KCChatPanelElement extends KCUIElement {
-    static override styles = [...KCUIElement.styles, ...chatPanelStyles, overlayStyles, historyPanelStyles];
+    static override styles = [
+        ...KCUIElement.styles,
+        ...chatPanelStyles,
+        overlayStyles,
+        historyPanelStyles,
+    ];
 
     // =========================================================================
     // Attributes
@@ -171,7 +188,10 @@ export class KCChatPanelElement extends KCUIElement {
 
     // Viewer and context for auto-initialization
     private _viewer: Viewer | null = null;
-    private _repoInfo: { repo: string | null; commit: string | null } = { repo: null, commit: null };
+    private _repoInfo: { repo: string | null; commit: string | null } = {
+        repo: null,
+        commit: null,
+    };
     private _viewerEventsSetup: boolean = false;
 
     // Dragging state
@@ -220,13 +240,15 @@ export class KCChatPanelElement extends KCUIElement {
         console.log("[ChatPanel] _initializeSchematicContext starting");
         try {
             // Get viewer context
-            this._viewer = await this.requestLazyContext("viewer") as Viewer;
+            this._viewer = (await this.requestLazyContext("viewer")) as Viewer;
             console.log("[ChatPanel] Got viewer, waiting for loaded");
             await this._viewer.loaded;
 
             // Get repo info
             try {
-                this._repoInfo = await this.requestLazyContext("repoInfo") as {
+                this._repoInfo = (await this.requestLazyContext(
+                    "repoInfo",
+                )) as {
                     repo: string | null;
                     commit: string | null;
                 };
@@ -250,9 +272,11 @@ export class KCChatPanelElement extends KCUIElement {
 
             // Set up viewer selection events
             this._setupViewerEvents();
-
         } catch (err) {
-            console.warn("[ChatPanel] Could not initialize schematic context:", err);
+            console.warn(
+                "[ChatPanel] Could not initialize schematic context:",
+                err,
+            );
             // Panel will still work, just without schematic features
         }
     }
@@ -296,13 +320,17 @@ export class KCChatPanelElement extends KCUIElement {
         this.addDisposable(
             this._viewer.addEventListener(KiCanvasZoneSelectEvent.type, (e) => {
                 const items = e.detail.items || [];
-                const symbols = items.filter((item: unknown) => this._isSchematicSymbol(item)) as SchematicSymbol[];
-                this._contextItems = symbols.map((item) => createSchematicContextItem(
-                    item.uuid,
-                    item.reference,
-                    item.value,
-                    item.lib_id,
-                ));
+                const symbols = items.filter((item: unknown) =>
+                    this._isSchematicSymbol(item),
+                ) as SchematicSymbol[];
+                this._contextItems = symbols.map((item) =>
+                    createSchematicContextItem(
+                        item.uuid,
+                        item.reference,
+                        item.value,
+                        item.lib_id,
+                    ),
+                );
                 this.updateContext({
                     repo: this._repoInfo.repo,
                     commit: this._repoInfo.commit,
@@ -313,50 +341,66 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     private _isSchematicSymbol(item: unknown): item is SchematicSymbol {
-        return item !== null && typeof item === "object" && "reference" in item && "uuid" in item;
+        return (
+            item !== null &&
+            typeof item === "object" &&
+            "reference" in item &&
+            "uuid" in item
+        );
     }
 
     override renderedCallback() {
         // Sync input value
-        const input = this.renderRoot.querySelector(".query-input") as HTMLTextAreaElement;
+        const input = this.renderRoot.querySelector(
+            ".query-input",
+        ) as HTMLTextAreaElement;
         if (input && input.value !== this._inputValue) {
             input.value = this._inputValue;
         }
 
         // Keep streaming content updated
         if (this._streamingContent && this.streaming) {
-            const streamingEl = this.renderRoot.querySelector(".streaming-response");
+            const streamingEl = this.renderRoot.querySelector(
+                ".streaming-response",
+            );
             if (streamingEl) {
-                streamingEl.innerHTML = this._formatContent(this._streamingContent) + 
+                streamingEl.innerHTML =
+                    this._formatContent(this._streamingContent) +
                     '<span class="cursor"></span>';
                 // Don't auto-scroll here either
             }
         }
-        
+
         // Apply stored panel position if dragged (but not in overlay mode)
         if (this._panelPosition && !this._isDocked && !this._isOverlay) {
-            const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
+            const container = this.renderRoot.querySelector(
+                ".chat-container",
+            ) as HTMLElement;
             if (container) {
-                container.style.position = 'fixed';
+                container.style.position = "fixed";
                 container.style.left = `${this._panelPosition.left}px`;
                 container.style.top = `${this._panelPosition.top}px`;
-                container.style.right = 'auto';
-                container.style.bottom = 'auto';
+                container.style.right = "auto";
+                container.style.bottom = "auto";
             }
         } else if (this._isOverlay) {
             // Clear any stored position when in overlay mode - use CSS positioning
-            const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
+            const container = this.renderRoot.querySelector(
+                ".chat-container",
+            ) as HTMLElement;
             if (container) {
-                container.style.position = '';
-                container.style.left = '';
-                container.style.top = '';
-                container.style.right = '';
-                container.style.bottom = '';
+                container.style.position = "";
+                container.style.left = "";
+                container.style.top = "";
+                container.style.right = "";
+                container.style.bottom = "";
             }
         }
-        
+
         // Restore scroll position after update
-        const scrollArea = this.renderRoot.querySelector(".conversation-scroll") as HTMLElement;
+        const scrollArea = this.renderRoot.querySelector(
+            ".conversation-scroll",
+        ) as HTMLElement;
         if (scrollArea && this._scrollPosition > 0) {
             scrollArea.scrollTop = this._scrollPosition;
         }
@@ -372,37 +416,44 @@ export class KCChatPanelElement extends KCUIElement {
     // Public API
     // =========================================================================
 
-    async setExtension(extension: ChatExtension, context?: ChatContext): Promise<void> {
-        console.log("[ChatPanel] setExtension called with:", extension.id, context);
+    async setExtension(
+        extension: ChatExtension,
+        context?: ChatContext,
+    ): Promise<void> {
+        console.log(
+            "[ChatPanel] setExtension called with:",
+            extension.id,
+            context,
+        );
         this._extensionId = extension.id;
         await this._service.setExtension(extension, context);
-        
+
         if (context?.selectedItems) {
             this._contextItems = context.selectedItems;
         }
-        
+
         this._refreshPresets();
         this._scheduleUpdate();
     }
 
     updateContext(context: Partial<ChatContext>): void {
         this._service.updateContext(context);
-        
+
         if (context.selectedItems) {
             this._contextItems = context.selectedItems;
         }
-        
+
         this._refreshPresets();
         this._scheduleUpdate();
     }
 
     configure(config: ChatPanelConfig): void {
         this._config = { ...this._config, ...config };
-        
+
         if (config.logoSrc) {
             this.logoSrc = config.logoSrc;
         }
-        
+
         this._scheduleUpdate();
     }
 
@@ -413,18 +464,22 @@ export class KCChatPanelElement extends KCUIElement {
         this._panelPosition = null;
         // Clear any inline styles to use default CSS positioning
         requestAnimationFrame(() => {
-            const container = this.renderRoot?.querySelector('.chat-container') as HTMLElement;
+            const container = this.renderRoot?.querySelector(
+                ".chat-container",
+            ) as HTMLElement;
             if (container && !this._isOverlay) {
-                container.style.position = '';
-                container.style.left = '';
-                container.style.top = '';
-                container.style.right = '';
-                container.style.bottom = '';
+                container.style.position = "";
+                container.style.left = "";
+                container.style.top = "";
+                container.style.right = "";
+                container.style.bottom = "";
             }
         });
         this._refreshPresets();
         this._scheduleUpdate();
-        this.dispatchEvent(new CustomEvent("chat-show", { bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent("chat-show", { bubbles: true, composed: true }),
+        );
     }
 
     hide(): void {
@@ -433,7 +488,9 @@ export class KCChatPanelElement extends KCUIElement {
         this._isOverlay = false;
         this._showHistory = false;
         this._scheduleUpdate();
-        this.dispatchEvent(new CustomEvent("chat-hide", { bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent("chat-hide", { bubbles: true, composed: true }),
+        );
     }
 
     toggle(): void {
@@ -443,7 +500,7 @@ export class KCChatPanelElement extends KCUIElement {
             this.hide();
         }
     }
-    
+
     /**
      * Completely hide the panel (not just dock).
      */
@@ -455,7 +512,7 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     addContextItem(item: ContextItem): void {
-        if (!this._contextItems.find(i => i.id === item.id)) {
+        if (!this._contextItems.find((i) => i.id === item.id)) {
             this._contextItems = [...this._contextItems, item];
             this._service.updateContext({ selectedItems: this._contextItems });
             this._refreshPresets();
@@ -464,7 +521,7 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     removeContextItem(id: string): void {
-        this._contextItems = this._contextItems.filter(i => i.id !== id);
+        this._contextItems = this._contextItems.filter((i) => i.id !== id);
         this._service.updateContext({ selectedItems: this._contextItems });
         this._refreshPresets();
         this._scheduleUpdate();
@@ -489,7 +546,9 @@ export class KCChatPanelElement extends KCUIElement {
         this._error = null;
         this._showHistory = false; // Close history panel when starting new chat
         this._scheduleUpdate();
-        this.dispatchEvent(new CustomEvent("chat-clear", { bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent("chat-clear", { bubbles: true, composed: true }),
+        );
     }
 
     /**
@@ -502,7 +561,9 @@ export class KCChatPanelElement extends KCUIElement {
         this._thinkingContent = "";
         this._error = null;
         this._scheduleUpdate();
-        this.dispatchEvent(new CustomEvent("chat-clear", { bubbles: true, composed: true }));
+        this.dispatchEvent(
+            new CustomEvent("chat-clear", { bubbles: true, composed: true }),
+        );
     }
 
     /**
@@ -529,24 +590,29 @@ export class KCChatPanelElement extends KCUIElement {
     private _saveCurrentConversation(): void {
         const messages = this._service.messages;
         if (messages.length === 0) return;
-        
+
         // Only save if there's actual content (not just empty messages)
-        const hasContent = messages.some(m => m.content && m.content.trim());
+        const hasContent = messages.some((m) => m.content && m.content.trim());
         if (!hasContent) return;
 
         const history = loadHistory();
-        
+
         // Generate title from first user message
-        const firstUserMsg = messages.find(m => m.role === "user" && m.content);
-        const title = firstUserMsg 
-            ? firstUserMsg.content.slice(0, 50) + (firstUserMsg.content.length > 50 ? "..." : "")
+        const firstUserMsg = messages.find(
+            (m) => m.role === "user" && m.content,
+        );
+        const title = firstUserMsg
+            ? firstUserMsg.content.slice(0, 50) +
+              (firstUserMsg.content.length > 50 ? "..." : "")
             : "Untitled Conversation";
 
         const now = new Date().toISOString();
-        
+
         if (this._currentConversationId) {
             // Try to update existing conversation
-            const existingIndex = history.findIndex(c => c.id === this._currentConversationId);
+            const existingIndex = history.findIndex(
+                (c) => c.id === this._currentConversationId,
+            );
             if (existingIndex !== -1) {
                 // Update existing
                 history[existingIndex]!.messages = messages;
@@ -612,20 +678,25 @@ export class KCChatPanelElement extends KCUIElement {
     private _scheduleUpdate(): void {
         if (this._updatePending) return;
         this._updatePending = true;
-        
+
         // Save scroll position before update
-        const scrollArea = this.renderRoot?.querySelector(".conversation-scroll") as HTMLElement;
+        const scrollArea = this.renderRoot?.querySelector(
+            ".conversation-scroll",
+        ) as HTMLElement;
         if (scrollArea) {
             this._scrollPosition = scrollArea.scrollTop;
         }
-        
+
         requestAnimationFrame(() => {
             if (this._updatePending && this._isInitialized) {
                 this._updatePending = false;
                 console.log("[ChatPanel] Calling super.update()");
                 super.update();
             } else {
-                console.log("[ChatPanel] Skipping update:", { pending: this._updatePending, initialized: this._isInitialized });
+                console.log("[ChatPanel] Skipping update:", {
+                    pending: this._updatePending,
+                    initialized: this._isInitialized,
+                });
                 this._updatePending = false;
             }
         });
@@ -640,10 +711,17 @@ export class KCChatPanelElement extends KCUIElement {
     }
 
     private async _submitQuery(overrideQuery?: string): Promise<void> {
-        console.log("[ChatPanel] _submitQuery called with:", overrideQuery ?? this._inputValue);
+        console.log(
+            "[ChatPanel] _submitQuery called with:",
+            overrideQuery ?? this._inputValue,
+        );
         const query = (overrideQuery ?? this._inputValue).trim();
         if (!query || this.streaming || this._isLoading) {
-            console.log("[ChatPanel] Query blocked:", { query, streaming: this.streaming, isLoading: this._isLoading });
+            console.log("[ChatPanel] Query blocked:", {
+                query,
+                streaming: this.streaming,
+                isLoading: this._isLoading,
+            });
             return;
         }
 
@@ -659,76 +737,93 @@ export class KCChatPanelElement extends KCUIElement {
         this._streamingContent = "";
         this._thinkingContent = "";
         this._presetsCollapsed = true; // Collapse quick actions when sending a message
-        
+
         this._scheduleUpdate();
 
         console.log("[ChatPanel] About to dispatch chat-send event");
-        this.dispatchEvent(new CustomEvent("chat-send", {
-            bubbles: true,
-            composed: true,
-            detail: { query, context: this._service.context },
-        }));
-
-        console.log("[ChatPanel] Calling streamQuery with context:", this._service.context);
-        try {
-        await this._service.streamQuery(
-            query,
-            {
-                onStart: () => {
-                    this._isLoading = false;
-                    this._scheduleUpdate();
-                    
-                    this.dispatchEvent(new CustomEvent("chat-stream-start", {
-                        bubbles: true,
-                        composed: true,
-                        detail: { messageId: "" },
-                    }));
-                },
-                onChunk: (content, isThinking) => {
-                    if (isThinking) {
-                        this._thinkingContent += content;
-                    } else {
-                        this._streamingContent += content; // Accumulate, not replace
-                    }
-                    
-                    const streamingEl = this.renderRoot.querySelector(".streaming-response");
-                    if (streamingEl) {
-                        streamingEl.innerHTML = this._formatContent(this._streamingContent) + 
-                            '<span class="cursor"></span>';
-                        // Don't auto-scroll on every chunk - let user read freely
-                    } else {
-                        this._scheduleUpdate();
-                    }
-                },
-                onComplete: (fullContent) => {
-                    this.streaming = false;
-                    this._streamingContent = "";
-                    this._thinkingContent = "";
-                    this._saveCurrentConversation(); // Auto-save after each response
-                    this._scheduleUpdate();
-                    
-                    this.dispatchEvent(new CustomEvent("chat-stream-complete", {
-                        bubbles: true,
-                        composed: true,
-                        detail: { messageId: "", content: fullContent },
-                    }));
-                },
-                onError: (error) => {
-                    console.error("[ChatPanel] streamQuery onError:", error);
-                    this._isLoading = false;
-                    this.streaming = false;
-                    this._error = error;
-                    this._scheduleUpdate();
-                    
-                    this.dispatchEvent(new CustomEvent("chat-error", {
-                        bubbles: true,
-                        composed: true,
-                        detail: { error },
-                    }));
-                },
-            },
-            this._thinkingMode,
+        this.dispatchEvent(
+            new CustomEvent("chat-send", {
+                bubbles: true,
+                composed: true,
+                detail: { query, context: this._service.context },
+            }),
         );
+
+        console.log(
+            "[ChatPanel] Calling streamQuery with context:",
+            this._service.context,
+        );
+        try {
+            await this._service.streamQuery(
+                query,
+                {
+                    onStart: () => {
+                        this._isLoading = false;
+                        this._scheduleUpdate();
+
+                        this.dispatchEvent(
+                            new CustomEvent("chat-stream-start", {
+                                bubbles: true,
+                                composed: true,
+                                detail: { messageId: "" },
+                            }),
+                        );
+                    },
+                    onChunk: (content, isThinking) => {
+                        if (isThinking) {
+                            this._thinkingContent += content;
+                        } else {
+                            this._streamingContent += content; // Accumulate, not replace
+                        }
+
+                        const streamingEl = this.renderRoot.querySelector(
+                            ".streaming-response",
+                        );
+                        if (streamingEl) {
+                            streamingEl.innerHTML =
+                                this._formatContent(this._streamingContent) +
+                                '<span class="cursor"></span>';
+                            // Don't auto-scroll on every chunk - let user read freely
+                        } else {
+                            this._scheduleUpdate();
+                        }
+                    },
+                    onComplete: (fullContent) => {
+                        this.streaming = false;
+                        this._streamingContent = "";
+                        this._thinkingContent = "";
+                        this._saveCurrentConversation(); // Auto-save after each response
+                        this._scheduleUpdate();
+
+                        this.dispatchEvent(
+                            new CustomEvent("chat-stream-complete", {
+                                bubbles: true,
+                                composed: true,
+                                detail: { messageId: "", content: fullContent },
+                            }),
+                        );
+                    },
+                    onError: (error) => {
+                        console.error(
+                            "[ChatPanel] streamQuery onError:",
+                            error,
+                        );
+                        this._isLoading = false;
+                        this.streaming = false;
+                        this._error = error;
+                        this._scheduleUpdate();
+
+                        this.dispatchEvent(
+                            new CustomEvent("chat-error", {
+                                bubbles: true,
+                                composed: true,
+                                detail: { error },
+                            }),
+                        );
+                    },
+                },
+                this._thinkingMode,
+            );
         } catch (err) {
             console.error("[ChatPanel] streamQuery threw exception:", err);
             this._isLoading = false;
@@ -745,104 +840,110 @@ export class KCChatPanelElement extends KCUIElement {
     // =========================================================================
     // Dragging and Docking
     // =========================================================================
-    
+
     private _startDrag(e: MouseEvent): void {
         // Don't start drag if clicking on a button
-        if ((e.target as HTMLElement).closest('button')) return;
-        
+        if ((e.target as HTMLElement).closest("button")) return;
+
         this._isDragging = true;
         this._dragStartX = e.clientX;
         this._dragStartY = e.clientY;
-        
+
         // Get the chat container position
-        const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
+        const container = this.renderRoot.querySelector(
+            ".chat-container",
+        ) as HTMLElement;
         if (!container) return;
-        
+
         const rect = container.getBoundingClientRect();
         this._panelStartX = rect.left;
         this._panelStartY = rect.top;
-        
+
         // Add temporary styles for dragging
-        container.style.position = 'fixed';
+        container.style.position = "fixed";
         container.style.left = `${rect.left}px`;
         container.style.top = `${rect.top}px`;
-        container.style.right = 'auto';
-        container.style.bottom = 'auto';
-        container.classList.add('dragging');
-        
-        document.addEventListener('mousemove', this._onDrag);
-        document.addEventListener('mouseup', this._endDrag);
+        container.style.right = "auto";
+        container.style.bottom = "auto";
+        container.classList.add("dragging");
+
+        document.addEventListener("mousemove", this._onDrag);
+        document.addEventListener("mouseup", this._endDrag);
     }
-    
+
     private _onDrag = (e: MouseEvent): void => {
         if (!this._isDragging) return;
-        
+
         const deltaX = e.clientX - this._dragStartX;
         const deltaY = e.clientY - this._dragStartY;
-        
+
         const newX = this._panelStartX + deltaX;
         const newY = this._panelStartY + deltaY;
-        
-        const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
+
+        const container = this.renderRoot.querySelector(
+            ".chat-container",
+        ) as HTMLElement;
         if (!container) return;
-        
+
         container.style.left = `${newX}px`;
         container.style.top = `${newY}px`;
-        
+
         // Store position for persistence across re-renders
         this._panelPosition = { left: newX, top: newY };
-        
+
         // Check if near right edge for docking hint
         const viewportWidth = window.innerWidth;
         if (newX + container.offsetWidth > viewportWidth - 50) {
-            this.classList.add('dock-hint');
+            this.classList.add("dock-hint");
         } else {
-            this.classList.remove('dock-hint');
+            this.classList.remove("dock-hint");
         }
     };
-    
+
     private _endDrag = (e: MouseEvent): void => {
         if (!this._isDragging) return;
         this._isDragging = false;
-        
-        document.removeEventListener('mousemove', this._onDrag);
-        document.removeEventListener('mouseup', this._endDrag);
-        
-        this.classList.remove('dock-hint');
-        
-        const container = this.renderRoot.querySelector('.chat-container') as HTMLElement;
+
+        document.removeEventListener("mousemove", this._onDrag);
+        document.removeEventListener("mouseup", this._endDrag);
+
+        this.classList.remove("dock-hint");
+
+        const container = this.renderRoot.querySelector(
+            ".chat-container",
+        ) as HTMLElement;
         if (!container) return;
-        
-        container.classList.remove('dragging');
-        
+
+        container.classList.remove("dragging");
+
         // Check if should dock to right edge
         const viewportWidth = window.innerWidth;
         const rect = container.getBoundingClientRect();
-        
+
         if (rect.right > viewportWidth - 50) {
             this._animateToDock(container);
         }
     };
-    
+
     private _animateToDock(container: HTMLElement): void {
         // Clear stored position - use default CSS positioning
         this._panelPosition = null;
-        
+
         // Animate panel sliding to dock position
-        container.style.transition = 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
-        container.style.right = '20px';
-        container.style.left = 'auto';
-        container.style.top = '60px';
-        container.style.bottom = '80px';
-        
+        container.style.transition = "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)";
+        container.style.right = "20px";
+        container.style.left = "auto";
+        container.style.top = "60px";
+        container.style.bottom = "80px";
+
         // Reset after animation
         setTimeout(() => {
-            container.style.transition = '';
-            container.style.position = '';
-            container.style.top = '';
-            container.style.bottom = '';
-            container.style.right = '';
-            container.style.left = '';
+            container.style.transition = "";
+            container.style.position = "";
+            container.style.top = "";
+            container.style.bottom = "";
+            container.style.right = "";
+            container.style.left = "";
         }, 250);
     }
 
@@ -915,12 +1016,13 @@ export class KCChatPanelElement extends KCUIElement {
             delegate(root, ".history-item", "click", (e, source) => {
                 const id = source.getAttribute("data-id");
                 if (!id) return;
-                
+
                 // Don't load if clicking on action buttons
-                if ((e.target as HTMLElement).closest(".history-item-actions")) return;
-                
+                if ((e.target as HTMLElement).closest(".history-item-actions"))
+                    return;
+
                 const history = loadHistory();
-                const conversation = history.find(c => c.id === id);
+                const conversation = history.find((c) => c.id === id);
                 if (conversation) {
                     this._loadConversation(conversation);
                 }
@@ -933,9 +1035,9 @@ export class KCChatPanelElement extends KCUIElement {
                 const item = source.closest(".history-item");
                 const id = item?.getAttribute("data-id");
                 if (!id) return;
-                
+
                 const history = loadHistory();
-                const conversation = history.find(c => c.id === id);
+                const conversation = history.find((c) => c.id === id);
                 if (conversation) {
                     this._exportConversation(conversation);
                 }
@@ -989,7 +1091,11 @@ export class KCChatPanelElement extends KCUIElement {
         // Preset cards
         this.addDisposable(
             delegate(root, ".preset-card", "click", (e, source) => {
-                if (source.classList.contains("disabled") || this.streaming || this._isLoading) {
+                if (
+                    source.classList.contains("disabled") ||
+                    this.streaming ||
+                    this._isLoading
+                ) {
                     return;
                 }
                 const presetId = source.getAttribute("data-preset-id");
@@ -1018,7 +1124,7 @@ export class KCChatPanelElement extends KCUIElement {
                 this._scheduleUpdate();
             }),
         );
-        
+
         this.addDisposable(
             delegate(root, ".context-collapse-btn", "click", () => {
                 this._contextExpanded = false;
@@ -1068,7 +1174,7 @@ export class KCChatPanelElement extends KCUIElement {
     private _handlePresetClick(presetId: string): void {
         console.log("[ChatPanel] Preset clicked:", presetId);
         for (const group of this._presets) {
-            const preset = group.presets.find(p => p.id === presetId);
+            const preset = group.presets.find((p) => p.id === presetId);
             if (preset) {
                 console.log("[ChatPanel] Found preset, query:", preset.query);
                 this._submitQuery(preset.query);
@@ -1093,19 +1199,34 @@ export class KCChatPanelElement extends KCUIElement {
             <div class="chat-header draggable">
                 <div class="header-left">
                     ${this.logoSrc
-                        ? html`<img class="header-logo" src="${this.logoSrc}" alt="" />`
+                        ? html`<img
+                              class="header-logo"
+                              src="${this.logoSrc}"
+                              alt="" />`
                         : ""}
                     <span class="header-title">${title}</span>
                 </div>
                 <div class="header-right">
-                    <button class="header-button new-chat-button" title="New conversation">
+                    <button
+                        class="header-button new-chat-button"
+                        title="New conversation">
                         <kc-ui-icon>add_comment</kc-ui-icon>
                     </button>
-                    <button class="header-button history-button" title="Chat history">
+                    <button
+                        class="header-button history-button"
+                        title="Chat history">
                         <kc-ui-icon>history</kc-ui-icon>
                     </button>
-                    <button class="header-button overlay-button" title="${this._isOverlay ? "Exit fullscreen" : "Fullscreen"}">
-                        <kc-ui-icon>${this._isOverlay ? "fullscreen_exit" : "fullscreen"}</kc-ui-icon>
+                    <button
+                        class="header-button overlay-button"
+                        title="${this._isOverlay
+                            ? "Exit fullscreen"
+                            : "Fullscreen"}">
+                        <kc-ui-icon
+                            >${this._isOverlay
+                                ? "fullscreen_exit"
+                                : "fullscreen"}</kc-ui-icon
+                        >
                     </button>
                     <button class="header-button close-button" title="Minimize">
                         <kc-ui-icon>remove</kc-ui-icon>
@@ -1126,9 +1247,11 @@ export class KCChatPanelElement extends KCUIElement {
                     <span class="history-title">Chat History</span>
                     <div class="history-actions">
                         ${history.length > 0
-                            ? html`<button class="clear-all-history" title="Clear all history">
-                                <kc-ui-icon>delete_forever</kc-ui-icon>
-                            </button>`
+                            ? html`<button
+                                  class="clear-all-history"
+                                  title="Clear all history">
+                                  <kc-ui-icon>delete_forever</kc-ui-icon>
+                              </button>`
                             : ""}
                         <button class="history-close" title="Close">
                             <kc-ui-icon>close</kc-ui-icon>
@@ -1137,41 +1260,60 @@ export class KCChatPanelElement extends KCUIElement {
                 </div>
                 <div class="history-list">
                     ${history.length === 0
-                        ? html`<div class="history-empty">No conversations yet</div>`
-                        : history.map(conv => html`
-                            <div class="history-item ${conv.id === this._currentConversationId ? "active" : ""}" 
-                                 data-id="${conv.id}">
-                                <div class="history-item-content">
-                                    <div class="history-item-title">${conv.title}</div>
-                                    <div class="history-item-meta">
-                                        ${new Date(conv.updatedAt).toLocaleDateString()} · 
-                                        ${conv.messages.length} messages
-                                    </div>
-                                </div>
-                                <div class="history-item-actions">
-                                    <button class="history-item-download" title="Download as Markdown">
-                                        <kc-ui-icon>download</kc-ui-icon>
-                                    </button>
-                                    <button class="history-item-delete" title="Delete">
-                                        <kc-ui-icon>delete</kc-ui-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        `)}
+                        ? html`<div class="history-empty">
+                              No conversations yet
+                          </div>`
+                        : history.map(
+                              (conv) => html`
+                                  <div
+                                      class="history-item ${conv.id ===
+                                      this._currentConversationId
+                                          ? "active"
+                                          : ""}"
+                                      data-id="${conv.id}">
+                                      <div class="history-item-content">
+                                          <div class="history-item-title">
+                                              ${conv.title}
+                                          </div>
+                                          <div class="history-item-meta">
+                                              ${new Date(
+                                                  conv.updatedAt,
+                                              ).toLocaleDateString()}
+                                              · ${conv.messages.length} messages
+                                          </div>
+                                      </div>
+                                      <div class="history-item-actions">
+                                          <button
+                                              class="history-item-download"
+                                              title="Download as Markdown">
+                                              <kc-ui-icon>download</kc-ui-icon>
+                                          </button>
+                                          <button
+                                              class="history-item-delete"
+                                              title="Delete">
+                                              <kc-ui-icon>delete</kc-ui-icon>
+                                          </button>
+                                      </div>
+                                  </div>
+                              `,
+                          )}
                 </div>
             </div>
         `;
     }
 
     private _renderContextItems(): ElementOrFragment | string {
-        if (this._config.showContextItems === false || this._contextItems.length === 0) {
+        if (
+            this._config.showContextItems === false ||
+            this._contextItems.length === 0
+        ) {
             return html``;
         }
 
         const MAX_VISIBLE = 6;
         const hasMore = this._contextItems.length > MAX_VISIBLE;
-        const visibleItems = this._contextExpanded 
-            ? this._contextItems 
+        const visibleItems = this._contextExpanded
+            ? this._contextItems
             : this._contextItems.slice(0, MAX_VISIBLE);
         const hiddenCount = this._contextItems.length - MAX_VISIBLE;
 
@@ -1179,22 +1321,41 @@ export class KCChatPanelElement extends KCUIElement {
             <div class="context-section">
                 <div class="context-header">
                     <span class="context-label">Context</span>
-                    <span class="context-count">${this._contextItems.length}</span>
+                    <span class="context-count"
+                        >${this._contextItems.length}</span
+                    >
                 </div>
                 <div class="context-items">
-                    ${visibleItems.map(item => html`
-                        <div class="context-item" data-id="${item.id}" title="${item.label} (${item.type})">
-                            <span class="context-item-label">${item.label}</span>
-                            <button class="context-item-remove" title="Remove">
-                                <kc-ui-icon>close</kc-ui-icon>
-                            </button>
-                        </div>
-                    `)}
+                    ${visibleItems.map(
+                        (item) => html`
+                            <div
+                                class="context-item"
+                                data-id="${item.id}"
+                                title="${item.label} (${item.type})">
+                                <span class="context-item-label"
+                                    >${item.label}</span
+                                >
+                                <button
+                                    class="context-item-remove"
+                                    title="Remove">
+                                    <kc-ui-icon>close</kc-ui-icon>
+                                </button>
+                            </div>
+                        `,
+                    )}
                     ${hasMore && !this._contextExpanded
-                        ? html`<button class="context-expand-btn" title="Show ${hiddenCount} more">+${hiddenCount} more</button>`
+                        ? html`<button
+                              class="context-expand-btn"
+                              title="Show ${hiddenCount} more">
+                              +${hiddenCount} more
+                          </button>`
                         : ""}
                     ${hasMore && this._contextExpanded
-                        ? html`<button class="context-collapse-btn" title="Show less">Show less</button>`
+                        ? html`<button
+                              class="context-collapse-btn"
+                              title="Show less">
+                              Show less
+                          </button>`
                         : ""}
                 </div>
             </div>
@@ -1209,41 +1370,67 @@ export class KCChatPanelElement extends KCUIElement {
         const hasContext = this._contextItems.length > 0;
 
         return html`
-            <div class="presets-section ${this._presetsCollapsed ? "collapsed" : ""}">
+            <div
+                class="presets-section ${this._presetsCollapsed
+                    ? "collapsed"
+                    : ""}">
                 <div class="presets-header">
                     <span class="presets-label">Quick Actions</span>
                     <button class="presets-toggle">
-                        <kc-ui-icon>${this._presetsCollapsed ? "expand_more" : "expand_less"}</kc-ui-icon>
+                        <kc-ui-icon
+                            >${this._presetsCollapsed
+                                ? "expand_more"
+                                : "expand_less"}</kc-ui-icon
+                        >
                     </button>
                 </div>
                 ${!this._presetsCollapsed
                     ? html`
-                        ${this._presets.map(group => html`
-                            <div class="preset-group">
-                                ${group.label
-                                    ? html`<div class="preset-group-label">${group.label}</div>`
-                                    : ""}
-                                <div class="preset-cards">
-                                    ${group.presets.map(preset => {
-                                        const disabled = preset.requiresContext && !hasContext;
-                                        const enabled = !preset.isEnabled || 
-                                            preset.isEnabled(this._service.context);
-                                        
-                                        return html`
-                                            <button
-                                                class="preset-card ${disabled || !enabled ? "disabled" : ""}"
-                                                data-preset-id="${preset.id}"
-                                                title="${preset.description}"
-                                                ?disabled=${disabled || !enabled}>
-                                                <kc-ui-icon class="preset-icon">${preset.icon}</kc-ui-icon>
-                                                <span class="preset-title">${preset.title}</span>
-                                            </button>
-                                        `;
-                                    })}
-                                </div>
-                            </div>
-                        `)}
-                    `
+                          ${this._presets.map(
+                              (group) => html`
+                                  <div class="preset-group">
+                                      ${group.label
+                                          ? html`<div
+                                                class="preset-group-label">
+                                                ${group.label}
+                                            </div>`
+                                          : ""}
+                                      <div class="preset-cards">
+                                          ${group.presets.map((preset) => {
+                                              const disabled =
+                                                  preset.requiresContext &&
+                                                  !hasContext;
+                                              const enabled =
+                                                  !preset.isEnabled ||
+                                                  preset.isEnabled(
+                                                      this._service.context,
+                                                  );
+
+                                              return html`
+                                                  <button
+                                                      class="preset-card ${disabled ||
+                                                      !enabled
+                                                          ? "disabled"
+                                                          : ""}"
+                                                      data-preset-id="${preset.id}"
+                                                      title="${preset.description}"
+                                                      ?disabled=${disabled ||
+                                                      !enabled}>
+                                                      <kc-ui-icon
+                                                          class="preset-icon"
+                                                          >${preset.icon}</kc-ui-icon
+                                                      >
+                                                      <span class="preset-title"
+                                                          >${preset.title}</span
+                                                      >
+                                                  </button>
+                                              `;
+                                          })}
+                                      </div>
+                                  </div>
+                              `,
+                          )}
+                      `
                     : ""}
             </div>
         `;
@@ -1251,23 +1438,31 @@ export class KCChatPanelElement extends KCUIElement {
 
     private _renderMessages(): ElementOrFragment {
         const allMessages = this._service.messages;
-        console.log("[ChatPanel] _renderMessages:", { 
-            allMessages: allMessages.length, 
-            streaming: this.streaming, 
-            isLoading: this._isLoading, 
-            error: this._error 
+        console.log("[ChatPanel] _renderMessages:", {
+            allMessages: allMessages.length,
+            streaming: this.streaming,
+            isLoading: this._isLoading,
+            error: this._error,
         });
-        
+
         // Filter out messages with no content (including streaming placeholders)
-        const messages = allMessages.filter(msg => msg.content && msg.content.trim());
+        const messages = allMessages.filter(
+            (msg) => msg.content && msg.content.trim(),
+        );
 
         // Show empty state only if no messages, not loading, not streaming, AND no error
-        if (messages.length === 0 && !this.streaming && !this._isLoading && !this._error) {
+        if (
+            messages.length === 0 &&
+            !this.streaming &&
+            !this._isLoading &&
+            !this._error
+        ) {
             return html`
                 <div class="empty-state">
                     <kc-ui-icon>chat_bubble_outline</kc-ui-icon>
                     <p class="empty-state-text">
-                        ${this._config.placeholder ?? "Ask a question or select a quick action above."}
+                        ${this._config.placeholder ??
+                        "Ask a question or select a quick action above."}
                     </p>
                 </div>
             `;
@@ -1275,36 +1470,39 @@ export class KCChatPanelElement extends KCUIElement {
 
         return html`
             <div class="conversation-scroll">
-                ${messages.map(msg => this._renderMessage(msg))}
+                ${messages.map((msg) => this._renderMessage(msg))}
                 ${this.streaming && this._streamingContent
                     ? html`
-                        ${this._thinkingMode && this._thinkingContent
-                            ? html`
-                                <div class="thinking-indicator">
-                                    <kc-ui-icon>psychology</kc-ui-icon>
-                                    <span>Thinking...</span>
-                                </div>
-                            `
-                            : ""}
-                        <div class="message message-assistant">
-                            <div class="message-content streaming-response"></div>
-                        </div>
-                    `
+                          ${this._thinkingMode && this._thinkingContent
+                              ? html`
+                                    <div class="thinking-indicator">
+                                        <kc-ui-icon>psychology</kc-ui-icon>
+                                        <span>Thinking...</span>
+                                    </div>
+                                `
+                              : ""}
+                          <div class="message message-assistant">
+                              <div
+                                  class="message-content streaming-response"></div>
+                          </div>
+                      `
                     : ""}
                 ${this._isLoading
                     ? html`
-                        <div class="loading-indicator">
-                            <div class="loading-spinner"></div>
-                            <span class="loading-text">Preparing response...</span>
-                        </div>
-                    `
+                          <div class="loading-indicator">
+                              <div class="loading-spinner"></div>
+                              <span class="loading-text"
+                                  >Preparing response...</span
+                              >
+                          </div>
+                      `
                     : ""}
                 ${this._error
                     ? html`
-                        <div class="message message-error">
-                            <div class="message-content">${this._error}</div>
-                        </div>
-                    `
+                          <div class="message message-error">
+                              <div class="message-content">${this._error}</div>
+                          </div>
+                      `
                     : ""}
             </div>
         `;
@@ -1326,10 +1524,10 @@ export class KCChatPanelElement extends KCUIElement {
 
         // Create element with formatted content using direct DOM manipulation
         // since property binding (.innerHTML) doesn't work in this template system
-        const div = document.createElement('div');
+        const div = document.createElement("div");
         div.className = `message message-${msg.role}`;
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
+        const contentDiv = document.createElement("div");
+        contentDiv.className = "message-content";
         contentDiv.innerHTML = this._formatContent(msg.content);
         div.appendChild(contentDiv);
         return div;
@@ -1344,16 +1542,18 @@ export class KCChatPanelElement extends KCUIElement {
             <div class="chat-input-area ${disabled ? "disabled" : ""}">
                 ${showThinking
                     ? html`
-                        <div class="input-row">
-                            <button
-                                class="thinking-toggle ${this._thinkingMode ? "active" : ""}"
-                                ?disabled=${disabled}
-                                title="Enable thinking mode for more detailed analysis">
-                                <kc-ui-icon>psychology</kc-ui-icon>
-                                <span>Think</span>
-                            </button>
-                        </div>
-                    `
+                          <div class="input-row">
+                              <button
+                                  class="thinking-toggle ${this._thinkingMode
+                                      ? "active"
+                                      : ""}"
+                                  ?disabled=${disabled}
+                                  title="Enable thinking mode for more detailed analysis">
+                                  <kc-ui-icon>psychology</kc-ui-icon>
+                                  <span>Think</span>
+                              </button>
+                          </div>
+                      `
                     : ""}
                 <div class="chat-input-container ${disabled ? "disabled" : ""}">
                     <textarea
@@ -1376,7 +1576,10 @@ export class KCChatPanelElement extends KCUIElement {
         return html`
             <div class="docked-tab" title="Open AI Chat">
                 ${this.logoSrc
-                    ? html`<img class="docked-logo" src="${this.logoSrc}" alt="" />`
+                    ? html`<img
+                          class="docked-logo"
+                          src="${this.logoSrc}"
+                          alt="" />`
                     : html`<kc-ui-icon>chat</kc-ui-icon>`}
             </div>
         `;
@@ -1384,12 +1587,13 @@ export class KCChatPanelElement extends KCUIElement {
 
     private _renderPanel(): ElementOrFragment {
         return html`
-            <div class="chat-container ${this._isOverlay ? "overlay-mode" : ""} ${this._isDragging ? "dragging" : ""}">
-                ${this._renderHeader()}
-                ${this._renderHistoryPanel()}
+            <div
+                class="chat-container ${this._isOverlay
+                    ? "overlay-mode"
+                    : ""} ${this._isDragging ? "dragging" : ""}">
+                ${this._renderHeader()} ${this._renderHistoryPanel()}
                 <div class="chat-body">
-                    ${this._renderContextItems()}
-                    ${this._renderPresets()}
+                    ${this._renderContextItems()} ${this._renderPresets()}
                     <div class="conversation-section">
                         ${this._renderMessages()}
                     </div>

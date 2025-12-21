@@ -13,7 +13,11 @@ import { Project } from "../project";
 import { FetchFileSystem, type VirtualFileSystem } from "../services/vfs";
 import { CommitFileSystem } from "../services/commit-vfs";
 import { GrokiAPI } from "../services/api";
-import { GitService, GitServiceError, type CachedRepoInfo } from "../services/git-service";
+import {
+    GitService,
+    GitServiceError,
+    type CachedRepoInfo,
+} from "../services/git-service";
 import { GitHubAuthService, type GitHubUser } from "../services/github-auth";
 import { xaiSettings } from "../services/xai-settings";
 import { KCBoardAppElement } from "./kc-board/app";
@@ -64,16 +68,22 @@ class KiCanvasShellElement extends KCUIElement {
     #current_repo: string | null = null;
     #current_commit: string | null = null;
     #cached_repos: CachedRepoInfo[] = [];
-    #eventListeners: Array<{ element: Element; event: string; handler: EventListener }> = [];
-    
+    #eventListeners: Array<{
+        element: Element;
+        event: string;
+        handler: EventListener;
+    }> = [];
+
     // Loading progress state
-    #cloneProgress: { phase: string; loaded: number; total: number } | null = null;
-    
+    #cloneProgress: { phase: string; loaded: number; total: number } | null =
+        null;
+
     // GitHub Auth state
     #githubUser: GitHubUser | null = null;
     #githubAuthLoading: boolean = false;
-    #githubRateLimit: { remaining: number; limit: number; reset: Date } | null = null;
-    
+    #githubRateLimit: { remaining: number; limit: number; reset: Date } | null =
+        null;
+
     // API Settings state
     #apiSettingsExpanded: boolean = false;
     #apiKeyInput: string = "";
@@ -99,7 +109,7 @@ class KiCanvasShellElement extends KCUIElement {
 
     @attribute({ type: Boolean })
     public switching: boolean;
-    
+
     // Switching commit info for corner loader
     #switchingCommit: string | null = null;
 
@@ -119,10 +129,10 @@ class KiCanvasShellElement extends KCUIElement {
         later(async () => {
             // Initialize GitHub auth and load configuration
             await this.initializeGitHubAuth();
-            
+
             // Handle GitHub OAuth callback
             await this.handleGitHubOAuthCallback();
-            
+
             // Load cached repos
             await this.refreshCachedRepos();
 
@@ -169,11 +179,11 @@ class KiCanvasShellElement extends KCUIElement {
             this.setupApiSettingsListeners();
             this.setupGitHubAuthListeners();
         });
-        
+
         // Initialize API settings inputs from stored values
         this.#apiKeyInput = xaiSettings.apiKey ?? "";
         this.#apiBaseUrlInput = xaiSettings.baseUrl;
-        
+
         // Subscribe to GitHub auth state changes
         GitHubAuthService.subscribe(() => {
             this.#githubUser = GitHubAuthService.getUser();
@@ -181,7 +191,7 @@ class KiCanvasShellElement extends KCUIElement {
             later(() => this.reattachAllListeners());
         });
     }
-    
+
     /**
      * Initialize GitHub auth - loads saved state and handles OAuth callback
      */
@@ -189,16 +199,19 @@ class KiCanvasShellElement extends KCUIElement {
         try {
             // Load saved auth state
             this.#githubUser = GitHubAuthService.getUser();
-            
+
             // Fetch rate limit info if authenticated
             if (GitHubAuthService.isAuthenticated()) {
                 await this.refreshGitHubRateLimit();
             }
         } catch (e) {
-            console.warn("[KiCanvasShell] Failed to initialize GitHub auth:", e);
+            console.warn(
+                "[KiCanvasShell] Failed to initialize GitHub auth:",
+                e,
+            );
         }
     }
-    
+
     /**
      * Handle GitHub OAuth callback if present in URL (PKCE flow)
      */
@@ -208,10 +221,10 @@ class KiCanvasShellElement extends KCUIElement {
         if (!urlParams.has("code") && !urlParams.has("error")) {
             return; // Not an OAuth callback
         }
-        
+
         this.#githubAuthLoading = true;
         this.update();
-        
+
         try {
             const success = await GitHubAuthService.handleOAuthCallback();
             if (success) {
@@ -220,14 +233,18 @@ class KiCanvasShellElement extends KCUIElement {
             }
         } catch (e) {
             console.error("[KiCanvasShell] GitHub callback error:", e);
-            this.showError(e instanceof Error ? e.message : "Failed to complete GitHub authentication");
+            this.showError(
+                e instanceof Error
+                    ? e.message
+                    : "Failed to complete GitHub authentication",
+            );
         } finally {
             this.#githubAuthLoading = false;
             this.update();
             later(() => this.reattachAllListeners());
         }
     }
-    
+
     /**
      * Refresh GitHub rate limit info
      */
@@ -241,7 +258,7 @@ class KiCanvasShellElement extends KCUIElement {
             };
         }
     }
-    
+
     /**
      * Setup GitHub auth button listeners
      */
@@ -250,29 +267,39 @@ class KiCanvasShellElement extends KCUIElement {
         if (loginBtn) {
             const handler = async () => {
                 if (!GitHubAuthService.isConfigured()) {
-                    this.showError("GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID in config.ts");
+                    this.showError(
+                        "GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID in config.ts",
+                    );
                     return;
                 }
-                
+
                 this.#githubAuthLoading = true;
                 this.update();
                 later(() => this.reattachAllListeners());
-                
+
                 try {
                     // This will redirect to GitHub
                     await GitHubAuthService.startLogin();
                 } catch (e) {
                     console.error("[KiCanvasShell] GitHub login error:", e);
-                    this.showError(e instanceof Error ? e.message : "Failed to start GitHub authentication");
+                    this.showError(
+                        e instanceof Error
+                            ? e.message
+                            : "Failed to start GitHub authentication",
+                    );
                     this.#githubAuthLoading = false;
                     this.update();
                     later(() => this.reattachAllListeners());
                 }
             };
             loginBtn.addEventListener("click", handler);
-            this.#eventListeners.push({ element: loginBtn, event: "click", handler });
+            this.#eventListeners.push({
+                element: loginBtn,
+                event: "click",
+                handler,
+            });
         }
-        
+
         const logoutBtn = this.renderRoot.querySelector("#github-logout-btn");
         if (logoutBtn) {
             const handler = () => {
@@ -283,7 +310,11 @@ class KiCanvasShellElement extends KCUIElement {
                 later(() => this.reattachAllListeners());
             };
             logoutBtn.addEventListener("click", handler);
-            this.#eventListeners.push({ element: logoutBtn, event: "click", handler });
+            this.#eventListeners.push({
+                element: logoutBtn,
+                event: "click",
+                handler,
+            });
         }
     }
 
@@ -322,24 +353,30 @@ class KiCanvasShellElement extends KCUIElement {
         this.setupApiSettingsListeners();
         this.setupGitHubAuthListeners();
     }
-    
+
     /**
      * Setup event listeners for the main input field
      */
     private setupInputListeners(): void {
-        const input = this.renderRoot.querySelector("#main-link-input") as HTMLInputElement;
+        const input = this.renderRoot.querySelector(
+            "#main-link-input",
+        ) as HTMLInputElement;
         if (!input) {
             console.warn("[KiCanvasShell] Main input not found");
             return;
         }
-        
+
         // Clear error when user types
         const inputHandler = () => {
             this.clearError();
         };
         input.addEventListener("input", inputHandler);
-        this.#eventListeners.push({ element: input, event: "input", handler: inputHandler });
-        
+        this.#eventListeners.push({
+            element: input,
+            event: "input",
+            handler: inputHandler,
+        });
+
         // Load on Enter key
         const keydownHandler = async (e: Event) => {
             const keyEvent = e as KeyboardEvent;
@@ -358,7 +395,9 @@ class KiCanvasShellElement extends KCUIElement {
             // Extract repo from the link
             const repo = GrokiAPI.extractRepoFromUrl(link);
             if (!repo) {
-                this.showError("Invalid GitHub URL. Please enter a valid repository link (e.g., https://github.com/user/repo).");
+                this.showError(
+                    "Invalid GitHub URL. Please enter a valid repository link (e.g., https://github.com/user/repo).",
+                );
                 return;
             }
 
@@ -370,7 +409,11 @@ class KiCanvasShellElement extends KCUIElement {
             window.history.pushState(null, "", location);
         };
         input.addEventListener("keydown", keydownHandler);
-        this.#eventListeners.push({ element: input, event: "keydown", handler: keydownHandler });
+        this.#eventListeners.push({
+            element: input,
+            event: "keydown",
+            handler: keydownHandler,
+        });
     }
 
     /**
@@ -437,7 +480,11 @@ class KiCanvasShellElement extends KCUIElement {
                     } catch (error) {
                         console.error("Failed to invalidate cache:", error);
                         this.showError(
-                            `Failed to remove repository from cache: ${error instanceof Error ? error.message : "Unknown error"}`,
+                            `Failed to remove repository from cache: ${
+                                error instanceof Error
+                                    ? error.message
+                                    : "Unknown error"
+                            }`,
                         );
                     }
                 }
@@ -465,7 +512,11 @@ class KiCanvasShellElement extends KCUIElement {
                     } catch (error) {
                         console.error("Failed to clear caches:", error);
                         this.showError(
-                            `Failed to clear cache: ${error instanceof Error ? error.message : "Unknown error"}`,
+                            `Failed to clear cache: ${
+                                error instanceof Error
+                                    ? error.message
+                                    : "Unknown error"
+                            }`,
                         );
                     }
                 }
@@ -500,7 +551,9 @@ class KiCanvasShellElement extends KCUIElement {
         }
 
         // API Key input
-        const apiKeyInput = this.renderRoot.querySelector("#api-key-input") as HTMLInputElement;
+        const apiKeyInput = this.renderRoot.querySelector(
+            "#api-key-input",
+        ) as HTMLInputElement;
         if (apiKeyInput) {
             const handler = (e: Event) => {
                 this.#apiKeyInput = (e.target as HTMLInputElement).value;
@@ -516,7 +569,9 @@ class KiCanvasShellElement extends KCUIElement {
         }
 
         // Base URL input
-        const baseUrlInput = this.renderRoot.querySelector("#api-base-url-input") as HTMLInputElement;
+        const baseUrlInput = this.renderRoot.querySelector(
+            "#api-base-url-input",
+        ) as HTMLInputElement;
         if (baseUrlInput) {
             const handler = (e: Event) => {
                 this.#apiBaseUrlInput = (e.target as HTMLInputElement).value;
@@ -546,7 +601,9 @@ class KiCanvasShellElement extends KCUIElement {
         }
 
         // Clear button
-        const clearBtn = this.renderRoot.querySelector(".api-buttons .clear-btn");
+        const clearBtn = this.renderRoot.querySelector(
+            ".api-buttons .clear-btn",
+        );
         if (clearBtn) {
             const handler = () => {
                 this.clearApiSettings();
@@ -581,7 +638,7 @@ class KiCanvasShellElement extends KCUIElement {
         xaiSettings.setApiKey(this.#apiKeyInput || null);
         xaiSettings.setBaseUrl(this.#apiBaseUrlInput);
         xaiSettings.save();
-        
+
         this.#apiStatusMessage = "Settings saved successfully!";
         this.#apiStatusType = "success";
         this.update();
@@ -622,7 +679,7 @@ class KiCanvasShellElement extends KCUIElement {
         // Temporarily save settings for testing
         const originalKey = xaiSettings.apiKey;
         const originalUrl = xaiSettings.baseUrl;
-        
+
         xaiSettings.setApiKey(this.#apiKeyInput);
         xaiSettings.setBaseUrl(this.#apiBaseUrlInput);
 
@@ -634,7 +691,8 @@ class KiCanvasShellElement extends KCUIElement {
 
         this.#isTestingConnection = false;
         if (result.success) {
-            this.#apiStatusMessage = "Connection successful! Click Save to keep these settings.";
+            this.#apiStatusMessage =
+                "Connection successful! Click Save to keep these settings.";
             this.#apiStatusType = "success";
         } else {
             this.#apiStatusMessage = result.error || "Connection failed";
@@ -656,7 +714,7 @@ class KiCanvasShellElement extends KCUIElement {
         location.searchParams.set("github", `https://github.com/${slug}`);
         window.history.pushState(null, "", location);
     }
-    
+
     /**
      * Load repository using isomorphic-git in the browser (no backend required)
      */
@@ -765,7 +823,7 @@ class KiCanvasShellElement extends KCUIElement {
         // If we already have content loaded, use the subtle corner loader
         // Otherwise, show the full loading overlay
         const wasLoaded = this.loaded;
-        
+
         if (wasLoaded) {
             // Subtle corner loader for switching commits
             this.switching = true;
@@ -775,7 +833,7 @@ class KiCanvasShellElement extends KCUIElement {
             this.loaded = false;
             this.loading = true;
         }
-        
+
         this.removeAttribute("error");
         this.#current_commit = commit;
 
@@ -788,7 +846,9 @@ class KiCanvasShellElement extends KCUIElement {
             this.switching = false;
             this.#switchingCommit = null;
             this.showError(
-                `Failed to load commit ${commit.substring(0, 7)}: ${e instanceof Error ? e.message : "Unknown error"}`,
+                `Failed to load commit ${commit.substring(0, 7)}: ${
+                    e instanceof Error ? e.message : "Unknown error"
+                }`,
             );
         }
     }
@@ -836,7 +896,7 @@ class KiCanvasShellElement extends KCUIElement {
 
     private loadExample(e: MouseEvent): void {
         const button = e.currentTarget as HTMLButtonElement;
-        const repoUrl = button.dataset['repo'];
+        const repoUrl = button.dataset["repo"];
         if (!repoUrl) return;
         this.link_input.value = repoUrl;
         const repo = GrokiAPI.extractRepoFromUrl(repoUrl);
@@ -868,7 +928,7 @@ class KiCanvasShellElement extends KCUIElement {
         if (diffDays < 7) return `${diffDays}d ago`;
         return date.toLocaleDateString();
     }
-    
+
     override render() {
         this.#schematic_app = html`
             <kc-schematic-app controls="full"></kc-schematic-app>
@@ -882,164 +942,304 @@ class KiCanvasShellElement extends KCUIElement {
                 <section class="overlay">
                     <div class="hero-glow"></div>
                     <div class="circuit-pattern"></div>
-                    
+
                     <!-- Top Navigation Bar -->
                     <nav class="top-nav">
                         <!-- Credits Dropdown - Left -->
                         <div class="credits-dropdown">
                             <div class="credits-trigger">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="9" cy="7" r="4"/>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                 </svg>
                                 <span>Credits</span>
                             </div>
                             <div class="credits-content">
                                 <div class="credits-title">Created by</div>
-                                <a href="https://x.com/KodaClement" target="_blank" rel="noopener" class="credit-person">
+                                <a
+                                    href="https://x.com/KodaClement"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="credit-person">
                                     <div class="credit-avatar">C</div>
                                     <div class="credit-info">
-                                        <div class="credit-name">Clement Hathaway</div>
-                                        <div class="credit-handle">@KodaClement</div>
+                                        <div class="credit-name">
+                                            Clement Hathaway
+                                        </div>
+                                        <div class="credit-handle">
+                                            @KodaClement
+                                        </div>
                                     </div>
-                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    <svg
+                                        class="credit-x-icon"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path
+                                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                     </svg>
                                 </a>
-                                <a href="https://x.com/juliankc" target="_blank" rel="noopener" class="credit-person">
+                                <a
+                                    href="https://x.com/juliankc"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="credit-person">
                                     <div class="credit-avatar">J</div>
                                     <div class="credit-info">
-                                        <div class="credit-name">Julian Carrier</div>
-                                        <div class="credit-handle">@juliankc</div>
+                                        <div class="credit-name">
+                                            Julian Carrier
+                                        </div>
+                                        <div class="credit-handle">
+                                            @juliankc
+                                        </div>
                                     </div>
-                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    <svg
+                                        class="credit-x-icon"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path
+                                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                     </svg>
                                 </a>
-                                <a href="https://x.com/unhinged_evan" target="_blank" rel="noopener" class="credit-person">
+                                <a
+                                    href="https://x.com/unhinged_evan"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="credit-person">
                                     <div class="credit-avatar">E</div>
                                     <div class="credit-info">
-                                        <div class="credit-name">Evan Hekman</div>
-                                        <div class="credit-handle">@unhinged_evan</div>
+                                        <div class="credit-name">
+                                            Evan Hekman
+                                        </div>
+                                        <div class="credit-handle">
+                                            @unhinged_evan
+                                        </div>
                                     </div>
-                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    <svg
+                                        class="credit-x-icon"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path
+                                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                     </svg>
                                 </a>
-                                <a href="https://x.com/ernestyalumni" target="_blank" rel="noopener" class="credit-person">
+                                <a
+                                    href="https://x.com/ernestyalumni"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="credit-person">
                                     <div class="credit-avatar">E</div>
                                     <div class="credit-info">
-                                        <div class="credit-name">Ernest Yeung</div>
-                                        <div class="credit-handle">@ernestyalumni</div>
+                                        <div class="credit-name">
+                                            Ernest Yeung
+                                        </div>
+                                        <div class="credit-handle">
+                                            @ernestyalumni
+                                        </div>
                                     </div>
-                                    <svg class="credit-x-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    <svg
+                                        class="credit-x-icon"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path
+                                            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                     </svg>
                                 </a>
                             </div>
                         </div>
-                        
+
                         <!-- Right Side: API Settings + GitHub -->
                         <div class="nav-right">
                             <!-- xAI API Settings Dropdown -->
                             <div class="api-dropdown">
                                 <div class="api-dropdown-trigger">
-                                    <span class="api-status-dot ${xaiSettings.isConfigured ? "configured" : ""}"></span>
-                                    <img src="images/xAI_Logomark_Light.png" alt="xAI" class="api-logo" />
+                                    <span
+                                        class="api-status-dot ${xaiSettings.isConfigured
+                                            ? "configured"
+                                            : ""}"></span>
+                                    <img
+                                        src="images/xAI_Logomark_Light.png"
+                                        alt="xAI"
+                                        class="api-logo" />
                                     <span class="api-label">API</span>
-                                    <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    <svg
+                                        class="dropdown-arrow"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline
+                                            points="6 9 12 15 18 9"></polyline>
                                     </svg>
                                 </div>
                                 <div class="api-dropdown-content">
-                                    <div class="api-dropdown-title">xAI API Configuration</div>
+                                    <div class="api-dropdown-title">
+                                        xAI API Configuration
+                                    </div>
                                     <div class="api-field">
-                                        <label for="api-key-input">API Key</label>
+                                        <label for="api-key-input"
+                                            >API Key</label
+                                        >
                                         <input
                                             type="password"
                                             id="api-key-input"
                                             placeholder="Enter your xAI API key..."
                                             value="${this.#apiKeyInput}"
-                                            autocomplete="off"
-                                        />
+                                            autocomplete="off" />
                                         <span class="field-hint">
-                                            Get your key from <a href="https://console.x.ai/" target="_blank" rel="noopener">console.x.ai</a>
+                                            Get your key from
+                                            <a
+                                                href="https://console.x.ai/"
+                                                target="_blank"
+                                                rel="noopener"
+                                                >console.x.ai</a
+                                            >
                                         </span>
                                     </div>
                                     <div class="api-field">
-                                        <label for="api-base-url-input">Base URL</label>
+                                        <label for="api-base-url-input"
+                                            >Base URL</label
+                                        >
                                         <input
                                             type="text"
                                             id="api-base-url-input"
                                             placeholder="https://api.x.ai/v1/chat/completions"
                                             value="${this.#apiBaseUrlInput}"
-                                            autocomplete="off"
-                                        />
-                                        <span class="field-hint">Leave default unless using a proxy</span>
+                                            autocomplete="off" />
+                                        <span class="field-hint"
+                                            >Leave default unless using a
+                                            proxy</span
+                                        >
                                     </div>
                                     ${this.#apiStatusMessage
-                                        ? html`<div class="api-status-msg ${this.#apiStatusType}">${this.#apiStatusMessage}</div>`
+                                        ? html`<div
+                                              class="api-status-msg ${this
+                                                  .#apiStatusType}">
+                                              ${this.#apiStatusMessage}
+                                          </div>`
                                         : null}
                                     <div class="api-buttons">
-                                        <button class="test-btn" ?disabled="${this.#isTestingConnection || !this.#apiKeyInput}">
-                                            ${this.#isTestingConnection ? "Testing..." : "Test"}
+                                        <button
+                                            class="test-btn"
+                                            ?disabled="${this
+                                                .#isTestingConnection ||
+                                            !this.#apiKeyInput}">
+                                            ${this.#isTestingConnection
+                                                ? "Testing..."
+                                                : "Test"}
                                         </button>
-                                        <button class="save-btn" ?disabled="${!this.#apiKeyInput}">Save</button>
+                                        <button
+                                            class="save-btn"
+                                            ?disabled="${!this.#apiKeyInput}">
+                                            Save
+                                        </button>
                                         <button class="clear-btn">Clear</button>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- GitHub Auth -->
                             <div class="github-dropdown">
                                 ${this.#githubUser
                                     ? html`
-                                        <div class="github-user-trigger">
-                                            <img 
-                                                class="github-avatar" 
-                                                src="${this.#githubUser.avatar_url}" 
-                                                alt="${this.#githubUser.login}" />
-                                            <div class="github-user-info">
-                                                <span class="github-username">${this.#githubUser.name || this.#githubUser.login}</span>
-                                                <span class="github-rate-limit">
-                                                    ${this.#githubRateLimit
-                                                        ? `${this.#githubRateLimit.remaining}/${this.#githubRateLimit.limit}`
-                                                        : "✓"}
-                                                </span>
-                                            </div>
-                                            <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="6 9 12 15 18 9"></polyline>
-                                            </svg>
-                                        </div>
-                                        <div class="github-dropdown-content">
-                                            <div class="github-dropdown-info">
-                                                <span>Signed in as <strong>${this.#githubUser.login}</strong></span>
-                                                ${this.#githubRateLimit
-                                                    ? html`<span class="rate-detail">${this.#githubRateLimit.remaining} / ${this.#githubRateLimit.limit} API calls remaining</span>`
-                                                    : null}
-                                            </div>
-                                            <button id="github-logout-btn" class="github-logout-btn">
-                                                Sign out
-                                            </button>
-                                        </div>
-                                    `
+                                          <div class="github-user-trigger">
+                                              <img
+                                                  class="github-avatar"
+                                                  src="${this.#githubUser
+                                                      .avatar_url}"
+                                                  alt="${this.#githubUser
+                                                      .login}" />
+                                              <div class="github-user-info">
+                                                  <span class="github-username"
+                                                      >${this.#githubUser
+                                                          .name ||
+                                                      this.#githubUser
+                                                          .login}</span
+                                                  >
+                                                  <span
+                                                      class="github-rate-limit">
+                                                      ${this.#githubRateLimit
+                                                          ? `${
+                                                                this
+                                                                    .#githubRateLimit
+                                                                    .remaining
+                                                            }/${
+                                                                this
+                                                                    .#githubRateLimit
+                                                                    .limit
+                                                            }`
+                                                          : "✓"}
+                                                  </span>
+                                              </div>
+                                              <svg
+                                                  class="dropdown-arrow"
+                                                  viewBox="0 0 24 24"
+                                                  fill="none"
+                                                  stroke="currentColor"
+                                                  stroke-width="2">
+                                                  <polyline
+                                                      points="6 9 12 15 18 9"></polyline>
+                                              </svg>
+                                          </div>
+                                          <div class="github-dropdown-content">
+                                              <div class="github-dropdown-info">
+                                                  <span
+                                                      >Signed in as
+                                                      <strong
+                                                          >${this.#githubUser
+                                                              .login}</strong
+                                                      ></span
+                                                  >
+                                                  ${this.#githubRateLimit
+                                                      ? html`<span
+                                                            class="rate-detail"
+                                                            >${this
+                                                                .#githubRateLimit
+                                                                .remaining}
+                                                            /
+                                                            ${this
+                                                                .#githubRateLimit
+                                                                .limit}
+                                                            API calls
+                                                            remaining</span
+                                                        >`
+                                                      : null}
+                                              </div>
+                                              <button
+                                                  id="github-logout-btn"
+                                                  class="github-logout-btn">
+                                                  Sign out
+                                              </button>
+                                          </div>
+                                      `
                                     : html`
-                                        <button 
-                                            id="github-login-btn" 
-                                            class="github-login-btn"
-                                            ?disabled="${this.#githubAuthLoading}">
-                                            <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                                            </svg>
-                                            ${this.#githubAuthLoading ? "..." : "Sign in"}
-                                        </button>
-                                    `}
+                                          <button
+                                              id="github-login-btn"
+                                              class="github-login-btn"
+                                              ?disabled="${this
+                                                  .#githubAuthLoading}">
+                                              <svg
+                                                  class="github-icon"
+                                                  viewBox="0 0 24 24"
+                                                  fill="currentColor">
+                                                  <path
+                                                      d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                                              </svg>
+                                              ${this.#githubAuthLoading
+                                                  ? "..."
+                                                  : "Sign in"}
+                                          </button>
+                                      `}
                             </div>
                         </div>
                     </nav>
-                    
+
                     <!-- Main Content Container -->
                     <div class="main-content">
                         <!-- Hero Section -->
@@ -1055,11 +1255,13 @@ class KiCanvasShellElement extends KCUIElement {
                                 AI-powered schematic intelligence
                             </p>
                             <p class="description">
-                                Interactive KiCAD viewer with Grok-powered component analysis.
-                                Get instant summaries, understand circuit blocks, and explore your designs.
+                                Interactive KiCAD viewer with Grok-powered
+                                component analysis. Get instant summaries,
+                                understand circuit blocks, and explore your
+                                designs.
                             </p>
                         </div>
-                        
+
                         <!-- Features Grid -->
                         <div class="features">
                             <div class="feature">
@@ -1078,7 +1280,7 @@ class KiCanvasShellElement extends KCUIElement {
                                 <span>Powered by Grok</span>
                             </div>
                         </div>
-                        
+
                         <!-- Action Section -->
                         <div class="action-section">
                             <!-- Main Input -->
@@ -1090,7 +1292,7 @@ class KiCanvasShellElement extends KCUIElement {
                                 autofocus />
                             <div class="error-bar">${this.error}</div>
                         </div>
-                        
+
                         <!-- Content Grid: Examples & Recent Repos -->
                         <div class="content-grid">
                             <!-- Examples Card -->
@@ -1114,7 +1316,7 @@ class KiCanvasShellElement extends KCUIElement {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <!-- Recent Repositories Card -->
                             <div class="content-card">
                                 <div class="card-header">
@@ -1124,55 +1326,70 @@ class KiCanvasShellElement extends KCUIElement {
                                     </div>
                                     ${this.#cached_repos.length > 0
                                         ? html`
-                                            <button
-                                                id="clear-cache-btn"
-                                                class="clear-cache-btn"
-                                                title="Clear history">
-                                                Clear
-                                            </button>
-                                        `
+                                              <button
+                                                  id="clear-cache-btn"
+                                                  class="clear-cache-btn"
+                                                  title="Clear history">
+                                                  Clear
+                                              </button>
+                                          `
                                         : null}
                                 </div>
                                 ${this.#cached_repos.length > 0
                                     ? html`
-                                        <div class="cached-repos">
-                                            <div class="cached-repo-list">
-                                                ${this.#cached_repos.map(
-                                                    (repo) => html`
-                                                        <div class="cached-repo-item">
-                                                            <button
-                                                                class="cached-repo-btn"
-                                                                data-slug="${repo.slug}"
-                                                                title="Load ${repo.slug}">
-                                                                <span class="repo-name">${repo.slug}</span>
-                                                                <span class="repo-date">${this.formatRelativeDate(repo.lastAccessed)}</span>
-                                                            </button>
-                                                            <button
-                                                                class="delete-repo-btn"
-                                                                data-slug="${repo.slug}"
-                                                                title="Remove from history">
-                                                                ✕
-                                                            </button>
-                                                        </div>
-                                                    `,
-                                                )}
-                                            </div>
-                                        </div>
-                                    `
+                                          <div class="cached-repos">
+                                              <div class="cached-repo-list">
+                                                  ${this.#cached_repos.map(
+                                                      (repo) => html`
+                                                          <div
+                                                              class="cached-repo-item">
+                                                              <button
+                                                                  class="cached-repo-btn"
+                                                                  data-slug="${repo.slug}"
+                                                                  title="Load ${repo.slug}">
+                                                                  <span
+                                                                      class="repo-name"
+                                                                      >${repo.slug}</span
+                                                                  >
+                                                                  <span
+                                                                      class="repo-date"
+                                                                      >${this.formatRelativeDate(
+                                                                          repo.lastAccessed,
+                                                                      )}</span
+                                                                  >
+                                                              </button>
+                                                              <button
+                                                                  class="delete-repo-btn"
+                                                                  data-slug="${repo.slug}"
+                                                                  title="Remove from history">
+                                                                  ✕
+                                                              </button>
+                                                          </div>
+                                                      `,
+                                                  )}
+                                              </div>
+                                          </div>
+                                      `
                                     : html`
-                                        <div class="empty-state">
-                                            <div class="empty-state-icon">📁</div>
-                                            <div class="empty-state-text">No recent projects yet</div>
-                                        </div>
-                                    `}
+                                          <div class="empty-state">
+                                              <div class="empty-state-icon">
+                                                  📁
+                                              </div>
+                                              <div class="empty-state-text">
+                                                  No recent projects yet
+                                              </div>
+                                          </div>
+                                      `}
                             </div>
                         </div>
-                        
+
                         <p class="drop-hint">or drag & drop your KiCAD files</p>
                     </div>
-                    
-                    <p class="credits">Made by Clement Hathaway, Ernest Yeung, Evan Hekman, Julian Carrier</p>
 
+                    <p class="credits">
+                        Made by Clement Hathaway, Ernest Yeung, Evan Hekman,
+                        Julian Carrier
+                    </p>
                 </section>
                 <section class="loading-overlay">
                     <div class="hero-glow"></div>
@@ -1185,33 +1402,54 @@ class KiCanvasShellElement extends KCUIElement {
                                 alt="Grok" />
                         </div>
                         <h2 class="loading-title">
-                            ${this.#cloneProgress ? "Loading Repository" : "Loading Repository"}
+                            ${this.#cloneProgress
+                                ? "Loading Repository"
+                                : "Loading Repository"}
                         </h2>
                         <p class="loading-message">
                             ${this.#cloneProgress
-                                ? `${this.#cloneProgress.phase}: ${this.#cloneProgress.loaded} / ${this.#cloneProgress.total} commits`
+                                ? `${this.#cloneProgress.phase}: ${
+                                      this.#cloneProgress.loaded
+                                  } / ${this.#cloneProgress.total} commits`
                                 : "Fetching and parsing your schematic files..."}
                         </p>
                         <div class="loading-progress">
                             <div
-                                class="loading-progress-bar ${this.#cloneProgress ? "determinate" : ""}"
-                                style="${this.#cloneProgress && this.#cloneProgress.total > 0 ? `width: ${(this.#cloneProgress.loaded / this.#cloneProgress.total) * 100}%` : ""}"></div>
+                                class="loading-progress-bar ${this
+                                    .#cloneProgress
+                                    ? "determinate"
+                                    : ""}"
+                                style="${this.#cloneProgress &&
+                                this.#cloneProgress.total > 0
+                                    ? `width: ${
+                                          (this.#cloneProgress.loaded /
+                                              this.#cloneProgress.total) *
+                                          100
+                                      }%`
+                                    : ""}"></div>
                         </div>
                         <p class="loading-hint">
-                            ${this.#cloneProgress && this.#cloneProgress.total > 0
-                                ? `${Math.round((this.#cloneProgress.loaded / this.#cloneProgress.total) * 100)}% complete`
+                            ${this.#cloneProgress &&
+                            this.#cloneProgress.total > 0
+                                ? `${Math.round(
+                                      (this.#cloneProgress.loaded /
+                                          this.#cloneProgress.total) *
+                                          100,
+                                  )}% complete`
                                 : "This may take a moment for larger repositories"}
                         </p>
                     </div>
                 </section>
                 <main>${this.#schematic_app} ${this.#board_app}</main>
-                
+
                 <!-- Corner loader for commit switching -->
                 <div class="corner-loader">
                     <div class="corner-loader-spinner"></div>
                     <span class="corner-loader-text">Loading commit</span>
-                    ${this.#switchingCommit 
-                        ? html`<span class="corner-loader-commit">${this.#switchingCommit.substring(0, 7)}</span>` 
+                    ${this.#switchingCommit
+                        ? html`<span class="corner-loader-commit"
+                              >${this.#switchingCommit.substring(0, 7)}</span
+                          >`
                         : null}
                 </div>
             </kc-ui-app>

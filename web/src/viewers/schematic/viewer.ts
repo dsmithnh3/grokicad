@@ -229,7 +229,8 @@ export class SchematicViewer extends DocumentViewer<
             }
         };
 
-        const keyFor = (x: number, y: number) => `${x.toFixed(3)},${y.toFixed(3)}`;
+        const keyFor = (x: number, y: number) =>
+            `${x.toFixed(3)},${y.toFixed(3)}`;
 
         // Add wire endpoints and connect consecutive points in each wire.
         for (const wire of wires) {
@@ -245,7 +246,10 @@ export class SchematicViewer extends DocumentViewer<
         }
 
         // Label maps (must exist before sheet pin processing)
-        const labelByKey = new Map<string, NetLabel | GlobalLabel | HierarchicalLabel>();
+        const labelByKey = new Map<
+            string,
+            NetLabel | GlobalLabel | HierarchicalLabel
+        >();
         const labelRootsByText = new Map<string, string[]>();
 
         // Map pin positions to nodes
@@ -360,7 +364,7 @@ export class SchematicViewer extends DocumentViewer<
             }
             seen.add(key);
 
-                                    connections.push({
+            connections.push({
                 from: from.ref,
                 fromPin: from.pinId,
                 to: to.ref,

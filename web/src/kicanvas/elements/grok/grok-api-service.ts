@@ -6,8 +6,14 @@
     - AI queries are sent directly to xAI API (no backend required)
 */
 
-import type { DistilledSchematic, RepoClearCacheResponse } from "../../services/api";
-import { distillService, type DistillResult } from "../../services/distill-service";
+import type {
+    DistilledSchematic,
+    RepoClearCacheResponse,
+} from "../../services/api";
+import {
+    distillService,
+    type DistillResult,
+} from "../../services/distill-service";
 import { createFocusedDistillation } from "../../../kicad/distill";
 import type { SelectedComponent, GrokContext } from "./types";
 import { xaiClient, Message } from "../../services/xai-client";
@@ -49,8 +55,8 @@ function buildComponentContext(
     componentIds: string[],
 ): { selectedContext: string; schematicSummary: string } {
     // Filter to selected components
-    const components = distilled.components.filter(
-        (c) => componentIds.includes(c.reference)
+    const components = distilled.components.filter((c) =>
+        componentIds.includes(c.reference),
     );
 
     // Build detailed component descriptions
@@ -100,10 +106,16 @@ function buildComponentContext(
     if (distilled.proximities) {
         for (const prox of distilled.proximities) {
             if ((prox.score || 0) > 0.3) {
-                if (componentIds.includes(prox.ref_a) && !componentIds.includes(prox.ref_b)) {
+                if (
+                    componentIds.includes(prox.ref_a) &&
+                    !componentIds.includes(prox.ref_b)
+                ) {
                     nearbyRefs.add(prox.ref_b);
                 }
-                if (componentIds.includes(prox.ref_b) && !componentIds.includes(prox.ref_a)) {
+                if (
+                    componentIds.includes(prox.ref_b) &&
+                    !componentIds.includes(prox.ref_a)
+                ) {
                     nearbyRefs.add(prox.ref_a);
                 }
             }
@@ -116,22 +128,32 @@ function buildComponentContext(
     for (const ref of nearbyRefsArray) {
         const comp = distilled.components.find((c) => c.reference === ref);
         if (comp) {
-            nearbyDetails.push(`${comp.reference} (${comp.value}, ${comp.category || "other"})`);
+            nearbyDetails.push(
+                `${comp.reference} (${comp.value}, ${
+                    comp.category || "other"
+                })`,
+            );
         }
     }
 
     // Build schematic overview
-    const schematicSummary = `The schematic contains ${distilled.components.length} total components and ${Object.keys(distilled.nets).length} nets.`;
+    const schematicSummary = `The schematic contains ${
+        distilled.components.length
+    } total components and ${Object.keys(distilled.nets).length} nets.`;
 
     // Build selected context
     let selectedContext: string;
     if (componentDetails.length === 0) {
         selectedContext = "No specific components selected.";
     } else {
-        selectedContext = `## Selected Components (${componentDetails.length})\n\n${componentDetails.join("\n\n")}`;
-        
+        selectedContext = `## Selected Components (${
+            componentDetails.length
+        })\n\n${componentDetails.join("\n\n")}`;
+
         if (nearbyDetails.length > 0) {
-            selectedContext += `\n\n## Nearby/Related Components\n${nearbyDetails.join(", ")}`;
+            selectedContext += `\n\n## Nearby/Related Components\n${nearbyDetails.join(
+                ", ",
+            )}`;
         }
     }
 
@@ -179,16 +201,19 @@ export class GrokAPIService {
         try {
             // Distill in browser using the distill service
             const result = await distillService.distillRepository(repo, commit);
-            
+
             this._distillResult = result;
             this._currentRepo = repo;
             this._currentCommit = commit;
-            
+
             const response = this.buildInitResponse(result, false);
             callbacks?.onComplete?.(response);
             return response;
         } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to initialize repository";
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : "Failed to initialize repository";
             callbacks?.onError?.(message);
             throw err;
         }
@@ -197,7 +222,10 @@ export class GrokAPIService {
     /**
      * Build a RepoInitResponse from a DistillResult
      */
-    private buildInitResponse(result: DistillResult, cached: boolean): RepoInitResponse {
+    private buildInitResponse(
+        result: DistillResult,
+        cached: boolean,
+    ): RepoInitResponse {
         return {
             repo: result.repo,
             commit: result.commit,
@@ -259,12 +287,14 @@ export class GrokAPIService {
         // Clear local caches
         this.clearCache();
         distillService.clearCache(repo, commit);
-        
+
         // Return a success response (no server call needed)
         return {
             repo,
             cleared: true,
-            message: `Cache cleared for ${repo}${commit ? ` at ${commit.slice(0, 8)}` : ""}`,
+            message: `Cache cleared for ${repo}${
+                commit ? ` at ${commit.slice(0, 8)}` : ""
+            }`,
         };
     }
 
@@ -320,30 +350,39 @@ export class GrokAPIService {
 
         try {
             // Fetch distilled schematic if needed
-            const fullDistilled = await this.getDistilledSchematic(repo, commit);
+            const fullDistilled = await this.getDistilledSchematic(
+                repo,
+                commit,
+            );
 
             const componentIds = components.map((c) => c.reference);
 
             // Create focused distillation for selected components
             // This includes selected + connected + nearby components with relevant nets
-            const distilled = componentIds.length > 0
-                ? createFocusedDistillation(fullDistilled, componentIds)
-                : fullDistilled;
+            const distilled =
+                componentIds.length > 0
+                    ? createFocusedDistillation(fullDistilled, componentIds)
+                    : fullDistilled;
 
             console.log(
                 `[GrokAPIService] Sending focused context: ${distilled.components.length} components, ` +
-                `${Object.keys(distilled.nets).length} nets, ${distilled.proximities.length} proximities`
+                    `${Object.keys(distilled.nets).length} nets, ${
+                        distilled.proximities.length
+                    } proximities`,
             );
 
             // Build rich semantic context from distilled data
-            const { selectedContext, schematicSummary } = buildComponentContext(distilled, componentIds);
+            const { selectedContext, schematicSummary } = buildComponentContext(
+                distilled,
+                componentIds,
+            );
 
             // Build system and user messages
             const systemPrompt = `${SYSTEM_PROMPT}\n\n---\n\n## Schematic Context\n${schematicSummary}`;
             const userPrompt = `${selectedContext}\n\n---\n\n## User's Question\n${query}`;
 
             console.log(
-                `[GrokAPIService] Using system prompt (${systemPrompt.length} chars), context (${userPrompt.length} chars), thinking_mode: ${thinkingMode}`
+                `[GrokAPIService] Using system prompt (${systemPrompt.length} chars), context (${userPrompt.length} chars), thinking_mode: ${thinkingMode}`,
             );
 
             const messages = [
@@ -353,7 +392,7 @@ export class GrokAPIService {
 
             // Accumulate full content for the final callback
             let fullContent = "";
-            let thinkingContent = "";
+            let _thinkingContent = "";
 
             // Stream the query using the XAI client
             await xaiClient.streamChatCompletion(
@@ -364,9 +403,11 @@ export class GrokAPIService {
                     },
                     onChunk: (content, isThinking) => {
                         if (isThinking) {
-                            thinkingContent += content;
+                            _thinkingContent += content;
                             // Wrap thinking content in a special marker
-                            callbacks.onChunk?.(`<thinking>${content}</thinking>`);
+                            callbacks.onChunk?.(
+                                `<thinking>${content}</thinking>`,
+                            );
                         } else {
                             fullContent += content;
                             callbacks.onChunk?.(fullContent);

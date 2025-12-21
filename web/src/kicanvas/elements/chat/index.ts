@@ -23,21 +23,13 @@ export type {
     StreamingCallbacks,
 } from "./types";
 
-export {
-    createChatEvent,
-    generateMessageId,
-} from "./types";
+export { createChatEvent, generateMessageId } from "./types";
 
 // Chat service
-export {
-    ChatService,
-    createChatService,
-} from "./chat-service";
+export { ChatService, createChatService } from "./chat-service";
 
 // Chat panel component
-export {
-    KCChatPanelElement,
-} from "./chat-panel";
+export { KCChatPanelElement } from "./chat-panel";
 
 // Styles (for extending)
 export {
@@ -56,4 +48,3 @@ export {
 
 // Extensions
 export * from "./extensions";
-

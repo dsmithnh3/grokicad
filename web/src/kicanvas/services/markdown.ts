@@ -20,7 +20,10 @@ export interface DownloadOptions {
  * @param content - The content to download
  * @param options - Download configuration options
  */
-export function downloadAsFile(content: string, options: DownloadOptions): void {
+export function downloadAsFile(
+    content: string,
+    options: DownloadOptions,
+): void {
     const { filename, extension = "md", mimeType = "text/markdown" } = options;
 
     const blob = new Blob([content], { type: mimeType });
@@ -133,5 +136,3 @@ export class MarkdownBuilder {
         downloadAsFile(this.build(), options);
     }
 }
-
-

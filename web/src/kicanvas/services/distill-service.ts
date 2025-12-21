@@ -59,17 +59,24 @@ export class SchematicDistillService {
             return this.cache.get(key)!;
         }
 
-        console.log(`[DistillService] Distilling ${repo}@${commit.slice(0, 8)}`);
+        console.log(
+            `[DistillService] Distilling ${repo}@${commit.slice(0, 8)}`,
+        );
 
         // Fetch schematic files using git service
         const allFiles = await GitService.getSchematicFiles(repo, commit);
-        
+
         // Filter to only .kicad_sch files (exclude .kicad_pro which are JSON)
-        const schematicFiles = allFiles.filter(f => f.path.endsWith('.kicad_sch'));
+        const schematicFiles = allFiles.filter((f) =>
+            f.path.endsWith(".kicad_sch"),
+        );
 
         if (schematicFiles.length === 0) {
             throw new Error(
-                `No .kicad_sch files found in ${repo} at commit ${commit.slice(0, 8)}`,
+                `No .kicad_sch files found in ${repo} at commit ${commit.slice(
+                    0,
+                    8,
+                )}`,
             );
         }
 
@@ -201,4 +208,3 @@ export class SchematicDistillService {
 
 /** Singleton instance for convenience */
 export const distillService = new SchematicDistillService();
-

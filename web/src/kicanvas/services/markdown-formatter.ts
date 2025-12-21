@@ -43,7 +43,11 @@ export function formatMarkdown(
     text: string,
     options: MarkdownFormatterOptions = {},
 ): string {
-    const { classPrefix = "md", escapeHtml: shouldEscape = true, addLineBreaks = true } = options;
+    const {
+        classPrefix = "md",
+        escapeHtml: shouldEscape = true,
+        addLineBreaks = true,
+    } = options;
 
     let formatted = shouldEscape ? escapeHtml(text) : text;
 
@@ -77,7 +81,10 @@ export function formatMarkdown(
     formatted = formatted.replace(/\*([^*]+)\*/g, "<em>$1</em>");
 
     // Handle inline code (but not inside code blocks)
-    formatted = formatted.replace(/`([^`]+)`/g, `<code class="${classPrefix}-inline-code">$1</code>`);
+    formatted = formatted.replace(
+        /`([^`]+)`/g,
+        `<code class="${classPrefix}-inline-code">$1</code>`,
+    );
 
     // Handle citation-style links first: [[1]](url) -> superscript link
     formatted = formatted.replace(

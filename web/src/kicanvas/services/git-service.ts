@@ -8,7 +8,13 @@
     - Minimize API calls
 */
 
-import { GitHubAPI, GitHubAPIError, type CommitInfo, type SchematicFile, type CachedRepoInfo } from "./github-api";
+import {
+    GitHubAPI,
+    GitHubAPIError,
+    type CommitInfo,
+    type SchematicFile,
+    type CachedRepoInfo,
+} from "./github-api";
 
 // Re-export types for backward compatibility
 export type { CommitInfo, SchematicFile, CachedRepoInfo };
@@ -46,7 +52,7 @@ const DEFAULT_CONFIG: GitServiceConfig = {
 
 /**
  * Frontend git service using GitHub REST API.
- * 
+ *
  * Key design principles:
  * - LAZY: Don't fetch until needed
  * - EFFICIENT: Minimal API calls
@@ -123,7 +129,9 @@ export class GitService {
                 throw error;
             }
             throw new GitHubAPIError(
-                `Failed to access ${sanitizedSlug}: ${error instanceof Error ? error.message : String(error)}`,
+                `Failed to access ${sanitizedSlug}: ${
+                    error instanceof Error ? error.message : String(error)
+                }`,
                 "API_ERROR",
                 error,
             );
@@ -139,7 +147,10 @@ export class GitService {
             GitHubAPI.invalidateCache(sanitizedSlug);
             this.log(`Invalidated cache for ${sanitizedSlug}`);
         } catch (e) {
-            console.warn(`[GitService] Failed to invalidate cache for ${repoSlug}:`, e);
+            console.warn(
+                `[GitService] Failed to invalidate cache for ${repoSlug}:`,
+                e,
+            );
         }
     }
 
@@ -220,7 +231,11 @@ export class GitService {
         onProgress?.({ phase: "Processing", loaded: 1, total: 1 });
 
         const elapsed = performance.now() - startTime;
-        this.log(`Got ${commits.length} commits for ${sanitizedSlug} in ${elapsed.toFixed(0)}ms`);
+        this.log(
+            `Got ${
+                commits.length
+            } commits for ${sanitizedSlug} in ${elapsed.toFixed(0)}ms`,
+        );
 
         return commits;
     }
@@ -238,9 +253,17 @@ export class GitService {
     ): Promise<SchematicFile[]> {
         const sanitizedSlug = this.validateAndSanitizeRepoSlug(repoSlug);
 
-        this.log(`Getting schematic files for ${sanitizedSlug}@${commitHash.slice(0, 7)}...`);
+        this.log(
+            `Getting schematic files for ${sanitizedSlug}@${commitHash.slice(
+                0,
+                7,
+            )}...`,
+        );
 
-        const files = await GitHubAPI.getSchematicFiles(sanitizedSlug, commitHash);
+        const files = await GitHubAPI.getSchematicFiles(
+            sanitizedSlug,
+            commitHash,
+        );
 
         this.log(`Found ${files.length} KiCad files`);
         return files;
@@ -280,6 +303,8 @@ export class GitService {
      * @deprecated No longer needed with GitHub API
      */
     static setCorsProxy(_url: string): void {
-        console.warn("[GitService] setCorsProxy is deprecated and has no effect");
+        console.warn(
+            "[GitService] setCorsProxy is deprecated and has no effect",
+        );
     }
 }

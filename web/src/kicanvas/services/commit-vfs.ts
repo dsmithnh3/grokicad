@@ -43,7 +43,10 @@ export class CommitFileSystem extends VirtualFileSystem {
             return;
         }
 
-        const files = await GitService.getSchematicFiles(this.repo, this.commit);
+        const files = await GitService.getSchematicFiles(
+            this.repo,
+            this.commit,
+        );
 
         for (const file of files) {
             const name = basename(file.path) ?? file.path;

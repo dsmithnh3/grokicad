@@ -6,7 +6,10 @@
 */
 
 import type { Message } from "../../../services/xai-client";
-import { distillService, type DistillResult } from "../../../services/distill-service";
+import {
+    distillService,
+    type DistillResult,
+} from "../../../services/distill-service";
 import { createFocusedDistillation } from "../../../../kicad/distill";
 import type { DistilledSchematic } from "../../../services/api";
 import { SYSTEM_PROMPT } from "../../../services/system-prompt";
@@ -48,7 +51,8 @@ const PROJECT_PRESETS: PresetGroup = {
             id: "project-overview",
             title: "Overview",
             icon: "search",
-            description: "Get a high-level overview of the entire schematic project",
+            description:
+                "Get a high-level overview of the entire schematic project",
             query: "Give an overview of the whole schematic project. Describe the main functional blocks, key ICs and their purposes, power architecture, and how the subsystems work together.",
             requiresContext: false,
         },
@@ -149,7 +153,7 @@ export class SchematicExtension implements ChatExtension {
 
         // Get or fetch distilled schematic
         const distilled = await this._getDistilledSchematic(repo, commit);
-        
+
         if (!distilled) {
             return {
                 systemPrompt: SYSTEM_PROMPT,
@@ -158,20 +162,20 @@ export class SchematicExtension implements ChatExtension {
         }
 
         // Get component references from selected items
-        const componentIds = selectedItems
-            ?.map(item => (item as SchematicContextItem).reference)
-            .filter(Boolean) ?? [];
+        const componentIds =
+            selectedItems
+                ?.map((item) => (item as SchematicContextItem).reference)
+                .filter(Boolean) ?? [];
 
         // Create focused distillation if components are selected
-        const focusedDistilled = componentIds.length > 0
-            ? createFocusedDistillation(distilled, componentIds)
-            : distilled;
+        const focusedDistilled =
+            componentIds.length > 0
+                ? createFocusedDistillation(distilled, componentIds)
+                : distilled;
 
         // Build semantic context
-        const { selectedContext, schematicSummary } = this._buildComponentContext(
-            focusedDistilled,
-            componentIds,
-        );
+        const { selectedContext, schematicSummary } =
+            this._buildComponentContext(focusedDistilled, componentIds);
 
         // Construct prompts
         const systemPrompt = `${SYSTEM_PROMPT}\n\n---\n\n## Schematic Context\n${schematicSummary}`;
@@ -182,9 +186,15 @@ export class SchematicExtension implements ChatExtension {
         if (conversationHistory && conversationHistory.length > 0) {
             for (const msg of conversationHistory) {
                 if (msg.role === "user") {
-                    additionalMessages.push({ role: "user", content: msg.content });
+                    additionalMessages.push({
+                        role: "user",
+                        content: msg.content,
+                    });
                 } else if (msg.role === "assistant" && !msg.error) {
-                    additionalMessages.push({ role: "assistant", content: msg.content });
+                    additionalMessages.push({
+                        role: "assistant",
+                        content: msg.content,
+                    });
                 }
             }
         }
@@ -192,7 +202,8 @@ export class SchematicExtension implements ChatExtension {
         return {
             systemPrompt,
             userPrompt,
-            additionalMessages: additionalMessages.length > 0 ? additionalMessages : undefined,
+            additionalMessages:
+                additionalMessages.length > 0 ? additionalMessages : undefined,
         };
     }
 
@@ -202,7 +213,9 @@ export class SchematicExtension implements ChatExtension {
     getPlaceholder(context: ChatContext): string {
         if (context.selectedItems && context.selectedItems.length > 0) {
             const count = context.selectedItems.length;
-            return `Ask about ${count} selected component${count > 1 ? "s" : ""}...`;
+            return `Ask about ${count} selected component${
+                count > 1 ? "s" : ""
+            }...`;
         }
         return "Ask about the schematic...";
     }
@@ -262,7 +275,10 @@ export class SchematicExtension implements ChatExtension {
             this._currentCommit = commit;
             return result.distilled;
         } catch (err) {
-            console.error("[SchematicExtension] Failed to get distilled schematic:", err);
+            console.error(
+                "[SchematicExtension] Failed to get distilled schematic:",
+                err,
+            );
             return null;
         }
     }
@@ -272,8 +288,8 @@ export class SchematicExtension implements ChatExtension {
         componentIds: string[],
     ): { selectedContext: string; schematicSummary: string } {
         // Filter to selected components
-        const components = distilled.components.filter(
-            c => componentIds.includes(c.reference),
+        const components = distilled.components.filter((c) =>
+            componentIds.includes(c.reference),
         );
 
         // Build detailed component descriptions
@@ -292,7 +308,7 @@ export class SchematicExtension implements ChatExtension {
 
             // Add pin connections
             if (comp.pins && comp.pins.length > 0) {
-                const pinStrs = comp.pins.map(pin => {
+                const pinStrs = comp.pins.map((pin) => {
                     const name = pin.name || "";
                     const net = pin.net || "NC";
                     if (!name) {
@@ -323,10 +339,16 @@ export class SchematicExtension implements ChatExtension {
         if (distilled.proximities) {
             for (const prox of distilled.proximities) {
                 if ((prox.score || 0) > 0.3) {
-                    if (componentIds.includes(prox.ref_a) && !componentIds.includes(prox.ref_b)) {
+                    if (
+                        componentIds.includes(prox.ref_a) &&
+                        !componentIds.includes(prox.ref_b)
+                    ) {
                         nearbyRefs.add(prox.ref_b);
                     }
-                    if (componentIds.includes(prox.ref_b) && !componentIds.includes(prox.ref_a)) {
+                    if (
+                        componentIds.includes(prox.ref_b) &&
+                        !componentIds.includes(prox.ref_a)
+                    ) {
                         nearbyRefs.add(prox.ref_a);
                     }
                 }
@@ -337,24 +359,34 @@ export class SchematicExtension implements ChatExtension {
         const nearbyDetails: string[] = [];
         const nearbyRefsArray = Array.from(nearbyRefs).slice(0, 10);
         for (const ref of nearbyRefsArray) {
-            const comp = distilled.components.find(c => c.reference === ref);
+            const comp = distilled.components.find((c) => c.reference === ref);
             if (comp) {
-                nearbyDetails.push(`${comp.reference} (${comp.value}, ${comp.category || "other"})`);
+                nearbyDetails.push(
+                    `${comp.reference} (${comp.value}, ${
+                        comp.category || "other"
+                    })`,
+                );
             }
         }
 
         // Build schematic overview
-        const schematicSummary = `The schematic contains ${distilled.components.length} total components and ${Object.keys(distilled.nets).length} nets.`;
+        const schematicSummary = `The schematic contains ${
+            distilled.components.length
+        } total components and ${Object.keys(distilled.nets).length} nets.`;
 
         // Build selected context
         let selectedContext: string;
         if (componentDetails.length === 0) {
             selectedContext = "No specific components selected.";
         } else {
-            selectedContext = `## Selected Components (${componentDetails.length})\n\n${componentDetails.join("\n\n")}`;
+            selectedContext = `## Selected Components (${
+                componentDetails.length
+            })\n\n${componentDetails.join("\n\n")}`;
 
             if (nearbyDetails.length > 0) {
-                selectedContext += `\n\n## Nearby/Related Components\n${nearbyDetails.join(", ")}`;
+                selectedContext += `\n\n## Nearby/Related Components\n${nearbyDetails.join(
+                    ", ",
+                )}`;
             }
         }
 
@@ -384,4 +416,3 @@ export function createSchematicContextItem(
 
 // Export singleton instance
 export const schematicExtension = new SchematicExtension();
-

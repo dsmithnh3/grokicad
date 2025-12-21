@@ -86,10 +86,7 @@ export class KCSchematicAppElement extends KCViewerAppElement<KCSchematicViewerE
             </kc-ui-activity>`,
 
             // Git history
-            html`<kc-ui-activity
-                slot="activities"
-                name="Git"
-                icon="history">
+            html`<kc-ui-activity slot="activities" name="Git" icon="history">
                 <kc-schematic-git-panel></kc-schematic-git-panel>
             </kc-ui-activity>`,
 

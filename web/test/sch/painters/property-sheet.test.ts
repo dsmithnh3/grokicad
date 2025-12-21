@@ -28,17 +28,21 @@ suite("sch.painters.property.sheet_fields", function () {
               (effects (font (size 1.27 1.27))))
         )`;
 
-        const sheet = new SchematicSheet(
-            sheet_expr,
-            { resolve_text_var: () => undefined } as any,
-        );
+        const sheet = new SchematicSheet(sheet_expr, {
+            resolve_text_var: () => undefined,
+        } as any);
         const property = sheet.properties.get("Sheet name")!;
 
         const gfx = new NullRenderer();
         const layers = new LayerSet(witch_hazel.schematic);
-        const painter = new SchematicPainter(gfx, layers, witch_hazel.schematic);
-        const property_painter =
-            painter.painters.get(property.constructor)! as any;
+        const painter = new SchematicPainter(
+            gfx,
+            layers,
+            witch_hazel.schematic,
+        );
+        const property_painter = painter.painters.get(
+            property.constructor,
+        )! as any;
         property_painter.view_painter ??= painter;
 
         // Simulate a leaked symbol transform from a previously-painted symbol.
@@ -62,4 +66,3 @@ suite("sch.painters.property.sheet_fields", function () {
         assert.isAbove(bbox.w, bbox.h);
     });
 });
-

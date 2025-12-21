@@ -102,7 +102,9 @@ export class KCSchematicGitPanelElement extends KCUIElement {
             }
 
             @keyframes spin {
-                to { transform: rotate(360deg); }
+                to {
+                    transform: rotate(360deg);
+                }
             }
 
             .commit-item {
@@ -433,7 +435,10 @@ export class KCSchematicGitPanelElement extends KCUIElement {
 
         try {
             const nextPage = this.currentPage + 1;
-            const result = await GrokiAPI.getCommitsPage(this.currentRepo, nextPage);
+            const result = await GrokiAPI.getCommitsPage(
+                this.currentRepo,
+                nextPage,
+            );
             this.commits = [...this.commits, ...result.commits];
             this.currentPage = nextPage;
             this.hasMore = result.hasMore;
@@ -653,16 +658,19 @@ export class KCSchematicGitPanelElement extends KCUIElement {
             }
         });
 
-        const loadMoreButton = this.hasMore ? html`
-            <button 
-                class="load-more-btn" 
-                data-action="load-more"
-                ${this.loadingMore ? "disabled" : ""}>
-                ${this.loadingMore 
-                    ? html`<div class="spinner"></div> Loading...`
-                    : html`Load more commits`}
-            </button>
-        ` : null;
+        const loadMoreButton = this.hasMore
+            ? html`
+                  <button
+                      class="load-more-btn"
+                      data-action="load-more"
+                      ${this.loadingMore ? "disabled" : ""}>
+                      ${this.loadingMore
+                          ? html`<div class="spinner"></div>
+                                Loading...`
+                          : html`Load more commits`}
+                  </button>
+              `
+            : null;
 
         return html`
             <kc-ui-panel>

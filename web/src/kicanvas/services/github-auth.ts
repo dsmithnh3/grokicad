@@ -69,7 +69,9 @@ interface PKCEState {
 function generateRandomString(length: number): string {
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
-    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, length);
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0"))
+        .join("")
+        .slice(0, length);
 }
 
 /**
@@ -105,7 +107,7 @@ function base64UrlEncode(buffer: Uint8Array): string {
 
 /**
  * GitHub OAuth service with PKCE support.
- * 
+ *
  * All PKCE logic runs in the browser. Only the token exchange uses a
  * minimal CORS proxy because GitHub's token endpoint doesn't support CORS.
  */
@@ -191,7 +193,9 @@ export class GitHubAuthService {
      */
     static async startLogin(returnUrl?: string): Promise<void> {
         if (!this.config.clientId) {
-            throw new Error("GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID in config.ts");
+            throw new Error(
+                "GitHub OAuth is not configured. Please set GITHUB_CLIENT_ID in config.ts",
+            );
         }
 
         // Generate PKCE values
@@ -205,7 +209,10 @@ export class GitHubAuthService {
             state,
             returnUrl: returnUrl || window.location.href,
         };
-        sessionStorage.setItem(this.config.pkceStateKey, JSON.stringify(pkceState));
+        sessionStorage.setItem(
+            this.config.pkceStateKey,
+            JSON.stringify(pkceState),
+        );
 
         // Build the callback URL (same origin)
         const redirectUri = `${window.location.origin}${window.location.pathname}`;
@@ -257,9 +264,13 @@ export class GitHubAuthService {
         }
 
         // Retrieve PKCE state
-        const storedStateJson = sessionStorage.getItem(this.config.pkceStateKey);
+        const storedStateJson = sessionStorage.getItem(
+            this.config.pkceStateKey,
+        );
         if (!storedStateJson) {
-            throw new Error("No PKCE state found. Please try signing in again.");
+            throw new Error(
+                "No PKCE state found. Please try signing in again.",
+            );
         }
 
         const pkceState: PKCEState = JSON.parse(storedStateJson);
@@ -279,7 +290,11 @@ export class GitHubAuthService {
         );
 
         if (tokenResponse.error || !tokenResponse.access_token) {
-            throw new Error(tokenResponse.error_description || tokenResponse.error || "No access token received");
+            throw new Error(
+                tokenResponse.error_description ||
+                    tokenResponse.error ||
+                    "No access token received",
+            );
         }
 
         // Fetch user info
@@ -332,7 +347,9 @@ export class GitHubAuthService {
     /**
      * Fetch the authenticated user's info
      */
-    private static async fetchUser(accessToken: string): Promise<GitHubUser | null> {
+    private static async fetchUser(
+        accessToken: string,
+    ): Promise<GitHubUser | null> {
         try {
             const response = await fetch("https://api.github.com/user", {
                 headers: {
@@ -343,7 +360,10 @@ export class GitHubAuthService {
             });
 
             if (!response.ok) {
-                console.warn("[GitHubAuth] Failed to fetch user info:", response.status);
+                console.warn(
+                    "[GitHubAuth] Failed to fetch user info:",
+                    response.status,
+                );
                 return null;
             }
 
@@ -377,7 +397,10 @@ export class GitHubAuthService {
      */
     private static saveToStorage(): void {
         if (this.authState) {
-            localStorage.setItem(this.config.storageKey, JSON.stringify(this.authState));
+            localStorage.setItem(
+                this.config.storageKey,
+                JSON.stringify(this.authState),
+            );
         }
     }
 
@@ -389,7 +412,10 @@ export class GitHubAuthService {
             const stored = localStorage.getItem(this.config.storageKey);
             if (stored) {
                 this.authState = JSON.parse(stored);
-                console.log("[GitHubAuth] Loaded auth state for", this.authState?.user?.login);
+                console.log(
+                    "[GitHubAuth] Loaded auth state for",
+                    this.authState?.user?.login,
+                );
             }
         } catch (error) {
             console.warn("[GitHubAuth] Failed to load auth state:", error);
@@ -413,11 +439,15 @@ export class GitHubAuthService {
             };
 
             if (this.authState?.accessToken) {
-                headers["Authorization"] = `Bearer ${this.authState.accessToken}`;
+                headers[
+                    "Authorization"
+                ] = `Bearer ${this.authState.accessToken}`;
             }
 
-            const response = await fetch("https://api.github.com/rate_limit", { headers });
-            
+            const response = await fetch("https://api.github.com/rate_limit", {
+                headers,
+            });
+
             if (!response.ok) {
                 return null;
             }

@@ -12,8 +12,8 @@
 
 These repositories provide example interactive KiCAD projects using KiCanvas:
 
-- [Smart Watch](https://github.com/CwbhX/GrokKiCADWatch)
-- [Battery System](https://github.com/CwbhX/uBMS-2)
+-   [Smart Watch](https://github.com/CwbhX/GrokKiCADWatch)
+-   [Battery System](https://github.com/CwbhX/uBMS-2)
 
 You can also use KiCanvas on your own websites using the [embedding API](embedding.md). It's written in modern vanilla [TypeScript] and uses the [Canvas] element and [WebGL] for rendering. You can learn more on the [development page](development.md).
 

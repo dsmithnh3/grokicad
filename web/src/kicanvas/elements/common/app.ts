@@ -12,10 +12,7 @@ import {
     html,
     type ElementOrFragment,
 } from "../../../base/web-components";
-import {
-    KCUIActivitySideBarElement,
-    KCUIElement,
-} from "../../../kc-ui";
+import { KCUIActivitySideBarElement, KCUIElement } from "../../../kc-ui";
 import { KiCanvasSelectEvent } from "../../../viewers/base/events";
 import type { Viewer } from "../../../viewers/base/viewer";
 import type { Project, ProjectPage } from "../../project";
@@ -99,9 +96,15 @@ export abstract class KCViewerAppElement<
             // Check if element is still connected before adding disposable
             if (this.isConnected && this.viewer) {
                 this.addDisposable(
-                    this.viewer.addEventListener(KiCanvasSelectEvent.type, (e) => {
-                        this.on_viewer_select(e.detail.item, e.detail.previous);
-                    }),
+                    this.viewer.addEventListener(
+                        KiCanvasSelectEvent.type,
+                        (e) => {
+                            this.on_viewer_select(
+                                e.detail.item,
+                                e.detail.previous,
+                            );
+                        },
+                    ),
                 );
             }
         })();
@@ -198,7 +201,8 @@ export abstract class KCViewerAppElement<
         }
 
         // Chat panel with docked tab (replaces old grok button)
-        const chat_panel = controls != "none" ? html`<kc-chat-panel></kc-chat-panel>` : null;
+        const chat_panel =
+            controls != "none" ? html`<kc-chat-panel></kc-chat-panel>` : null;
 
         let bottom_toolbar = null;
         if (controls != "none") {

@@ -1,6 +1,6 @@
 /**
  * Worker Configuration
- * 
+ *
  * This module provides environment-specific configuration for the Cloudflare Worker.
  * Uses centralized environment definitions from config/environments.ts
  */
@@ -22,26 +22,26 @@ export type { Environment, EnvironmentDefinition };
 export interface WorkerConfig {
     /** Environment name */
     environment: Environment;
-    
+
     /** Base URL for the application */
     appBaseUrl: string;
-    
+
     /** Allowed CORS origins */
     allowedOrigins: string[];
-    
+
     /** Session TTL in seconds */
     sessionTtl: number;
-    
+
     /** Enable debug logging */
     debug: boolean;
-    
+
     /** DigiKey OAuth URLs */
     digikey: {
         authUrl: string;
         tokenUrl: string;
         searchUrl: string;
     };
-    
+
     /** GitHub OAuth URLs */
     github: {
         tokenUrl: string;
@@ -51,7 +51,10 @@ export interface WorkerConfig {
 /**
  * Build worker config from environment definition
  */
-function buildWorkerConfig(env: Environment, def: EnvironmentDefinition): WorkerConfig {
+function buildWorkerConfig(
+    env: Environment,
+    def: EnvironmentDefinition,
+): WorkerConfig {
     return {
         environment: env,
         appBaseUrl: def.appUrl,
@@ -91,23 +94,34 @@ export function getConfig(env: { ENVIRONMENT?: string }): WorkerConfig {
 /**
  * Check if an origin is allowed for CORS
  */
-export function isOriginAllowed(origin: string | null, config: WorkerConfig): boolean {
+export function isOriginAllowed(
+    origin: string | null,
+    config: WorkerConfig,
+): boolean {
     if (!origin) return false;
-    
+
     // In development, be more permissive with localhost
-    if (config.debug && (origin.includes("localhost") || origin.includes("127.0.0.1"))) {
+    if (
+        config.debug &&
+        (origin.includes("localhost") || origin.includes("127.0.0.1"))
+    ) {
         return true;
     }
-    
+
     return config.allowedOrigins.includes(origin);
 }
 
 /**
  * Get appropriate CORS headers based on origin and config
  */
-export function getCorsHeaders(origin: string | null, config: WorkerConfig): HeadersInit {
-    const allowedOrigin = isOriginAllowed(origin, config) ? origin : config.allowedOrigins[0];
-    
+export function getCorsHeaders(
+    origin: string | null,
+    config: WorkerConfig,
+): HeadersInit {
+    const allowedOrigin = isOriginAllowed(origin, config)
+        ? origin
+        : config.allowedOrigins[0];
+
     return {
         "Access-Control-Allow-Origin": allowedOrigin || "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",

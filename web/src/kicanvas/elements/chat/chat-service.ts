@@ -22,55 +22,58 @@ export class ChatService {
     private _messages: ChatMessage[] = [];
     private _extension: ChatExtension | null = null;
     private _context: ChatContext = {};
-    
+
     /** Get the current messages */
     get messages(): ChatMessage[] {
         return [...this._messages];
     }
-    
+
     /** Get the current context */
     get context(): ChatContext {
         return { ...this._context };
     }
-    
+
     /** Check if the service is configured (has API key) */
     get isConfigured(): boolean {
         return xaiSettings.isConfigured;
     }
-    
+
     /** Check if a query is currently streaming */
     get isStreaming(): boolean {
         return this._abortController !== null;
     }
-    
+
     /**
      * Set the active extension for this chat session.
      */
-    async setExtension(extension: ChatExtension, context?: ChatContext): Promise<void> {
+    async setExtension(
+        extension: ChatExtension,
+        context?: ChatContext,
+    ): Promise<void> {
         // Dispose previous extension if any
         if (this._extension?.dispose) {
             this._extension.dispose();
         }
-        
+
         this._extension = extension;
-        
+
         if (context) {
             this._context = context;
         }
-        
+
         // Initialize the new extension
         if (extension.initialize) {
             await extension.initialize(this._context);
         }
     }
-    
+
     /**
      * Update the context for the current session.
      */
     updateContext(context: Partial<ChatContext>): void {
         this._context = { ...this._context, ...context };
     }
-    
+
     /**
      * Add a message to the conversation history.
      */
@@ -83,14 +86,14 @@ export class ChatService {
         this._messages.push(fullMessage);
         return fullMessage;
     }
-    
+
     /**
      * Clear the conversation history.
      */
     clearMessages(): void {
         this._messages = [];
     }
-    
+
     /**
      * Abort any in-progress streaming request.
      */
@@ -101,7 +104,7 @@ export class ChatService {
         }
         xaiClient.abort();
     }
-    
+
     /**
      * Send a query and stream the response.
      */
@@ -110,20 +113,23 @@ export class ChatService {
         callbacks: StreamingCallbacks,
         thinkingMode: boolean = false,
     ): Promise<void> {
-        console.log("[ChatService] streamQuery called", { query, thinkingMode });
-        
+        console.log("[ChatService] streamQuery called", {
+            query,
+            thinkingMode,
+        });
+
         // Add user message first, before any validation
         this.addMessage({
             role: "user",
             content: query,
         });
-        
+
         if (!this._extension) {
             console.error("[ChatService] No extension configured");
             callbacks.onError?.("No extension configured");
             return;
         }
-        
+
         if (!xaiSettings.isConfigured) {
             console.error("[ChatService] xAI API key not configured");
             callbacks.onError?.(
@@ -131,11 +137,11 @@ export class ChatService {
             );
             return;
         }
-        
+
         // Abort any existing request
         this.abort();
         this._abortController = new AbortController();
-        
+
         try {
             // Build context using the extension
             // Note: user message was already added at the start of this method
@@ -144,25 +150,25 @@ export class ChatService {
                 query,
                 this._messages.slice(0, -1), // Exclude the message we just added
             );
-            
+
             // Build message array for the API
             const messages: Message[] = [
                 Message.system(built.systemPrompt),
                 ...(built.additionalMessages || []),
                 Message.user(built.userPrompt),
             ];
-            
+
             // Add assistant message as placeholder
             const assistantMessage = this.addMessage({
                 role: "assistant",
                 content: "",
                 isStreaming: true,
             });
-            
+
             // Track accumulated content
             let fullContent = "";
             let thinkingContent = "";
-            
+
             // Stream the response
             await xaiClient.streamChatCompletion(
                 messages,
@@ -182,7 +188,7 @@ export class ChatService {
                     onComplete: () => {
                         // Update the assistant message with final content
                         const msgIndex = this._messages.findIndex(
-                            m => m.id === assistantMessage.id
+                            (m) => m.id === assistantMessage.id,
                         );
                         if (msgIndex !== -1) {
                             const existing = this._messages[msgIndex]!;
@@ -197,13 +203,13 @@ export class ChatService {
                                     : undefined,
                             };
                         }
-                        
+
                         callbacks.onComplete?.(fullContent, thinkingContent);
                     },
                     onError: (error) => {
                         // Update the assistant message with error
                         const msgIndex = this._messages.findIndex(
-                            m => m.id === assistantMessage.id
+                            (m) => m.id === assistantMessage.id,
                         );
                         if (msgIndex !== -1) {
                             const existing = this._messages[msgIndex]!;
@@ -216,11 +222,11 @@ export class ChatService {
                                 error,
                             };
                         }
-                        
+
                         callbacks.onError?.(error);
                     },
                 },
-                thinkingMode && (this._extension.supportsThinking !== false),
+                thinkingMode && this._extension.supportsThinking !== false,
             );
         } catch (err) {
             console.error("[ChatService] Stream error:", err);
@@ -231,7 +237,7 @@ export class ChatService {
             this._abortController = null;
         }
     }
-    
+
     /**
      * Dispose of the service and cleanup.
      */
@@ -244,7 +250,7 @@ export class ChatService {
         this._messages = [];
         this._context = {};
     }
-    
+
     private _generateId(): string {
         return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     }
@@ -254,4 +260,3 @@ export class ChatService {
 export function createChatService(): ChatService {
     return new ChatService();
 }
-

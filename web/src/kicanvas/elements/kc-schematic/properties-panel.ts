@@ -94,7 +94,8 @@ export class KCSchematicPropertiesPanelElement extends KCUIElement {
                 // Make URLs clickable (especially Datasheet)
                 if (v.text && isUrl(v.text)) {
                     // For datasheet, show a friendly label
-                    const label = v.name === "Datasheet" ? "Open Datasheet ↗" : v.text;
+                    const label =
+                        v.name === "Datasheet" ? "Open Datasheet ↗" : v.text;
                     return linkEntry(v.name, v.text, label);
                 }
                 return entry(v.name, v.text);

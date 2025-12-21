@@ -49,7 +49,8 @@ KiCanvas is open source! Please take a chance to read the [LICENSE](LICENSE.md) 
 Contributions are welcome! However, since KiCanvas is in a super early stage please file an issue before you start working on something so we can coordinate. It's also recommended to take a moment and read over the [development documentation].
 
 For migration to the new configuration system:
-- [Migration Checklist](MIGRATION_CHECKLIST.md)
+
+-   [Migration Checklist](MIGRATION_CHECKLIST.md)
 
 [development documentation]: https://kicanvas.org/development
 

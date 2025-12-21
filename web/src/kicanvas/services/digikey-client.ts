@@ -104,7 +104,10 @@ export class DigiKeyClient {
      */
     static login(returnUrl?: string): void {
         const currentUrl = returnUrl || window.location.href;
-        const loginUrl = new URL(`${this.baseUrl}/auth/digikey/login`, window.location.origin);
+        const loginUrl = new URL(
+            `${this.baseUrl}/auth/digikey/login`,
+            window.location.origin,
+        );
         loginUrl.searchParams.set("return_url", currentUrl);
         window.location.href = loginUrl.toString();
     }
@@ -139,17 +142,14 @@ export class DigiKeyClient {
         mpn?: string,
     ): Promise<DigiKeySearchResponse> {
         try {
-            const response = await fetch(
-                `${this.baseUrl}/api/digikey/search`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include", // Include session cookie
-                    body: JSON.stringify({ query, mpn }),
+            const response = await fetch(`${this.baseUrl}/api/digikey/search`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-            );
+                credentials: "include", // Include session cookie
+                body: JSON.stringify({ query, mpn }),
+            });
 
             // Handle 401 specially - means user needs to reconnect
             if (response.status === 401) {
@@ -168,7 +168,9 @@ export class DigiKeyClient {
                 return {
                     query: mpn || query,
                     success: false,
-                    error: `Search failed: ${response.status}${errorText ? ` - ${errorText}` : ""}`,
+                    error: `Search failed: ${response.status}${
+                        errorText ? ` - ${errorText}` : ""
+                    }`,
                     parts: [],
                     total_count: 0,
                 };
@@ -255,4 +257,3 @@ export class DigiKeyClient {
 
 // Default export for convenience
 export default DigiKeyClient;
-

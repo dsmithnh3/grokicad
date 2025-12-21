@@ -31,7 +31,13 @@ export interface PartReplacementContext extends ChatContext {
     /** Category/type of component */
     category?: string;
     /** Reason for needing replacement (obsolete, out of stock, etc.) */
-    reason?: "obsolete" | "out_of_stock" | "nrnd" | "cost" | "availability" | "upgrade";
+    reason?:
+        | "obsolete"
+        | "out_of_stock"
+        | "nrnd"
+        | "cost"
+        | "availability"
+        | "upgrade";
 }
 
 export interface PartInfo {
@@ -108,7 +114,8 @@ const REPLACEMENT_PRESETS: PresetGroup = {
             id: "find-replacement",
             title: "Find Replacement",
             icon: "find_replace",
-            description: "Find drop-in or compatible replacements for this part",
+            description:
+                "Find drop-in or compatible replacements for this part",
             query: "Find suitable replacements for this part. Prioritize drop-in replacements that are pin-compatible, but also suggest near-equivalents if no exact matches exist.",
             requiresContext: true,
         },
@@ -139,7 +146,8 @@ const ANALYSIS_PRESETS: PresetGroup = {
             id: "check-availability",
             title: "Check Availability",
             icon: "inventory",
-            description: "Get insights on current availability and lifecycle status",
+            description:
+                "Get insights on current availability and lifecycle status",
             query: "What is the current availability and lifecycle status of this part? Is it at risk of becoming obsolete?",
             requiresContext: true,
         },
@@ -171,12 +179,12 @@ export class PartReplacementExtension implements ChatExtension {
      */
     getPresets(context: ChatContext): PresetGroup[] {
         const partContext = context as PartReplacementContext;
-        
+
         // Only show presets if we have part info
         if (!partContext.part) {
             return [];
         }
-        
+
         return [REPLACEMENT_PRESETS, ANALYSIS_PRESETS];
     }
 
@@ -193,7 +201,7 @@ export class PartReplacementExtension implements ChatExtension {
 
         // Build part information section
         let partInfo = "No part information provided.";
-        
+
         if (part) {
             partInfo = this._buildPartInfo(part, digiKeyData, reason);
         }
@@ -206,9 +214,15 @@ export class PartReplacementExtension implements ChatExtension {
         if (conversationHistory && conversationHistory.length > 0) {
             for (const msg of conversationHistory) {
                 if (msg.role === "user") {
-                    additionalMessages.push({ role: "user", content: msg.content });
+                    additionalMessages.push({
+                        role: "user",
+                        content: msg.content,
+                    });
                 } else if (msg.role === "assistant" && !msg.error) {
-                    additionalMessages.push({ role: "assistant", content: msg.content });
+                    additionalMessages.push({
+                        role: "assistant",
+                        content: msg.content,
+                    });
                 }
             }
         }
@@ -216,7 +230,8 @@ export class PartReplacementExtension implements ChatExtension {
         return {
             systemPrompt,
             userPrompt,
-            additionalMessages: additionalMessages.length > 0 ? additionalMessages : undefined,
+            additionalMessages:
+                additionalMessages.length > 0 ? additionalMessages : undefined,
         };
     }
 
@@ -225,16 +240,20 @@ export class PartReplacementExtension implements ChatExtension {
      */
     transformResponse(content: string): TransformedResponse {
         const actions: ResponseAction[] = [];
-        
+
         // Extract part numbers from the response (simple regex for MPNs)
-        const mpnPattern = /`([A-Z0-9][A-Z0-9\-\/]+[A-Z0-9])`/g;
+        const mpnPattern = /`([A-Z0-9][A-Z0-9\-/]+[A-Z0-9])`/g;
         const matches = content.matchAll(mpnPattern);
-        
+
         for (const match of matches) {
             const mpn = match[1];
             // Skip if it looks like a net name or common term
-            if (mpn && mpn.length >= 4 && !mpn.match(/^(VCC|GND|VDD|VSS|PIN|NET)/i)) {
-                if (!actions.find(a => a.data?.["mpn"] === mpn)) {
+            if (
+                mpn &&
+                mpn.length >= 4 &&
+                !mpn.match(/^(VCC|GND|VDD|VSS|PIN|NET)/i)
+            ) {
+                if (!actions.find((a) => a.data?.["mpn"] === mpn)) {
                     actions.push({
                         id: `search-${mpn}`,
                         type: "search-digikey",
@@ -290,11 +309,11 @@ export class PartReplacementExtension implements ChatExtension {
 
         // Basic info
         lines.push(`**Part Number:** ${part.mpn}`);
-        
+
         if (part.manufacturer) {
             lines.push(`**Manufacturer:** ${part.manufacturer}`);
         }
-        
+
         if (part.schematicReference) {
             lines.push(`**Schematic Reference:** ${part.schematicReference}`);
         }
@@ -307,24 +326,28 @@ export class PartReplacementExtension implements ChatExtension {
 
         // Description
         if (part.description || digiKeyData?.description) {
-            lines.push(`**Description:** ${part.description || digiKeyData?.description}`);
+            lines.push(
+                `**Description:** ${
+                    part.description || digiKeyData?.description
+                }`,
+            );
         }
 
         // Parameters
         const params: string[] = [];
-        
+
         // From part info
         if (part.parameters) {
             for (const [key, value] of Object.entries(part.parameters)) {
                 params.push(`- ${key}: ${value}`);
             }
         }
-        
+
         // From DigiKey data
         if (digiKeyData?.parameters) {
             for (const param of digiKeyData.parameters) {
                 // Skip if already have this param
-                if (!params.find(p => p.includes(param.name))) {
+                if (!params.find((p) => p.includes(param.name))) {
                     params.push(`- ${param.name}: ${param.value}`);
                 }
             }
@@ -338,7 +361,7 @@ export class PartReplacementExtension implements ChatExtension {
         // DigiKey specific data
         if (digiKeyData) {
             lines.push("\n**Current Status (from DigiKey):**");
-            
+
             if (digiKeyData.product_status) {
                 lines.push(`- Status: ${digiKeyData.product_status}`);
             }
@@ -349,7 +372,9 @@ export class PartReplacementExtension implements ChatExtension {
                 lines.push(`- Lifecycle: ${digiKeyData.lifecycle_status}`);
             }
             if (digiKeyData.quantity_available !== null) {
-                lines.push(`- Stock: ${digiKeyData.quantity_available.toLocaleString()}`);
+                lines.push(
+                    `- Stock: ${digiKeyData.quantity_available.toLocaleString()}`,
+                );
             }
             if (digiKeyData.category) {
                 lines.push(`- Category: ${digiKeyData.category}`);
@@ -358,7 +383,11 @@ export class PartReplacementExtension implements ChatExtension {
 
         // Datasheet
         if (part.datasheetUrl || digiKeyData?.datasheet_url) {
-            lines.push(`\n**Datasheet:** ${part.datasheetUrl || digiKeyData?.datasheet_url}`);
+            lines.push(
+                `\n**Datasheet:** ${
+                    part.datasheetUrl || digiKeyData?.datasheet_url
+                }`,
+            );
         }
 
         return lines.join("\n");
@@ -397,7 +426,9 @@ export function createPartContextFromDigiKey(
 ): PartReplacementContext {
     const reason = digiKeyData.is_obsolete
         ? "obsolete"
-        : digiKeyData.lifecycle_status?.toLowerCase().includes("not recommended")
+        : digiKeyData.lifecycle_status
+              ?.toLowerCase()
+              .includes("not recommended")
         ? "nrnd"
         : digiKeyData.quantity_available === 0
         ? "out_of_stock"
@@ -465,4 +496,3 @@ export function createPartContextItem(
 
 // Export singleton instance
 export const partReplacementExtension = new PartReplacementExtension();
-

@@ -15,7 +15,8 @@ export const PROJECT_PRESETS: QueryPreset[] = [
         id: "project-overview",
         title: "Project Overview",
         icon: "search",
-        description: "Get a high-level overview of the entire schematic project",
+        description:
+            "Get a high-level overview of the entire schematic project",
         query: "Give an overview of the whole schematic project. Describe the main functional blocks, key ICs and their purposes, power architecture, and how the subsystems work together.",
     },
     {

@@ -13,8 +13,7 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
-        "verbatimModuleSyntax": true
+        "verbatimModuleSyntax": true,
     },
-    "include": ["./**/*.ts"]
+    "include": ["./**/*.ts"],
 }
-

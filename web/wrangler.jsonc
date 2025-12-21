@@ -1,92 +1,91 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "grokicad",
-  "main": "worker/oauth-worker.ts",
-  "compatibility_date": "2025-12-01",
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "grokicad",
+    "main": "worker/oauth-worker.ts",
+    "compatibility_date": "2025-12-01",
 
-  // Static assets served from /debug directory
-  "assets": {
-    "directory": "./debug",
-    "binding": "ASSETS"
-  },
+    // Static assets served from /debug directory
+    "assets": {
+        "directory": "./debug",
+        "binding": "ASSETS"
+    },
 
-  // Local development configuration
-  "dev": {
-    "port": 8787,
-    "local_protocol": "http"
-  },
-
-  // ==========================================================================
-  // ENVIRONMENT CONFIGURATIONS
-  // ==========================================================================
-
-  "env": {
-    // Development environment
+    // Local development configuration
     "dev": {
-      "name": "grokicad-dev",
-      "vars": {
-        "ENVIRONMENT": "development"
-      },
-      "kv_namespaces": [
-        {
-          "binding": "DIGIKEY_SESSIONS",
-          "id": "c70d20e3617e49bd925e405d1803ffd1"
-        }
-      ]
+        "port": 8787,
+        "local_protocol": "http"
     },
 
-    // Beta/Staging environment
-    "beta": {
-      "name": "grokicad-beta",
-      "vars": {
-        "ENVIRONMENT": "beta"
-      },
-      "routes": [
-        {
-          "pattern": "beta.grokicad.com/*",
-          "zone_name": "grokicad.com"
-        }
-      ],
-      "kv_namespaces": [
-        {
-          "binding": "DIGIKEY_SESSIONS",
-          "id": "3fe487dbdcd44061aea661a1072f81b0",
-          "preview_id": "3fe487dbdcd44061aea661a1072f81b0"
-        }
-      ]
-    },
+    // ==========================================================================
+    // ENVIRONMENT CONFIGURATIONS
+    // ==========================================================================
 
-    // Production environment
-    "production": {
-      "name": "grokicad",
-      "vars": {
-        "ENVIRONMENT": "production"
-      },
-      "routes": [
-        {
-          "pattern": "grokicad.com/*",
-          "zone_name": "grokicad.com"
+    "env": {
+        // Development environment
+        "dev": {
+            "name": "grokicad-dev",
+            "vars": {
+                "ENVIRONMENT": "development"
+            },
+            "kv_namespaces": [
+                {
+                    "binding": "DIGIKEY_SESSIONS",
+                    "id": "c70d20e3617e49bd925e405d1803ffd1"
+                }
+            ]
+        },
+
+        // Beta/Staging environment
+        "beta": {
+            "name": "grokicad-beta",
+            "vars": {
+                "ENVIRONMENT": "beta"
+            },
+            "routes": [
+                {
+                    "pattern": "beta.grokicad.com/*",
+                    "zone_name": "grokicad.com"
+                }
+            ],
+            "kv_namespaces": [
+                {
+                    "binding": "DIGIKEY_SESSIONS",
+                    "id": "3fe487dbdcd44061aea661a1072f81b0",
+                    "preview_id": "3fe487dbdcd44061aea661a1072f81b0"
+                }
+            ]
+        },
+
+        // Production environment
+        "production": {
+            "name": "grokicad",
+            "vars": {
+                "ENVIRONMENT": "production"
+            },
+            "routes": [
+                {
+                    "pattern": "grokicad.com/*",
+                    "zone_name": "grokicad.com"
+                }
+            ],
+            "kv_namespaces": [
+                {
+                    "binding": "DIGIKEY_SESSIONS",
+                    "id": "839b3de95308423a96d372a239c8e3ea",
+                    "preview_id": "839b3de95308423a96d372a239c8e3ea"
+                }
+            ]
         }
-      ],
-      "kv_namespaces": [
-        {
-          "binding": "DIGIKEY_SESSIONS",
-          "id": "839b3de95308423a96d372a239c8e3ea",
-          "preview_id": "839b3de95308423a96d372a239c8e3ea"
-        }
-      ]
     }
-  }
 
-  // ==========================================================================
-  // SECRETS (set via CLI, not in this file)
-  // ==========================================================================
-  //
-  // wrangler secret put DIGIKEY_CLIENT_ID --env [dev|beta|production]
-  // wrangler secret put DIGIKEY_CLIENT_SECRET --env [dev|beta|production]
-  // wrangler secret put GITHUB_CLIENT_SECRET --env [dev|beta|production]
-  //
-  // For local development, use .dev.vars file
-  // ==========================================================================
+    // ==========================================================================
+    // SECRETS (set via CLI, not in this file)
+    // ==========================================================================
+    //
+    // wrangler secret put DIGIKEY_CLIENT_ID --env [dev|beta|production]
+    // wrangler secret put DIGIKEY_CLIENT_SECRET --env [dev|beta|production]
+    // wrangler secret put GITHUB_CLIENT_SECRET --env [dev|beta|production]
+    //
+    // For local development, use .dev.vars file
+    // ==========================================================================
 }
-

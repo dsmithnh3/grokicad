@@ -134,9 +134,13 @@ export class XAISettingsManager extends EventTarget {
      */
     updateSettings(settings: Partial<XAISettings>): void {
         if (settings.apiKey !== undefined) this._apiKey = settings.apiKey;
-        if (settings.baseUrl !== undefined) this._baseUrl = settings.baseUrl || XAI_DEFAULTS.baseUrl;
-        if (settings.model !== undefined) this._model = settings.model || XAI_DEFAULTS.model;
-        if (settings.thinkingModel !== undefined) this._thinkingModel = settings.thinkingModel || XAI_DEFAULTS.thinkingModel;
+        if (settings.baseUrl !== undefined)
+            this._baseUrl = settings.baseUrl || XAI_DEFAULTS.baseUrl;
+        if (settings.model !== undefined)
+            this._model = settings.model || XAI_DEFAULTS.model;
+        if (settings.thinkingModel !== undefined)
+            this._thinkingModel =
+                settings.thinkingModel || XAI_DEFAULTS.thinkingModel;
     }
 
     /**
@@ -151,8 +155,10 @@ export class XAISettingsManager extends EventTarget {
         this.storage.set("baseUrl", this._baseUrl);
         this.storage.set("model", this._model);
         this.storage.set("thinkingModel", this._thinkingModel);
-        
-        this.dispatchEvent(new XAISettingsChangeEvent({ settings: this.settings }));
+
+        this.dispatchEvent(
+            new XAISettingsChangeEvent({ settings: this.settings }),
+        );
     }
 
     /**
@@ -163,7 +169,10 @@ export class XAISettingsManager extends EventTarget {
         this._apiKey = deobfuscateKey(obfuscatedKey) || null;
         this._baseUrl = this.storage.get("baseUrl", XAI_DEFAULTS.baseUrl);
         this._model = this.storage.get("model", XAI_DEFAULTS.model);
-        this._thinkingModel = this.storage.get("thinkingModel", XAI_DEFAULTS.thinkingModel);
+        this._thinkingModel = this.storage.get(
+            "thinkingModel",
+            XAI_DEFAULTS.thinkingModel,
+        );
     }
 
     /**
@@ -178,8 +187,10 @@ export class XAISettingsManager extends EventTarget {
         this.storage.delete("baseUrl");
         this.storage.delete("model");
         this.storage.delete("thinkingModel");
-        
-        this.dispatchEvent(new XAISettingsChangeEvent({ settings: this.settings }));
+
+        this.dispatchEvent(
+            new XAISettingsChangeEvent({ settings: this.settings }),
+        );
     }
 
     /**
@@ -196,7 +207,7 @@ export class XAISettingsManager extends EventTarget {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${this._apiKey}`,
+                    Authorization: `Bearer ${this._apiKey}`,
                 },
                 body: JSON.stringify({
                     model: this._model,
@@ -209,18 +220,24 @@ export class XAISettingsManager extends EventTarget {
                 return { success: false, error: "Invalid API key" };
             }
             if (response.status === 429) {
-                return { success: false, error: "Rate limited - API key is valid" };
+                return {
+                    success: false,
+                    error: "Rate limited - API key is valid",
+                };
             }
             if (!response.ok) {
                 const text = await response.text();
-                return { success: false, error: `API error: ${response.status} ${text}` };
+                return {
+                    success: false,
+                    error: `API error: ${response.status} ${text}`,
+                };
             }
 
             return { success: true };
         } catch (e) {
-            return { 
-                success: false, 
-                error: e instanceof Error ? e.message : "Connection failed" 
+            return {
+                success: false,
+                error: e instanceof Error ? e.message : "Connection failed",
             };
         }
     }
@@ -246,4 +263,3 @@ export class XAISettingsChangeEvent extends CustomEvent<XAISettingsChangeEventDe
 
 /** Singleton instance for convenience */
 export const xaiSettings = XAISettingsManager.INSTANCE;
-

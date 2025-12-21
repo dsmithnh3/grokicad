@@ -42,7 +42,12 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-    console.error("[serve] Unhandled rejection at:", promise, "reason:", reason);
+    console.error(
+        "[serve] Unhandled rejection at:",
+        promise,
+        "reason:",
+        reason,
+    );
     cleanup();
 });
 

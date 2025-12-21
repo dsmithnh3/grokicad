@@ -241,10 +241,7 @@ class ConnectivityAnalyzer {
         }
 
         // Translate to symbol position
-        return new Vec2(
-            symbol.at.position.x + mx,
-            symbol.at.position.y + my,
-        );
+        return new Vec2(symbol.at.position.x + mx, symbol.at.position.y + my);
     }
 
     private processWires(wires: Wire[]): void {
@@ -313,7 +310,7 @@ class ConnectivityAnalyzer {
         for (const symbol of schematic.symbols.values()) {
             if (this.isPowerSymbol(symbol)) {
                 const powerValue = symbol.value;
-                
+
                 // Find pin position for this power symbol
                 if (symbol.unit_pins.length > 0) {
                     const pin = symbol.unit_pins[0]!;
@@ -356,7 +353,7 @@ class ConnectivityAnalyzer {
     private buildNets(pinPositions: Map<string, PinConnection[]>): void {
         // Group pins by connectivity root
         const pinsByRoot = new Map<string, PinConnection[]>();
-        
+
         for (const [k, pins] of pinPositions) {
             const root = this.find(k);
             if (!pinsByRoot.has(root)) {
@@ -381,7 +378,7 @@ class ConnectivityAnalyzer {
             if (pins.length === 0) continue;
 
             let netName = netNameByRoot.get(root);
-            
+
             // Auto-generate name if not labeled
             if (!netName) {
                 const firstPin = pins[0]!;
@@ -463,7 +460,10 @@ function distance(
     return Math.hypot(p1.x - p2.x, p1.y - p2.y);
 }
 
-function isIcCapPair(catA: ComponentCategory, catB: ComponentCategory): boolean {
+function isIcCapPair(
+    catA: ComponentCategory,
+    catB: ComponentCategory,
+): boolean {
     return (
         (catA === "ic" && catB === "capacitor") ||
         (catA === "capacitor" && catB === "ic")
@@ -843,9 +843,7 @@ export function sliceDistillationForComponents(
             .sort((a, b) => b.score - a.score);
 
         for (const prox of relevantProximities) {
-            const other = selectedSet.has(prox.ref_a)
-                ? prox.ref_b
-                : prox.ref_a;
+            const other = selectedSet.has(prox.ref_a) ? prox.ref_b : prox.ref_a;
 
             if (
                 !selectedSet.has(other) &&
@@ -895,7 +893,8 @@ export function sliceDistillationForComponents(
     const relevantProximities = distilled.proximities.filter(
         (p) =>
             (selectedSet.has(p.ref_a) || selectedSet.has(p.ref_b)) &&
-            (allRelevantRefs.has(p.ref_a) && allRelevantRefs.has(p.ref_b)),
+            allRelevantRefs.has(p.ref_a) &&
+            allRelevantRefs.has(p.ref_b),
     );
 
     return {
@@ -949,4 +948,3 @@ export function createFocusedDistillation(
         proximities: slice.relevantProximities,
     };
 }
-

@@ -46,5 +46,10 @@
         "skipLibCheck": true,
     },
     "include": ["./src/**/*", "./test/**/*"],
-    "exclude": ["./node_modules", "./**/node_modules/*", "./scripts/", "./worker/"],
+    "exclude": [
+        "./node_modules",
+        "./**/node_modules/*",
+        "./scripts/",
+        "./worker/",
+    ],
 }

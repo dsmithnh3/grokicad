@@ -428,7 +428,8 @@ export class KCSchematicZonePanelElement extends KCUIElement {
         if (!this.zoneData) {
             return html`
                 <kc-ui-panel>
-                    <kc-ui-panel-title title="Zone Selection"></kc-ui-panel-title>
+                    <kc-ui-panel-title
+                        title="Zone Selection"></kc-ui-panel-title>
                     <kc-ui-panel-body>
                         <div class="empty-state">
                             <div class="empty-state-icon">◻️</div>
@@ -454,9 +455,7 @@ export class KCSchematicZonePanelElement extends KCUIElement {
             const remaining = Math.max(0, s.pins.length - MAX_VISIBLE_PINS);
 
             return html`
-                <div
-                    class="symbol-item"
-                    data-symbol-uuid="${s.symbol.uuid}">
+                <div class="symbol-item" data-symbol-uuid="${s.symbol.uuid}">
                     <div class="symbol-header">
                         <span class="symbol-reference">${s.reference}</span>
                         <span class="symbol-value">${s.value}</span>
@@ -487,7 +486,8 @@ export class KCSchematicZonePanelElement extends KCUIElement {
                                                 <button
                                                     type="button"
                                                     class="pin-toggle"
-                                                    data-pin-toggle="${s.symbol.uuid}">
+                                                    data-pin-toggle="${s.symbol
+                                                        .uuid}">
                                                     ${isExpanded
                                                         ? "Show less"
                                                         : `+${remaining} more`}

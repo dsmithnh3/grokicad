@@ -1,9 +1,9 @@
 /**
  * Application Configuration (Frontend)
- * 
+ *
  * This module provides environment-specific configuration for the frontend application.
  * Configuration is determined at runtime based on the current hostname.
- * 
+ *
  * Uses centralized environment definitions from config/environments.ts
  */
 
@@ -26,8 +26,8 @@ export type { Environment, EnvironmentDefinition };
 /**
  * Current environment (auto-detected from hostname)
  */
-export const ENVIRONMENT: Environment = 
-    typeof window !== "undefined" 
+export const ENVIRONMENT: Environment =
+    typeof window !== "undefined"
         ? detectEnvironmentFromHostname(window.location.hostname)
         : "development";
 
@@ -45,9 +45,10 @@ const envConfig: EnvironmentDefinition = environments[ENVIRONMENT];
  * Empty string means same-origin (for deployed environments)
  * Full URL for development (pointing to deployed dev worker)
  */
-export const API_BASE_URL = ENVIRONMENT === "development" 
-    ? "https://grokicad-dev.mo0nbase.workers.dev"
-    : "";
+export const API_BASE_URL =
+    ENVIRONMENT === "development"
+        ? "https://grokicad-dev.mo0nbase.workers.dev"
+        : "";
 
 /**
  * DigiKey Worker URL (for backward compatibility)
@@ -85,11 +86,11 @@ export { GITHUB_RATE_LIMITS };
  */
 export function getApiUrl(path: string): string {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    
+
     if (!API_BASE_URL) {
         return cleanPath;
     }
-    
+
     return `${API_BASE_URL}${cleanPath}`;
 }
 

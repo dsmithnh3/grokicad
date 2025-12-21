@@ -30,7 +30,10 @@ import type { ChatExtension } from "../types";
 /**
  * Registry of available chat extensions.
  */
-export const extensionRegistry: Map<string, ChatExtension> = new Map<string, ChatExtension>([
+export const extensionRegistry: Map<string, ChatExtension> = new Map<
+    string,
+    ChatExtension
+>([
     [schematicExtension.id, schematicExtension as ChatExtension],
     [partReplacementExtension.id, partReplacementExtension as ChatExtension],
 ]);
@@ -48,4 +51,3 @@ export function getExtension(id: string): ChatExtension | undefined {
 export function registerExtension(extension: ChatExtension): void {
     extensionRegistry.set(extension.id, extension);
 }
-

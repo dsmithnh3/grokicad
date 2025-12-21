@@ -57,10 +57,10 @@ export interface ChatContext {
     /** Current repository context */
     repo?: string | null;
     commit?: string | null;
-    
+
     /** Selected items (components, parts, etc.) */
     selectedItems?: ContextItem[];
-    
+
     /** Any additional data specific to the extension */
     extra?: Record<string, unknown>;
 }
@@ -88,23 +88,23 @@ export interface BuiltContext {
 // Extension Interface
 // =============================================================================
 
-/** 
+/**
  * Extension interface for adding new chat capabilities.
  * Extensions can provide presets, context, and custom rendering.
  */
 export interface ChatExtension {
     /** Unique identifier for this extension */
     readonly id: string;
-    
+
     /** Human-readable name */
     readonly name: string;
-    
-    /** 
+
+    /**
      * Get presets to show for this extension.
      * Called whenever context changes.
      */
     getPresets(context: ChatContext): PresetGroup[];
-    
+
     /**
      * Build the context (system prompt + user prompt) for a query.
      * Extensions can add domain-specific context to the prompt.
@@ -114,30 +114,30 @@ export interface ChatExtension {
         userQuery: string,
         conversationHistory?: ChatMessage[],
     ): Promise<BuiltContext>;
-    
+
     /**
      * Optional: Transform the response before displaying.
      * Can be used to parse special formats, extract actions, etc.
      */
     transformResponse?(content: string): TransformedResponse;
-    
+
     /**
      * Optional: Whether thinking mode is supported.
      * Defaults to true.
      */
     supportsThinking?: boolean;
-    
+
     /**
      * Optional: Custom placeholder text for the input.
      */
     getPlaceholder?(context: ChatContext): string;
-    
+
     /**
      * Optional: Initialize the extension with context.
      * Called once when the extension is activated.
      */
     initialize?(context: ChatContext): Promise<void>;
-    
+
     /**
      * Optional: Cleanup when extension is deactivated.
      */
@@ -171,28 +171,28 @@ export interface ResponseAction {
 export interface ChatPanelConfig {
     /** Title shown in the header */
     title?: string;
-    
+
     /** Logo to show in header */
     logoSrc?: string;
-    
+
     /** Whether the panel is draggable */
     draggable?: boolean;
-    
+
     /** Whether the panel can be docked */
     dockable?: boolean;
-    
+
     /** Whether to show the thinking mode toggle */
     showThinkingToggle?: boolean;
-    
+
     /** Whether to show preset quick actions */
     showPresets?: boolean;
-    
+
     /** Whether to allow context items to be selected/shown */
     showContextItems?: boolean;
-    
+
     /** Custom CSS class for theming */
     themeClass?: string;
-    
+
     /** Placeholder text for the input */
     placeholder?: string;
 }
@@ -205,31 +205,33 @@ export interface ChatPanelConfig {
 export interface ChatPanelEvents {
     /** Fired when a message is sent */
     "chat-send": { query: string; context: ChatContext };
-    
+
     /** Fired when streaming starts */
     "chat-stream-start": { messageId: string };
-    
+
     /** Fired when streaming completes */
     "chat-stream-complete": { messageId: string; content: string };
-    
+
     /** Fired when an error occurs */
     "chat-error": { error: string };
-    
+
     /** Fired when panel is shown */
     "chat-show": void;
-    
+
     /** Fired when panel is hidden */
     "chat-hide": void;
-    
+
     /** Fired when an action button is clicked */
     "chat-action": { action: ResponseAction };
-    
+
     /** Fired when conversation is cleared */
     "chat-clear": void;
 }
 
 /** Helper type for typed events */
-export type ChatEvent<K extends keyof ChatPanelEvents> = CustomEvent<ChatPanelEvents[K]>;
+export type ChatEvent<K extends keyof ChatPanelEvents> = CustomEvent<
+    ChatPanelEvents[K]
+>;
 
 /** Create a typed chat event */
 export function createChatEvent<K extends keyof ChatPanelEvents>(
@@ -272,4 +274,3 @@ export interface StreamingCallbacks {
 export function generateMessageId(): string {
     return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
-

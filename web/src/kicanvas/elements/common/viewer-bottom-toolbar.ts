@@ -139,8 +139,9 @@ export class KCViewerBottomToolbarElement extends KCUIElement {
         this.update_position();
 
         return html`<kc-ui-floating-toolbar location="bottom">
-            ${this.#position_elm} ${this.#download_btn} ${this.#zoom_to_selection_btn}
-            ${this.#zoom_to_page_btn} ${this.#home_btn}
+            ${this.#position_elm} ${this.#download_btn}
+            ${this.#zoom_to_selection_btn} ${this.#zoom_to_page_btn}
+            ${this.#home_btn}
         </kc-ui-floating-toolbar>`;
     }
 }

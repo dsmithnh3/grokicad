@@ -60,9 +60,12 @@ export class KCGrokChatPanelElement extends KCUIElement {
     private _controlsCollapsed: boolean = false; // Collapse quick actions for more response space
     private _thinkingMode: boolean = false; // Enable reasoning/thinking mode for more detailed analysis
     private _hasAutoCollapsed: boolean = false; // Track if we've auto-collapsed once (to not annoy user)
-    
+
     // Conversation history
-    private _conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+    private _conversationHistory: Array<{
+        role: "user" | "assistant";
+        content: string;
+    }> = [];
 
     // Context
     private _viewer: Viewer | null = null;
@@ -72,7 +75,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
     // Update batching to prevent flickering
     private _updatePending = false;
     private _isInitialized = false;
-    
+
     // Dragging and docking state
     private _isDocked: boolean = false;
     private _isDragging: boolean = false;
@@ -129,16 +132,24 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
         // Set data attribute for search dropdown state
         if (this._showSearchResults) {
-            this.setAttribute('data-search-open', '');
+            this.setAttribute("data-search-open", "");
         } else {
-            this.removeAttribute('data-search-open');
+            this.removeAttribute("data-search-open");
         }
 
         // Ensure streaming response content is rendered as HTML after re-render
-        if (this._responseContent && this.streaming && !this._isLoading && !this._error) {
-            const streamingEl = this.renderRoot.querySelector(".streaming-response");
+        if (
+            this._responseContent &&
+            this.streaming &&
+            !this._isLoading &&
+            !this._error
+        ) {
+            const streamingEl = this.renderRoot.querySelector(
+                ".streaming-response",
+            );
             if (streamingEl) {
-                streamingEl.innerHTML = this._formatContent(this._responseContent) +
+                streamingEl.innerHTML =
+                    this._formatContent(this._responseContent) +
                     '<span class="cursor"></span>';
             }
         }
@@ -155,7 +166,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
     private _scheduleUpdate() {
         if (this._updatePending) return;
         this._updatePending = true;
-        
+
         // Use requestAnimationFrame for smooth updates
         requestAnimationFrame(() => {
             if (this._updatePending && this._isInitialized) {
@@ -187,7 +198,7 @@ export class KCGrokChatPanelElement extends KCUIElement {
         if (this.visible) return;
         this.visible = true;
         this._loadAllComponents();
-        
+
         // Trigger repository initialization for AI analysis (non-blocking)
         this._initializeForAI();
     }
@@ -199,7 +210,9 @@ export class KCGrokChatPanelElement extends KCUIElement {
     private async _initializeForAI() {
         const { repo, commit } = this._context;
         if (!repo || !commit) {
-            console.warn("[GrokChat] No repo context, skipping AI initialization");
+            console.warn(
+                "[GrokChat] No repo context, skipping AI initialization",
+            );
             return;
         }
 
@@ -209,7 +222,9 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
             await grokAPI.initRepository(repo, commit, {
                 onStart: () => {
-                    console.log("[GrokChat] Initializing repository for AI analysis...");
+                    console.log(
+                        "[GrokChat] Initializing repository for AI analysis...",
+                    );
                 },
                 onComplete: (resp) => {
                     console.log(
@@ -217,7 +232,10 @@ export class KCGrokChatPanelElement extends KCUIElement {
                     );
                 },
                 onError: (err) => {
-                    console.error("[GrokChat] Repository initialization failed:", err);
+                    console.error(
+                        "[GrokChat] Repository initialization failed:",
+                        err,
+                    );
                 },
             });
 
@@ -250,13 +268,18 @@ export class KCGrokChatPanelElement extends KCUIElement {
      * and can't use requestLazyContext to get the repoInfo.
      */
     public setContext(repo: string | null, commit: string | null) {
-        const changed = this._context.repo !== repo || this._context.commit !== commit;
+        const changed =
+            this._context.repo !== repo || this._context.commit !== commit;
         this._context = { repo, commit };
-        
+
         if (changed) {
             // Clear cached data when context changes
             grokAPI.clearCache();
-            console.log(`[GrokChat] Context set: ${repo}@${commit?.slice(0, 8) ?? 'latest'}`);
+            console.log(
+                `[GrokChat] Context set: ${repo}@${
+                    commit?.slice(0, 8) ?? "latest"
+                }`,
+            );
         }
     }
 
@@ -275,10 +298,16 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
     public setSelectedComponents(components: SelectedComponent[]) {
         // Only update if components actually changed
-        const currentIds = this._selectedComponents.map(c => c.uuid).sort().join(',');
-        const newIds = components.map(c => c.uuid).sort().join(',');
+        const currentIds = this._selectedComponents
+            .map((c) => c.uuid)
+            .sort()
+            .join(",");
+        const newIds = components
+            .map((c) => c.uuid)
+            .sort()
+            .join(",");
         if (currentIds === newIds) return;
-        
+
         this._selectedComponents = components;
         this._scheduleUpdate();
     }
@@ -346,8 +375,14 @@ export class KCGrokChatPanelElement extends KCUIElement {
                     }
                 }
                 // Only update if selection actually changed
-                const currentIds = this._selectedComponents.map(c => c.uuid).sort().join(',');
-                const newIds = newComponents.map(c => c.uuid).sort().join(',');
+                const currentIds = this._selectedComponents
+                    .map((c) => c.uuid)
+                    .sort()
+                    .join(",");
+                const newIds = newComponents
+                    .map((c) => c.uuid)
+                    .sort()
+                    .join(",");
                 if (currentIds !== newIds) {
                     console.log(
                         "[GrokChat] Zone selection event:",
@@ -365,20 +400,23 @@ export class KCGrokChatPanelElement extends KCUIElement {
         this.addDisposable(
             this._viewer.addEventListener(KiCanvasHoverEvent.type, (e) => {
                 const item = e.detail.item;
-                const newUuid = item && this._hasUuid(item) ? (item as { uuid: string }).uuid : null;
-                
+                const newUuid =
+                    item && this._hasUuid(item)
+                        ? (item as { uuid: string }).uuid
+                        : null;
+
                 if (this._hoveredComponentUuid !== newUuid) {
                     // Remove old highlight
                     if (this._hoveredComponentUuid) {
                         const oldCard = this.renderRoot.querySelector(
-                            `.component-card[data-uuid="${this._hoveredComponentUuid}"]`
+                            `.component-card[data-uuid="${this._hoveredComponentUuid}"]`,
                         );
                         oldCard?.classList.remove("hovered");
                     }
                     // Add new highlight
                     if (newUuid) {
                         const newCard = this.renderRoot.querySelector(
-                            `.component-card[data-uuid="${newUuid}"]`
+                            `.component-card[data-uuid="${newUuid}"]`,
                         );
                         newCard?.classList.add("hovered");
                     }
@@ -404,28 +442,27 @@ export class KCGrokChatPanelElement extends KCUIElement {
                 this._submitQuery();
             }),
         );
-        
+
         // Dock button
         this.addDisposable(
             delegate(root, ".dock-button", "click", () => {
                 this._dock();
             }),
         );
-        
+
         // Docked tab - click to undock
         this.addDisposable(
             delegate(root, ".docked-tab", "click", () => {
                 this._undock();
             }),
         );
-        
+
         // Draggable header
         this.addDisposable(
             delegate(root, ".chat-header.draggable", "mousedown", (e) => {
                 this._startDrag(e as MouseEvent);
             }),
         );
-
 
         // Toggle collapsible controls section
         this.addDisposable(
@@ -505,7 +542,11 @@ export class KCGrokChatPanelElement extends KCUIElement {
         this.addDisposable(
             delegate(root, ".preset-card", "click", (e, source) => {
                 // Don't trigger if disabled or already streaming
-                if (source.classList.contains("disabled") || this.streaming || this._isLoading) {
+                if (
+                    source.classList.contains("disabled") ||
+                    this.streaming ||
+                    this._isLoading
+                ) {
                     return;
                 }
                 const presetId = source.getAttribute("data-preset-id");
@@ -643,13 +684,13 @@ export class KCGrokChatPanelElement extends KCUIElement {
                 "click",
                 (e) => {
                     const path = (e as any).composedPath();
-                    const isInsideSearch = path.some((el: any) =>
-                        el && typeof el.closest === "function" && el.closest(".search-container"),
+                    const isInsideSearch = path.some(
+                        (el: any) =>
+                            el &&
+                            typeof el.closest === "function" &&
+                            el.closest(".search-container"),
                     );
-                    if (
-                        !isInsideSearch &&
-                        this._showSearchResults
-                    ) {
+                    if (!isInsideSearch && this._showSearchResults) {
                         this._showSearchResults = false;
                         this._searchHighlightIndex = -1;
                         this._searchInputFocused = false;
@@ -867,11 +908,13 @@ export class KCGrokChatPanelElement extends KCUIElement {
         // Find preset in both arrays
         const allPresets = [...PROJECT_PRESETS, ...COMPONENT_PRESETS];
         const preset = allPresets.find((p) => p.id === presetId);
-        
+
         if (!preset) return;
 
         // Check if this is a component preset and we have no selection
-        const isComponentPreset = COMPONENT_PRESETS.some((p) => p.id === presetId);
+        const isComponentPreset = COMPONENT_PRESETS.some(
+            (p) => p.id === presetId,
+        );
         if (isComponentPreset && this._selectedComponents.length === 0) {
             this._error = "Please select one or more components first";
             this._scheduleUpdate();
@@ -880,14 +923,14 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
         // Set the preset (but don't copy query to input box)
         this._selectedPreset = presetId;
-        
+
         // Auto-collapse quick actions once to give more space for the response
         // Only do this once so we don't annoy the user if they reopen it
         if (!this._hasAutoCollapsed && !this._controlsCollapsed) {
             this._controlsCollapsed = true;
             this._hasAutoCollapsed = true;
         }
-        
+
         this._scheduleUpdate();
 
         // Submit the preset query directly
@@ -897,21 +940,21 @@ export class KCGrokChatPanelElement extends KCUIElement {
     private async _submitQuery(overrideQuery?: string) {
         const query = (overrideQuery ?? this._customQuery).trim();
         if (!query) return;
-        
+
         // Clear input after submitting (if it was from the input box)
         if (!overrideQuery) {
             this._customQuery = "";
         }
 
         // Add user message to conversation history
-        this._conversationHistory.push({ role: 'user', content: query });
+        this._conversationHistory.push({ role: "user", content: query });
 
         this._isLoading = true;
         this._error = null;
         this._responseContent = "";
         this.streaming = true;
         this._shouldAutoScroll = true; // Reset auto-scroll for new query
-        
+
         // Force immediate render to show loading state right away
         // Don't use _scheduleUpdate which batches via requestAnimationFrame
         super.update();
@@ -928,9 +971,12 @@ export class KCGrokChatPanelElement extends KCUIElement {
                 onChunk: (content) => {
                     this._responseContent = content;
                     // Update streaming response content directly for performance
-                    const streamingEl = this.renderRoot.querySelector(".streaming-response");
+                    const streamingEl = this.renderRoot.querySelector(
+                        ".streaming-response",
+                    );
                     if (streamingEl) {
-                        streamingEl.innerHTML = this._formatContent(content) + 
+                        streamingEl.innerHTML =
+                            this._formatContent(content) +
                             '<span class="cursor"></span>';
                         this._scrollResponseToBottom();
                     } else {
@@ -941,7 +987,10 @@ export class KCGrokChatPanelElement extends KCUIElement {
                     this.streaming = false;
                     // Add completed response to conversation history
                     if (this._responseContent) {
-                        this._conversationHistory.push({ role: 'assistant', content: this._responseContent });
+                        this._conversationHistory.push({
+                            role: "assistant",
+                            content: this._responseContent,
+                        });
                     }
                     this._responseContent = ""; // Clear streaming content
                     this._scheduleUpdate();
@@ -961,13 +1010,13 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
     private _scrollResponseToBottom() {
         if (!this._shouldAutoScroll) return;
-        
+
         const scrollEl = this.renderRoot.querySelector(".conversation-scroll");
         if (scrollEl) {
             // Smooth scroll to bottom
             scrollEl.scrollTo({
                 top: scrollEl.scrollHeight,
-                behavior: 'smooth'
+                behavior: "smooth",
             });
         }
     }
@@ -976,11 +1025,14 @@ export class KCGrokChatPanelElement extends KCUIElement {
         const scrollEl = this.renderRoot.querySelector(".conversation-scroll");
         if (scrollEl) {
             // Auto-scroll if user is within 100px of the bottom
-            const isNearBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 100;
+            const isNearBottom =
+                scrollEl.scrollHeight -
+                    scrollEl.scrollTop -
+                    scrollEl.clientHeight <
+                100;
             this._shouldAutoScroll = isNearBottom;
         }
     }
-
 
     // =========================================================================
     // Rendering Helpers
@@ -1116,31 +1168,54 @@ export class KCGrokChatPanelElement extends KCUIElement {
                     ${PROJECT_PRESETS.map(
                         (preset) => html`
                             <div
-                                class="preset-card ${this._selectedPreset === preset.id ? "selected" : ""} ${isLoading ? "disabled" : ""}"
+                                class="preset-card ${this._selectedPreset ===
+                                preset.id
+                                    ? "selected"
+                                    : ""} ${isLoading ? "disabled" : ""}"
                                 data-preset-id="${preset.id}"
                                 title="${preset.description}">
                                 ${preset.icon
-                                    ? html`<kc-ui-icon class="preset-icon">${preset.icon}</kc-ui-icon>`
+                                    ? html`<kc-ui-icon class="preset-icon"
+                                          >${preset.icon}</kc-ui-icon
+                                      >`
                                     : null}
-                                <span class="preset-title">${preset.title}</span>
+                                <span class="preset-title"
+                                    >${preset.title}</span
+                                >
                             </div>
                         `,
                     )}
                 </div>
             </div>
             <div class="section">
-                <div class="section-label">Component Analysis ${hasSelection ? `(${this._selectedComponents.length} selected)` : ""}</div>
+                <div class="section-label">
+                    Component Analysis
+                    ${hasSelection
+                        ? `(${this._selectedComponents.length} selected)`
+                        : ""}
+                </div>
                 <div class="preset-cards">
                     ${COMPONENT_PRESETS.map(
                         (preset) => html`
                             <div
-                                class="preset-card ${this._selectedPreset === preset.id ? "selected" : ""} ${!hasSelection || isLoading ? "disabled" : ""}"
+                                class="preset-card ${this._selectedPreset ===
+                                preset.id
+                                    ? "selected"
+                                    : ""} ${!hasSelection || isLoading
+                                    ? "disabled"
+                                    : ""}"
                                 data-preset-id="${preset.id}"
-                                title="${hasSelection ? preset.description : "Select components first"}">
+                                title="${hasSelection
+                                    ? preset.description
+                                    : "Select components first"}">
                                 ${preset.icon
-                                    ? html`<kc-ui-icon class="preset-icon">${preset.icon}</kc-ui-icon>`
+                                    ? html`<kc-ui-icon class="preset-icon"
+                                          >${preset.icon}</kc-ui-icon
+                                      >`
                                     : null}
-                                <span class="preset-title">${preset.title}</span>
+                                <span class="preset-title"
+                                    >${preset.title}</span
+                                >
                             </div>
                         `,
                     )}
@@ -1152,77 +1227,124 @@ export class KCGrokChatPanelElement extends KCUIElement {
     private _renderConversation() {
         const isProcessing = this._isLoading || this.streaming;
         const canSubmit = this._customQuery.trim().length > 0 && !isProcessing;
-        
+
         // Show loading when:
         // 1. _isLoading is true (waiting for server to respond)
         // 2. OR streaming is true but no content yet (stream started, waiting for first chunk)
-        const showLoading = this._isLoading || (this.streaming && !this._responseContent);
+        const showLoading =
+            this._isLoading || (this.streaming && !this._responseContent);
 
         // Determine the loading message based on thinking mode and state
-        const loadingMessage = this._thinkingMode 
-            ? (this._isLoading ? 'Connecting...' : 'Thinking...') 
-            : (this._isLoading ? 'Connecting...' : 'Analyzing...');
+        const loadingMessage = this._thinkingMode
+            ? this._isLoading
+                ? "Connecting..."
+                : "Thinking..."
+            : this._isLoading
+            ? "Connecting..."
+            : "Analyzing...";
 
-        const hasConversation = this._conversationHistory.length > 0 || this.streaming || showLoading;
+        const hasConversation =
+            this._conversationHistory.length > 0 ||
+            this.streaming ||
+            showLoading;
 
         return html`
             <div class="conversation-section">
                 <div class="conversation-scroll">
                     ${this._error
-                        ? html`<div class="message error-bubble">${this._error}</div>`
+                        ? html`<div class="message error-bubble">
+                              ${this._error}
+                          </div>`
                         : !hasConversation
                         ? html`
-                            <div class="empty-state">
-                                <div class="empty-state-text">
-                                    Select a quick action above or ask a question below
-                                </div>
-                            </div>
+                              <div class="empty-state">
+                                  <div class="empty-state-text">
+                                      Select a quick action above or ask a
+                                      question below
+                                  </div>
+                              </div>
                           `
                         : html`
-                            ${this._conversationHistory.map((msg) => html`
-                                <div class="message ${msg.role === 'user' ? 'user-bubble' : 'assistant-bubble'}">
-                                    ${msg.role === 'user' 
-                                        ? msg.content 
-                                        : html`<div class="response-content-static">${this._formatContentToHTML(msg.content)}</div>`}
-                                </div>
-                            `)}
-                            ${showLoading ? html`
-                                <div class="message assistant-bubble">
-                                    <div class="loading-indicator ${this._thinkingMode ? 'thinking-mode' : ''}">
-                                        <div class="loading-dots">
-                                            <span></span>
-                                            <span></span>
-                                            <span></span>
+                              ${this._conversationHistory.map(
+                                  (msg) => html`
+                                      <div
+                                          class="message ${msg.role === "user"
+                                              ? "user-bubble"
+                                              : "assistant-bubble"}">
+                                          ${msg.role === "user"
+                                              ? msg.content
+                                              : html`<div
+                                                    class="response-content-static">
+                                                    ${this._formatContentToHTML(
+                                                        msg.content,
+                                                    )}
+                                                </div>`}
+                                      </div>
+                                  `,
+                              )}
+                              ${showLoading
+                                  ? html`
+                                        <div class="message assistant-bubble">
+                                            <div
+                                                class="loading-indicator ${this
+                                                    ._thinkingMode
+                                                    ? "thinking-mode"
+                                                    : ""}">
+                                                <div class="loading-dots">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </div>
+                                                <span>${loadingMessage}</span>
+                                            </div>
                                         </div>
-                                        <span>${loadingMessage}</span>
-                                    </div>
-                                </div>
-                            ` : this._responseContent ? html`
-                                <div class="message assistant-bubble">
-                                    <div class="streaming-response"></div>
-                                </div>
-                            ` : null}
+                                    `
+                                  : this._responseContent
+                                  ? html`
+                                        <div class="message assistant-bubble">
+                                            <div
+                                                class="streaming-response"></div>
+                                        </div>
+                                    `
+                                  : null}
                           `}
                 </div>
-                <div class="chat-input-area ${isProcessing ? 'disabled' : ''}">
+                <div class="chat-input-area ${isProcessing ? "disabled" : ""}">
                     <div class="thinking-toggle-row">
-                        ${isProcessing && this._thinkingMode 
+                        ${isProcessing && this._thinkingMode
                             ? html`<div class="thinking-status">
-                                <kc-ui-icon>psychology_alt</kc-ui-icon>
-                                <span>Deep thinking in progress...</span>
+                                  <kc-ui-icon>psychology_alt</kc-ui-icon>
+                                  <span>Deep thinking in progress...</span>
                               </div>`
-                            : html`<button 
-                                class="thinking-toggle ${this._thinkingMode ? 'active' : ''}"
-                                title="${this._thinkingMode ? 'Thinking mode ON - shows reasoning process' : 'Thinking mode OFF - faster responses'}"
-                                ?disabled="${isProcessing}">
-                                <kc-ui-icon>${this._thinkingMode ? 'psychology_alt' : 'bolt'}</kc-ui-icon>
-                                <span>${this._thinkingMode ? 'Deep Thinking' : 'Fast Mode'}</span>
-                            </button>`}
+                            : html`<button
+                                  class="thinking-toggle ${this._thinkingMode
+                                      ? "active"
+                                      : ""}"
+                                  title="${this._thinkingMode
+                                      ? "Thinking mode ON - shows reasoning process"
+                                      : "Thinking mode OFF - faster responses"}"
+                                  ?disabled="${isProcessing}">
+                                  <kc-ui-icon
+                                      >${this._thinkingMode
+                                          ? "psychology_alt"
+                                          : "bolt"}</kc-ui-icon
+                                  >
+                                  <span
+                                      >${this._thinkingMode
+                                          ? "Deep Thinking"
+                                          : "Fast Mode"}</span
+                                  >
+                              </button>`}
                     </div>
-                    <div class="chat-input-container ${isProcessing ? 'disabled' : ''}">
+                    <div
+                        class="chat-input-container ${isProcessing
+                            ? "disabled"
+                            : ""}">
                         <textarea
                             class="query-input"
-                            placeholder="${isProcessing ? 'Waiting for response...' : 'Ask about the schematic...'}"
+                            placeholder="${isProcessing
+                                ? "Waiting for response..."
+                                : "Ask about the schematic..."}"
                             rows="2"
                             ?disabled="${isProcessing}"></textarea>
                         <button class="send-button" ?disabled="${!canSubmit}">
@@ -1233,10 +1355,10 @@ export class KCGrokChatPanelElement extends KCUIElement {
             </div>
         `;
     }
-    
+
     /** Format content to HTML element (for static conversation history) */
     private _formatContentToHTML(content: string): HTMLElement {
-        const div = document.createElement('div');
+        const div = document.createElement("div");
         div.innerHTML = this._formatContent(content);
         return div;
     }
@@ -1247,21 +1369,30 @@ export class KCGrokChatPanelElement extends KCUIElement {
 
     private _renderCollapsibleControls() {
         return html`
-            <div class="controls-section ${this._controlsCollapsed ? 'collapsed' : ''}">
+            <div
+                class="controls-section ${this._controlsCollapsed
+                    ? "collapsed"
+                    : ""}">
                 <button class="controls-toggle">
-                    <span class="toggle-icon">${this._controlsCollapsed ? '▶' : '▼'}</span>
+                    <span class="toggle-icon"
+                        >${this._controlsCollapsed ? "▶" : "▼"}</span
+                    >
                     <span class="toggle-label">Quick Actions</span>
-                    ${this._selectedComponents.length > 0 
-                        ? html`<span class="selection-badge">${this._selectedComponents.length}</span>` 
+                    ${this._selectedComponents.length > 0
+                        ? html`<span class="selection-badge"
+                              >${this._selectedComponents.length}</span
+                          >`
                         : null}
                 </button>
-                ${!this._controlsCollapsed ? html`
-                    <div class="controls-content">
-                        ${this._renderPresets()}
-                        ${this._renderSelectedComponents()}
-                        ${this._renderSearch()}
-                    </div>
-                ` : null}
+                ${!this._controlsCollapsed
+                    ? html`
+                          <div class="controls-content">
+                              ${this._renderPresets()}
+                              ${this._renderSelectedComponents()}
+                              ${this._renderSearch()}
+                          </div>
+                      `
+                    : null}
             </div>
         `;
     }
@@ -1274,9 +1405,9 @@ export class KCGrokChatPanelElement extends KCUIElement {
                 </div>
             `;
         }
-        
+
         return html`
-            <div class="chat-container ${this._isDragging ? 'dragging' : ''}">
+            <div class="chat-container ${this._isDragging ? "dragging" : ""}">
                 ${this._renderHeader()}
                 <div class="chat-body">
                     ${this._renderCollapsibleControls()}
@@ -1285,70 +1416,70 @@ export class KCGrokChatPanelElement extends KCUIElement {
             </div>
         `;
     }
-    
+
     // =========================================================================
     // Dragging and Docking
     // =========================================================================
-    
+
     private _startDrag(e: MouseEvent) {
         // Don't start drag if clicking on close button
-        if ((e.target as HTMLElement).closest('.close-button')) return;
-        
+        if ((e.target as HTMLElement).closest(".close-button")) return;
+
         this._isDragging = true;
         this._dragStartX = e.clientX;
         this._dragStartY = e.clientY;
-        
+
         const rect = this.getBoundingClientRect();
         this._panelStartX = rect.left;
         this._panelStartY = rect.top;
-        
+
         // Add temporary styles for dragging
-        this.style.position = 'fixed';
+        this.style.position = "fixed";
         this.style.left = `${rect.left}px`;
         this.style.top = `${rect.top}px`;
-        this.style.right = 'auto';
-        this.style.bottom = 'auto';
-        
-        document.addEventListener('mousemove', this._onDrag);
-        document.addEventListener('mouseup', this._endDrag);
-        
+        this.style.right = "auto";
+        this.style.bottom = "auto";
+
+        document.addEventListener("mousemove", this._onDrag);
+        document.addEventListener("mouseup", this._endDrag);
+
         this._scheduleUpdate();
     }
-    
+
     private _onDrag = (e: MouseEvent) => {
         if (!this._isDragging) return;
-        
+
         const deltaX = e.clientX - this._dragStartX;
         const deltaY = e.clientY - this._dragStartY;
-        
+
         const newX = this._panelStartX + deltaX;
         const newY = this._panelStartY + deltaY;
-        
+
         this.style.left = `${newX}px`;
         this.style.top = `${newY}px`;
-        
+
         // Check if near right edge for docking hint
         const viewportWidth = window.innerWidth;
         if (newX + this.offsetWidth > viewportWidth - 50) {
-            this.classList.add('dock-hint');
+            this.classList.add("dock-hint");
         } else {
-            this.classList.remove('dock-hint');
+            this.classList.remove("dock-hint");
         }
     };
-    
+
     private _endDrag = (e: MouseEvent) => {
         if (!this._isDragging) return;
-        
-        document.removeEventListener('mousemove', this._onDrag);
-        document.removeEventListener('mouseup', this._endDrag);
-        
+
+        document.removeEventListener("mousemove", this._onDrag);
+        document.removeEventListener("mouseup", this._endDrag);
+
         this._isDragging = false;
-        this.classList.remove('dock-hint');
-        
+        this.classList.remove("dock-hint");
+
         // Check if should dock to right edge
         const viewportWidth = window.innerWidth;
         const rect = this.getBoundingClientRect();
-        
+
         if (rect.right > viewportWidth - 50) {
             this._animateToDock();
         } else {
@@ -1356,40 +1487,40 @@ export class KCGrokChatPanelElement extends KCUIElement {
             this._scheduleUpdate();
         }
     };
-    
+
     private _animateToDock() {
         // Animate panel sliding off to the right before docking
         const viewportWidth = window.innerWidth;
-        this.style.transition = 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+        this.style.transition = "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)";
         this.style.left = `${viewportWidth}px`;
-        this.style.opacity = '0';
-        
+        this.style.opacity = "0";
+
         setTimeout(() => {
             this._dock();
         }, 250);
     }
-    
+
     private _dock() {
         this._isDocked = true;
         // Reset position and transition styles
-        this.style.transition = '';
-        this.style.position = '';
-        this.style.left = '';
-        this.style.top = '';
-        this.style.right = '';
-        this.style.bottom = '';
-        this.style.opacity = '';
+        this.style.transition = "";
+        this.style.position = "";
+        this.style.left = "";
+        this.style.top = "";
+        this.style.right = "";
+        this.style.bottom = "";
+        this.style.opacity = "";
         this._scheduleUpdate();
     }
-    
+
     private _undock() {
         this._isDocked = false;
         // Reset to default position with animation
-        this.style.position = '';
-        this.style.left = '';
-        this.style.top = '';
-        this.style.right = '';
-        this.style.bottom = '';
+        this.style.position = "";
+        this.style.left = "";
+        this.style.top = "";
+        this.style.right = "";
+        this.style.bottom = "";
         this._scheduleUpdate();
     }
 }

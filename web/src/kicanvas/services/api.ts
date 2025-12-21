@@ -84,7 +84,14 @@ export class GrokiAPI {
      * Get initial commits (first page only for fast loading).
      * For more commits, use getCommitsPage().
      */
-    static async getCommits(repo: string, onProgress?: (progress: { phase: string; loaded: number; total: number }) => void): Promise<CommitInfo[]> {
+    static async getCommits(
+        repo: string,
+        onProgress?: (progress: {
+            phase: string;
+            loaded: number;
+            total: number;
+        }) => void,
+    ): Promise<CommitInfo[]> {
         return GitService.getAllCommits(repo, onProgress);
     }
 

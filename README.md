@@ -3,8 +3,8 @@
 </p>
 
 <div align="center">
-  <a href="https://github.com/mo0nbase/grokicad/actions">
-    <img src="https://github.com/mo0nbase/grokicad/actions/workflows/ci.yml/badge.svg"
+  <a href="https://github.com/grokicad/grokicad/actions/workflows/ci.yml">
+    <img src="https://github.com/grokicad/grokicad/actions/workflows/ci.yml/badge.svg?branch=main"
       alt="CI status" />
   </a>
   <a href="#license">
@@ -104,7 +104,7 @@ Both are in `kicad-example-files/` for instant demos.
 
 ## 🤝 Contributing
 
-We welcome contributions! Please open an issue or PR on [GitHub](https://github.com/mo0nbase/grokicad).
+We welcome contributions! Please open an issue or PR on [GitHub](https://github.com/grokicad/grokicad).
 
 ## 👥 Team
 

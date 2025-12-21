@@ -41,12 +41,8 @@
             "vars": {
                 "ENVIRONMENT": "beta"
             },
-            "routes": [
-                {
-                    "pattern": "beta.grokicad.com/*",
-                    "zone_name": "grokicad.com"
-                }
-            ],
+            // custom_domains automatically creates DNS records
+            "custom_domains": ["beta.grokicad.com"],
             "kv_namespaces": [
                 {
                     "binding": "DIGIKEY_SESSIONS",
@@ -62,12 +58,8 @@
             "vars": {
                 "ENVIRONMENT": "production"
             },
-            "routes": [
-                {
-                    "pattern": "grokicad.com/*",
-                    "zone_name": "grokicad.com"
-                }
-            ],
+            // custom_domains automatically creates DNS records
+            "custom_domains": ["grokicad.com", "www.grokicad.com"],
             "kv_namespaces": [
                 {
                     "binding": "DIGIKEY_SESSIONS",

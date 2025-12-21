@@ -24,6 +24,9 @@ export interface Env {
     GITHUB_CLIENT_SECRET?: string;
     // Environment identifier
     ENVIRONMENT?: string;
+    // Basic auth for beta (optional)
+    BETA_AUTH_USERNAME?: string;
+    BETA_AUTH_PASSWORD?: string;
 }
 
 // ============================================================================
@@ -792,6 +795,46 @@ export default {
                 status: 204,
                 headers: getCorsHeaders(origin, config),
             });
+        }
+
+        // ============================================================
+        // Basic Auth for Beta Environment
+        // ============================================================
+        if (
+            config.environment === "beta" &&
+            env.BETA_AUTH_USERNAME &&
+            env.BETA_AUTH_PASSWORD
+        ) {
+            const auth = request.headers.get("Authorization");
+
+            if (!auth) {
+                return new Response("Authentication required", {
+                    status: 401,
+                    headers: {
+                        "WWW-Authenticate": 'Basic realm="Beta Access"',
+                    },
+                });
+            }
+
+            const [scheme, encoded] = auth.split(" ");
+            if (!encoded || scheme !== "Basic") {
+                return new Response("Invalid authentication", { status: 401 });
+            }
+
+            const decoded = atob(encoded);
+            const [username, password] = decoded.split(":");
+
+            if (
+                username !== env.BETA_AUTH_USERNAME ||
+                password !== env.BETA_AUTH_PASSWORD
+            ) {
+                return new Response("Invalid credentials", {
+                    status: 401,
+                    headers: {
+                        "WWW-Authenticate": 'Basic realm="Beta Access"',
+                    },
+                });
+            }
         }
 
         try {

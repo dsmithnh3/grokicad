@@ -41,9 +41,6 @@
             "vars": {
                 "ENVIRONMENT": "beta"
             },
-            "routes": [
-                { "pattern": "beta.grokicad.com", "zone_name": "grokicad.com" }
-            ],
             "kv_namespaces": [
                 {
                     "binding": "DIGIKEY_SESSIONS",
@@ -59,10 +56,6 @@
             "vars": {
                 "ENVIRONMENT": "production"
             },
-            "routes": [
-                { "pattern": "grokicad.com", "zone_name": "grokicad.com" },
-                { "pattern": "www.grokicad.com", "zone_name": "grokicad.com" }
-            ],
             "kv_namespaces": [
                 {
                     "binding": "DIGIKEY_SESSIONS",

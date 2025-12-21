@@ -42,6 +42,10 @@ jobs:
           bun run worker:types
           bun run lint:types
 
+      - name: Build assets
+        working-directory: web
+        run: bun run build
+
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:

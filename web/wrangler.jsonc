@@ -41,8 +41,9 @@
             "vars": {
                 "ENVIRONMENT": "beta"
             },
-            // custom_domains automatically creates DNS records
-            "custom_domains": ["beta.grokicad.com"],
+            "routes": [
+                { "pattern": "beta.grokicad.com", "zone_name": "grokicad.com" }
+            ],
             "kv_namespaces": [
                 {
                     "binding": "DIGIKEY_SESSIONS",
@@ -58,8 +59,10 @@
             "vars": {
                 "ENVIRONMENT": "production"
             },
-            // custom_domains automatically creates DNS records
-            "custom_domains": ["grokicad.com", "www.grokicad.com"],
+            "routes": [
+                { "pattern": "grokicad.com", "zone_name": "grokicad.com" },
+                { "pattern": "www.grokicad.com", "zone_name": "grokicad.com" }
+            ],
             "kv_namespaces": [
                 {
                     "binding": "DIGIKEY_SESSIONS",
@@ -70,14 +73,5 @@
         }
     }
 
-    // ==========================================================================
-    // SECRETS (set via CLI, not in this file)
-    // ==========================================================================
-    //
-    // wrangler secret put DIGIKEY_CLIENT_ID --env [dev|beta|production]
-    // wrangler secret put DIGIKEY_CLIENT_SECRET --env [dev|beta|production]
-    // wrangler secret put GITHUB_CLIENT_SECRET --env [dev|beta|production]
-    //
-    // For local development, use .dev.vars file
-    // ==========================================================================
+    // For local development, use .dev.vars file for secrets
 }

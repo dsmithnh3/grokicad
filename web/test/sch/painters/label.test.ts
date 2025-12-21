@@ -10,8 +10,8 @@ import { NullRenderer } from "../../../src/graphics/null-renderer";
 import { GlobalLabel, HierarchicalLabel } from "../../../src/kicad/schematic";
 import { SchText } from "../../../src/kicad/text";
 import witch_hazel from "../../../src/kicanvas/themes/witch-hazel";
-import { DocumentPainter } from "../../../src/viewers/base/painter";
-import { ViewLayerSet } from "../../../src/viewers/base/view-layers";
+import { LayerSet } from "../../../src/viewers/schematic/layers";
+import { SchematicPainter } from "../../../src/viewers/schematic/painter";
 import {
     GlobalLabelPainter,
     HierarchicalLabelPainter,
@@ -19,15 +19,15 @@ import {
 } from "../../../src/viewers/schematic/painters/label";
 
 const renderer = new NullRenderer();
-const layer_set = new ViewLayerSet();
-const document_painter = new DocumentPainter(
+const layer_set = new LayerSet(witch_hazel.schematic);
+const schematic_painter = new SchematicPainter(
     renderer,
     layer_set,
-    witch_hazel.board,
+    witch_hazel.schematic,
 );
 
 suite("sch.painters.label.LabelPainter()", function () {
-    const painter = new LabelPainter(document_painter, renderer);
+    const painter = new LabelPainter(schematic_painter, renderer);
     const schtext = new SchText("abc");
 
     test(".get_text_offset()", function () {
@@ -70,7 +70,7 @@ suite("sch.painters.label.LabelPainter()", function () {
 });
 
 suite("sch.painters.label.GlobalLabelPainter()", function () {
-    const painter = new GlobalLabelPainter(document_painter, renderer);
+    const painter = new GlobalLabelPainter(schematic_painter, renderer);
 
     test(".get_schematic_text_offset() no tail", function () {
         const schtext = new SchText("abc");
@@ -132,7 +132,7 @@ suite("sch.painters.label.GlobalLabelPainter()", function () {
 });
 
 suite("sch.painters.label.HierarchicalLabelPainter()", function () {
-    const painter = new HierarchicalLabelPainter(document_painter, renderer);
+    const painter = new HierarchicalLabelPainter(schematic_painter, renderer);
     const schtext = new SchText("abc");
 
     test(".get_schematic_text_offset()", function () {

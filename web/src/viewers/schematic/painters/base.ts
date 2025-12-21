@@ -5,6 +5,7 @@
 */
 
 import type { Color } from "../../../base/color";
+import type { Renderer } from "../../../graphics";
 import type { SchematicTheme } from "../../../kicad";
 import * as schematic_items from "../../../kicad/schematic";
 import { DocumentPainter, ItemPainter } from "../../base/painter";
@@ -20,6 +21,11 @@ export abstract class BaseSchematicPainter extends DocumentPainter {
 
 export abstract class SchematicItemPainter extends ItemPainter {
     override view_painter: SchematicPainter;
+
+    constructor(view_painter: SchematicPainter, gfx: Renderer) {
+        super(view_painter, gfx);
+        this.view_painter = view_painter;
+    }
 
     override get theme(): SchematicTheme {
         return this.view_painter.theme;

@@ -40,10 +40,6 @@ suite("sch.painters.property.sheet_fields", function () {
             layers,
             witch_hazel.schematic,
         );
-        const property_painter = painter.painters.get(
-            property.constructor,
-        )! as any;
-        property_painter.view_painter ??= painter;
 
         // Simulate a leaked symbol transform from a previously-painted symbol.
         painter.current_symbol_transform = {

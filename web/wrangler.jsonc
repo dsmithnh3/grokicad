@@ -53,7 +53,15 @@
                     "id": "3fe487dbdcd44061aea661a1072f81b0",
                     "preview_id": "3fe487dbdcd44061aea661a1072f81b0"
                 }
-            ]
+            ],
+            "observability": {
+                "logs": {
+                    "enabled": true,
+                    "head_sampling_rate": 1,
+                    "invocation_logs": true,
+                    "persist": true
+                }
+            }
         },
 
         // Production environment
@@ -78,7 +86,15 @@
                     "id": "839b3de95308423a96d372a239c8e3ea",
                     "preview_id": "839b3de95308423a96d372a239c8e3ea"
                 }
-            ]
+            ],
+            "observability": {
+                "logs": {
+                    "enabled": true,
+                    "head_sampling_rate": 1,
+                    "invocation_logs": true,
+                    "persist": true
+                }
+            }
         }
     }
 

@@ -55,3 +55,5 @@ dist/
 # package-lock.json is already ignored above
 /schematic-distiller/\#
 /schematic-distiller/create
+/kicanvas/debug
+*.lock

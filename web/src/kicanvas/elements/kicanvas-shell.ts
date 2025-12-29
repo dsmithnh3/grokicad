@@ -175,7 +175,7 @@ class KiCanvasShellElement extends KCUIElement {
         later(() => {
             this.setupInputListeners();
             this.setupExampleButtons();
-            this.setupCachedRepoListeners();
+            // this.setupCachedRepoListeners(); // Disabled: recent projects UI not working
             this.setupApiSettingsListeners();
             this.setupGitHubAuthListeners();
         });
@@ -349,7 +349,7 @@ class KiCanvasShellElement extends KCUIElement {
         this.cleanupEventListeners();
         this.setupInputListeners();
         this.setupExampleButtons();
-        this.setupCachedRepoListeners();
+        // this.setupCachedRepoListeners(); // Disabled: recent projects UI not working
         this.setupApiSettingsListeners();
         this.setupGitHubAuthListeners();
     }
@@ -446,7 +446,9 @@ class KiCanvasShellElement extends KCUIElement {
 
     /**
      * Setup event listeners for cached repo buttons
+     * DISABLED: Recent projects UI not working
      */
+    /*
     private setupCachedRepoListeners(): void {
         // Cached repo buttons
         const cachedBtns = this.renderRoot.querySelectorAll(".cached-repo-btn");
@@ -529,6 +531,7 @@ class KiCanvasShellElement extends KCUIElement {
             });
         }
     }
+    */
 
     /**
      * Setup event listeners for API settings panel
@@ -1387,12 +1390,6 @@ class KiCanvasShellElement extends KCUIElement {
                         <div class="content-grid">
                             <!-- Examples Card -->
                             <div class="content-card">
-                                <div class="card-header">
-                                    <div class="card-title">
-                                        <span class="card-title-icon">⚡</span>
-                                        Quick Start
-                                    </div>
-                                </div>
                                 <div class="examples">
                                     <button
                                         id="grok-watch-btn"
@@ -1408,69 +1405,74 @@ class KiCanvasShellElement extends KCUIElement {
                             </div>
 
                             <!-- Recent Repositories Card -->
-                            <div class="content-card">
-                                <div class="card-header">
-                                    <div class="card-title">
-                                        <span class="card-title-icon">📂</span>
-                                        Recent Projects
-                                    </div>
-                                    ${this.#cached_repos.length > 0
-                                        ? html`
-                                              <button
-                                                  id="clear-cache-btn"
-                                                  class="clear-cache-btn"
-                                                  title="Clear history">
-                                                  Clear
-                                              </button>
-                                          `
-                                        : null}
-                                </div>
-                                ${this.#cached_repos.length > 0
-                                    ? html`
-                                          <div class="cached-repos">
-                                              <div class="cached-repo-list">
-                                                  ${this.#cached_repos.map(
-                                                      (repo) => html`
-                                                          <div
-                                                              class="cached-repo-item">
-                                                              <button
-                                                                  class="cached-repo-btn"
-                                                                  data-slug="${repo.slug}"
-                                                                  title="Load ${repo.slug}">
-                                                                  <span
-                                                                      class="repo-name"
-                                                                      >${repo.slug}</span
-                                                                  >
-                                                                  <span
-                                                                      class="repo-date"
-                                                                      >${this.formatRelativeDate(
-                                                                          repo.lastAccessed,
-                                                                      )}</span
-                                                                  >
-                                                              </button>
-                                                              <button
-                                                                  class="delete-repo-btn"
-                                                                  data-slug="${repo.slug}"
-                                                                  title="Remove from history">
-                                                                  ✕
-                                                              </button>
-                                                          </div>
-                                                      `,
-                                                  )}
+                            <!-- DISABLED: Recent projects UI not working -->
+                            ${false
+                                ? html`
+                                      <div class="content-card">
+                                          <div class="card-header">
+                                              <div class="card-title">
+                                                  <span class="card-title-icon">📂</span>
+                                                  Recent Projects
                                               </div>
+                                              ${this.#cached_repos.length > 0
+                                                  ? html`
+                                                        <button
+                                                            id="clear-cache-btn"
+                                                            class="clear-cache-btn"
+                                                            title="Clear history">
+                                                            Clear
+                                                        </button>
+                                                    `
+                                                  : null}
                                           </div>
-                                      `
-                                    : html`
-                                          <div class="empty-state">
-                                              <div class="empty-state-icon">
-                                                  📁
-                                              </div>
-                                              <div class="empty-state-text">
-                                                  No recent projects yet
-                                              </div>
-                                          </div>
-                                      `}
-                            </div>
+                                          ${this.#cached_repos.length > 0
+                                              ? html`
+                                                    <div class="cached-repos">
+                                                        <div class="cached-repo-list">
+                                                            ${this.#cached_repos.map(
+                                                                (repo) => html`
+                                                                    <div
+                                                                        class="cached-repo-item">
+                                                                        <button
+                                                                            class="cached-repo-btn"
+                                                                            data-slug="${repo.slug}"
+                                                                            title="Load ${repo.slug}">
+                                                                            <span
+                                                                                class="repo-name"
+                                                                                >${repo.slug}</span
+                                                                            >
+                                                                            <span
+                                                                                class="repo-date"
+                                                                                >${this.formatRelativeDate(
+                                                                                    repo.lastAccessed,
+                                                                                )}</span
+                                                                            >
+                                                                        </button>
+                                                                        <button
+                                                                            class="delete-repo-btn"
+                                                                            data-slug="${repo.slug}"
+                                                                            title="Remove from history">
+                                                                            ✕
+                                                                        </button>
+                                                                    </div>
+                                                                `,
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                `
+                                              : html`
+                                                    <div class="empty-state">
+                                                        <div class="empty-state-icon">
+                                                            📁
+                                                        </div>
+                                                        <div class="empty-state-text">
+                                                            No recent projects yet
+                                                        </div>
+                                                    </div>
+                                                `}
+                                      </div>
+                                  `
+                                : null}
                         </div>
 
                         <p class="drop-hint">or drag & drop your KiCAD files</p>

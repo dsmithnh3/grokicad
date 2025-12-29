@@ -1035,18 +1035,20 @@ section.overlay input:-webkit-autofill:active {
 
 .content-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr; /* Changed to single column so Quick Start expands to full width */
     gap: 24px;
     width: 100%;
     margin-top: 40px;
+    justify-items: center; /* Center the Quick Start card */
 }
 
 .content-card {
     background: var(--surface-1);
     border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    padding: 24px;
+    padding: 16px;
     transition: all 0.3s ease;
+    max-width: fit-content;
 }
 
 .content-card:hover {
@@ -1082,7 +1084,7 @@ section.overlay input:-webkit-autofill:active {
 /* Examples Section */
 section.overlay .examples {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
 }
 
@@ -1104,7 +1106,7 @@ section.overlay .examples button {
 }
 
 section.overlay .examples button::before {
-    content: "⚡";
+    content: "";
     font-size: 1.1em;
 }
 

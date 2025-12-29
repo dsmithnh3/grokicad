@@ -211,6 +211,12 @@ class KiCanvasShellElement extends KCUIElement {
             if (GitHubAuthService.isAuthenticated()) {
                 await this.refreshGitHubRateLimit();
             }
+
+            // Update UI if we loaded a saved session
+            if (this.#githubUser) {
+                this.update();
+                later(() => this.reattachAllListeners());
+            }
         } catch (e) {
             console.warn(
                 "[KiCanvasShell] Failed to initialize GitHub auth:",

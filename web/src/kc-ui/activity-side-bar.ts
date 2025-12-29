@@ -27,6 +27,11 @@ export class KCUIActivitySideBarElement extends KCUIElement {
                 max-width: calc(max(18%, 350px));
             }
 
+            :host([data-digikey-active="true"]) {
+                min-width: calc(max(25%, 450px));
+                max-width: calc(max(25%, 450px));
+            }
+
             div {
                 display: flex;
                 overflow: hidden;
@@ -259,6 +264,13 @@ export class KCUIActivitySideBarElement extends KCUIElement {
             } else {
                 activity.removeAttribute("active");
             }
+        }
+
+        // Set data attribute for DigiKey activity to enable wider width
+        if (this.#activity === "digikey") {
+            this.setAttribute("data-digikey-active", "true");
+        } else {
+            this.removeAttribute("data-digikey-active");
         }
     }
 }

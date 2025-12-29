@@ -372,11 +372,11 @@ export class KCSchematicGitPanelElement extends KCUIElement {
                     const repoInfo = (await this.requestLazyContext(
                         "repoInfo",
                     )) as { repo: string | null; commit: string | null };
-                    
+
                     const repoChanged = this.currentRepo !== repoInfo.repo;
                     this.currentRepo = repoInfo.repo;
                     this.currentCommit = repoInfo.commit;
-                    
+
                     // Only reload git history if repo changed, otherwise just update UI
                     if (repoChanged) {
                         this.loadGitHistory();
@@ -420,7 +420,7 @@ export class KCSchematicGitPanelElement extends KCUIElement {
         delegate(this.renderRoot, ".load-more-btn", "click", () => {
             this.loadMoreCommits();
         });
-        
+
         // Handle retry button
         delegate(this.renderRoot, ".retry-btn", "click", () => {
             this.loadGitHistory();
@@ -450,18 +450,24 @@ export class KCSchematicGitPanelElement extends KCUIElement {
             this.hasMore = result.hasMore;
         } catch (e) {
             console.error("Git history error:", e);
-            
+
             // Provide specific error messages
             if (e instanceof Error) {
                 if (e.message.includes("Rate limit")) {
-                    this.error = "GitHub rate limit reached. Please wait a moment and try again.";
-                } else if (e.message.includes("not found") || e.message.includes("NOT_FOUND")) {
+                    this.error =
+                        "GitHub rate limit reached. Please wait a moment and try again.";
+                } else if (
+                    e.message.includes("not found") ||
+                    e.message.includes("NOT_FOUND")
+                ) {
                     this.error = "Repository not found or inaccessible.";
                 } else {
-                    this.error = "Failed to load git history. Click retry to try again.";
+                    this.error =
+                        "Failed to load git history. Click retry to try again.";
                 }
             } else {
-                this.error = "Failed to load git history. Click retry to try again.";
+                this.error =
+                    "Failed to load git history. Click retry to try again.";
             }
         } finally {
             this.loading = false;

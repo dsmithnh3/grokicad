@@ -914,14 +914,23 @@ class KiCanvasShellElement extends KCUIElement {
                 if (e.message.includes("No schematic files")) {
                     errorMessage = e.message;
                 } else if (e.message.includes("Unable to find")) {
-                    errorMessage = `No viewable schematic pages in commit ${commit.substring(0, 7)}. The file may not have existed at this point in history.`;
+                    errorMessage = `No viewable schematic pages in commit ${commit.substring(
+                        0,
+                        7,
+                    )}. The file may not have existed at this point in history.`;
                 } else if (e.message.includes("No viewable schematic pages")) {
                     errorMessage = e.message;
                 } else {
-                    errorMessage = `Failed to load commit ${commit.substring(0, 7)}: ${e.message}`;
+                    errorMessage = `Failed to load commit ${commit.substring(
+                        0,
+                        7,
+                    )}: ${e.message}`;
                 }
             } else {
-                errorMessage = `Failed to load commit ${commit.substring(0, 7)}: Unknown error`;
+                errorMessage = `Failed to load commit ${commit.substring(
+                    0,
+                    7,
+                )}: Unknown error`;
             }
 
             this.showError(errorMessage);

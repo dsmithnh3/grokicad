@@ -471,8 +471,11 @@ export class KCCommitHistoryPanelElement extends KCUIElement {
             return;
         }
 
-        this.selectedCommit = commit.commit_hash;
-        this.update();
+        // Don't update selectedCommit here - wait for the shell to
+        // successfully load the commit. The shell will update the context
+        // and we'll get the new commit hash from there.
+        // This prevents the UI from showing the wrong commit as selected
+        // if the load fails.
 
         // Dispatch event for parent to handle loading the new commit
         this.dispatchEvent(

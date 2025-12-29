@@ -55,13 +55,27 @@ export abstract class KCViewerElement<
 
             this.viewer = this.addDisposable(this.make_viewer());
 
-            await this.viewer.setup();
+            // Check if we're still connected and viewer wasn't disposed
+            // (can happen if element was disconnected during make_viewer)
+            if (!this.isConnected || !this.viewer) {
+                return;
+            }
+
+            try {
+                await this.viewer.setup();
+            } catch (e) {
+                // Viewer may have been disposed during setup if element disconnected
+                if (!this.isConnected) {
+                    return;
+                }
+                throw e;
+            }
 
             // Resolve the viewer ready promise
             this.#viewerReady.resolve();
 
             // Only add event listeners if element is still connected
-            if (this.isConnected) {
+            if (this.isConnected && this.viewer) {
                 this.addDisposable(
                     this.viewer.addEventListener(KiCanvasLoadEvent.type, () => {
                         this.loaded = true;

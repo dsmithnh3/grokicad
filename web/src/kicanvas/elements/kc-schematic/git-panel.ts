@@ -310,6 +310,23 @@ export class KCSchematicGitPanelElement extends KCUIElement {
                 margin-bottom: 0.5em;
                 opacity: 0.5;
             }
+
+            .retry-btn {
+                margin-top: 1em;
+                padding: 0.5em 1.5em;
+                background: rgba(255, 206, 84, 0.1);
+                border: 1px solid rgba(255, 206, 84, 0.3);
+                border-radius: 6px;
+                color: rgb(255, 206, 84);
+                cursor: pointer;
+                font-size: 0.85em;
+                transition: all 0.2s ease;
+            }
+
+            .retry-btn:hover {
+                background: rgba(255, 206, 84, 0.2);
+                border-color: rgba(255, 206, 84, 0.5);
+            }
         `,
     ];
 
@@ -350,17 +367,27 @@ export class KCSchematicGitPanelElement extends KCUIElement {
         // Reload git history when a different schematic is loaded
         this.addDisposable(
             this.viewer.addEventListener(KiCanvasLoadEvent.type, async () => {
-                // Re-fetch repo info
+                // Re-fetch repo info - this tells us which commit is ACTUALLY loaded
                 try {
                     const repoInfo = (await this.requestLazyContext(
                         "repoInfo",
                     )) as { repo: string | null; commit: string | null };
+                    
+                    const repoChanged = this.currentRepo !== repoInfo.repo;
                     this.currentRepo = repoInfo.repo;
                     this.currentCommit = repoInfo.commit;
+                    
+                    // Only reload git history if repo changed, otherwise just update UI
+                    if (repoChanged) {
+                        this.loadGitHistory();
+                    } else {
+                        // Just update the UI to show the new current commit
+                        this.update();
+                    }
                 } catch {
                     // No repo info available
+                    this.update();
                 }
-                this.loadGitHistory();
             }),
         );
 
@@ -393,6 +420,11 @@ export class KCSchematicGitPanelElement extends KCUIElement {
         delegate(this.renderRoot, ".load-more-btn", "click", () => {
             this.loadMoreCommits();
         });
+        
+        // Handle retry button
+        delegate(this.renderRoot, ".retry-btn", "click", () => {
+            this.loadGitHistory();
+        });
     }
 
     private async loadGitHistory() {
@@ -417,8 +449,20 @@ export class KCSchematicGitPanelElement extends KCUIElement {
             this.commits = result.commits;
             this.hasMore = result.hasMore;
         } catch (e) {
-            this.error = "Failed to load git history";
             console.error("Git history error:", e);
+            
+            // Provide specific error messages
+            if (e instanceof Error) {
+                if (e.message.includes("Rate limit")) {
+                    this.error = "GitHub rate limit reached. Please wait a moment and try again.";
+                } else if (e.message.includes("not found") || e.message.includes("NOT_FOUND")) {
+                    this.error = "Repository not found or inaccessible.";
+                } else {
+                    this.error = "Failed to load git history. Click retry to try again.";
+                }
+            } else {
+                this.error = "Failed to load git history. Click retry to try again.";
+            }
         } finally {
             this.loading = false;
             this.update();
@@ -461,6 +505,9 @@ export class KCSchematicGitPanelElement extends KCUIElement {
         }
 
         // Dispatch event for shell to handle loading the new commit
+        // Note: We don't update currentCommit here - we wait for the shell
+        // to successfully load the commit and trigger KiCanvasLoadEvent,
+        // which will refresh our state from the context
         this.dispatchEvent(
             new CustomEvent("commit-select", {
                 detail: {
@@ -472,10 +519,6 @@ export class KCSchematicGitPanelElement extends KCUIElement {
                 composed: true,
             }),
         );
-
-        // Update current commit locally for UI feedback
-        this.currentCommit = commit.commit_hash;
-        this.update();
     }
 
     /**
@@ -534,6 +577,7 @@ export class KCSchematicGitPanelElement extends KCUIElement {
                         <div class="empty-state">
                             <div class="empty-state-icon">⚠️</div>
                             <div>${this.error}</div>
+                            <button class="retry-btn">Retry</button>
                         </div>
                     </kc-ui-panel-body>
                 </kc-ui-panel>

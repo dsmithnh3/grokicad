@@ -734,24 +734,39 @@ class KiCanvasShellElement extends KCUIElement {
             if (commits.length > 0) {
                 // Load the most recent commit
                 const latestCommit = commits[0]!.commit_hash;
-                this.#current_commit = latestCommit;
 
                 // Load the schematic files for this commit
                 const vfs = await CommitFileSystem.fromCommit(
                     repo,
                     latestCommit,
                 );
+
+                // Check if there are any schematic files
+                const fileCount = [...vfs.list()].length;
+                if (fileCount === 0) {
+                    throw new Error(
+                        "No KiCAD schematic files (.kicad_sch) found in this repository.",
+                    );
+                }
+
                 await this.setup_project(vfs);
+
+                // Only update state after successful load
+                this.#current_commit = latestCommit;
+                this.#lastSuccessfulVfs = vfs;
 
                 // Refresh cached repos list (repo is now cached in IndexedDB)
                 // This also refreshes storage info
                 await this.refreshCachedRepos();
             } else {
-                throw new Error("No commits with schematic files found");
+                throw new Error("No commits found in the repository.");
             }
         } catch (e) {
             console.error("Failed to load from GitHub:", e);
             this.loading = false;
+
+            // Clear commit state on error
+            this.#current_commit = null;
 
             // Provide user-friendly error messages based on error type
             let errorMessage = "Failed to load schematic.";
@@ -805,12 +820,24 @@ class KiCanvasShellElement extends KCUIElement {
                         break;
                 }
             } else if (e instanceof Error) {
-                errorMessage = `${e.message}. Please check that the repository exists.`;
+                // Handle project/schematic specific errors
+                if (
+                    e.message.includes("No KiCAD") ||
+                    e.message.includes("No viewable") ||
+                    e.message.includes("No commits")
+                ) {
+                    errorMessage = e.message;
+                } else {
+                    errorMessage = `${e.message}. Please check that the repository exists and contains KiCAD files.`;
+                }
             }
 
             this.showError(errorMessage);
         }
     }
+
+    // Store the last successfully loaded VFS for recovery
+    #lastSuccessfulVfs: VirtualFileSystem | null = null;
 
     /**
      * Load a specific commit
@@ -819,6 +846,10 @@ class KiCanvasShellElement extends KCUIElement {
         if (this.#current_commit === commit) {
             return;
         }
+
+        // Save the previous state for recovery
+        const previousCommit = this.#current_commit;
+        const previousVfs = this.#lastSuccessfulVfs;
 
         // If we already have content loaded, use the subtle corner loader
         // Otherwise, show the full loading overlay
@@ -835,21 +866,65 @@ class KiCanvasShellElement extends KCUIElement {
         }
 
         this.removeAttribute("error");
-        this.#current_commit = commit;
+        // Don't set this.#current_commit here - wait until success
+        // This prevents the git panel from getting confused if the load fails
 
         try {
             const vfs = await CommitFileSystem.fromCommit(repo, commit);
+
+            // Check if there are any schematic files in this commit BEFORE
+            // calling project.load, to avoid corrupting the project state
+            const fileCount = [...vfs.list()].length;
+            if (fileCount === 0) {
+                throw new Error(
+                    "No schematic files found in this commit. The schematic may not have existed at this point in history.",
+                );
+            }
+
             await this.setup_project(vfs);
+
+            // Only update state after successful load
+            this.#current_commit = commit;
+            this.#lastSuccessfulVfs = vfs;
         } catch (e) {
             console.error("Failed to load commit:", e);
+
+            // Ensure we stay at the previous commit
+            this.#current_commit = previousCommit;
+
             this.loading = false;
             this.switching = false;
             this.#switchingCommit = null;
-            this.showError(
-                `Failed to load commit ${commit.substring(0, 7)}: ${
-                    e instanceof Error ? e.message : "Unknown error"
-                }`,
-            );
+
+            // Try to restore the previous project state if we had one
+            if (previousVfs && wasLoaded) {
+                try {
+                    await this.setup_project(previousVfs);
+                } catch (restoreError) {
+                    console.error(
+                        "Failed to restore previous state:",
+                        restoreError,
+                    );
+                }
+            }
+
+            // Provide user-friendly error messages
+            let errorMessage: string;
+            if (e instanceof Error) {
+                if (e.message.includes("No schematic files")) {
+                    errorMessage = e.message;
+                } else if (e.message.includes("Unable to find")) {
+                    errorMessage = `No viewable schematic pages in commit ${commit.substring(0, 7)}. The file may not have existed at this point in history.`;
+                } else if (e.message.includes("No viewable schematic pages")) {
+                    errorMessage = e.message;
+                } else {
+                    errorMessage = `Failed to load commit ${commit.substring(0, 7)}: ${e.message}`;
+                }
+            } else {
+                errorMessage = `Failed to load commit ${commit.substring(0, 7)}: Unknown error`;
+            }
+
+            this.showError(errorMessage);
         }
     }
 
@@ -880,13 +955,19 @@ class KiCanvasShellElement extends KCUIElement {
 
         try {
             await this.project.load(vfs);
-            // Prefer schematic pages over board pages
+
+            // Check if we have any pages to display
             const schematicPage =
                 this.project.root_schematic_page ?? this.project.first_page;
+
+            if (!schematicPage) {
+                throw new Error(
+                    "No viewable schematic pages found. The project may be empty or contain unsupported file types.",
+                );
+            }
+
             this.project.set_active_page(schematicPage);
             this.loaded = true;
-        } catch (e) {
-            console.error(e);
         } finally {
             this.loading = false;
             this.switching = false;

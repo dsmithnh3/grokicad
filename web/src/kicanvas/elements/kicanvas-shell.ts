@@ -31,6 +31,9 @@ import "./common/project-panel";
 // Setup KCUIIconElement to use icon sprites.
 KCUIIconElement.sprites_url = sprites_url;
 
+// Feature flag: Recent projects UI (disabled - not working properly)
+const ENABLE_RECENT_PROJECTS = false;
+
 /**
  * <kc-kicanvas-shell> is the main entrypoint for the standalone KiCanvas
  * application- it's the thing you see when you go to kicanvas.org.
@@ -134,7 +137,9 @@ class KiCanvasShellElement extends KCUIElement {
             await this.handleGitHubOAuthCallback();
 
             // Load cached repos
-            await this.refreshCachedRepos();
+            if (ENABLE_RECENT_PROJECTS) {
+                await this.refreshCachedRepos();
+            }
 
             if (this.src) {
                 const vfs = new FetchFileSystem([this.src]);
@@ -175,7 +180,9 @@ class KiCanvasShellElement extends KCUIElement {
         later(() => {
             this.setupInputListeners();
             this.setupExampleButtons();
-            // this.setupCachedRepoListeners(); // Disabled: recent projects UI not working
+            if (ENABLE_RECENT_PROJECTS) {
+                this.setupCachedRepoListeners();
+            }
             this.setupApiSettingsListeners();
             this.setupGitHubAuthListeners();
         });
@@ -349,7 +356,9 @@ class KiCanvasShellElement extends KCUIElement {
         this.cleanupEventListeners();
         this.setupInputListeners();
         this.setupExampleButtons();
-        // this.setupCachedRepoListeners(); // Disabled: recent projects UI not working
+        if (ENABLE_RECENT_PROJECTS) {
+            this.setupCachedRepoListeners();
+        }
         this.setupApiSettingsListeners();
         this.setupGitHubAuthListeners();
     }
@@ -446,9 +455,7 @@ class KiCanvasShellElement extends KCUIElement {
 
     /**
      * Setup event listeners for cached repo buttons
-     * DISABLED: Recent projects UI not working
      */
-    /*
     private setupCachedRepoListeners(): void {
         // Cached repo buttons
         const cachedBtns = this.renderRoot.querySelectorAll(".cached-repo-btn");
@@ -531,7 +538,6 @@ class KiCanvasShellElement extends KCUIElement {
             });
         }
     }
-    */
 
     /**
      * Setup event listeners for API settings panel
@@ -760,7 +766,9 @@ class KiCanvasShellElement extends KCUIElement {
 
                 // Refresh cached repos list (repo is now cached in IndexedDB)
                 // This also refreshes storage info
-                await this.refreshCachedRepos();
+                if (ENABLE_RECENT_PROJECTS) {
+                    await this.refreshCachedRepos();
+                }
             } else {
                 throw new Error("No commits found in the repository.");
             }
@@ -1405,13 +1413,14 @@ class KiCanvasShellElement extends KCUIElement {
                             </div>
 
                             <!-- Recent Repositories Card -->
-                            <!-- DISABLED: Recent projects UI not working -->
-                            ${false
+                            ${ENABLE_RECENT_PROJECTS
                                 ? html`
                                       <div class="content-card">
                                           <div class="card-header">
                                               <div class="card-title">
-                                                  <span class="card-title-icon">📂</span>
+                                                  <span class="card-title-icon"
+                                                      >📂</span
+                                                  >
                                                   Recent Projects
                                               </div>
                                               ${this.#cached_repos.length > 0
@@ -1428,7 +1437,8 @@ class KiCanvasShellElement extends KCUIElement {
                                           ${this.#cached_repos.length > 0
                                               ? html`
                                                     <div class="cached-repos">
-                                                        <div class="cached-repo-list">
+                                                        <div
+                                                            class="cached-repo-list">
                                                             ${this.#cached_repos.map(
                                                                 (repo) => html`
                                                                     <div
@@ -1462,11 +1472,14 @@ class KiCanvasShellElement extends KCUIElement {
                                                 `
                                               : html`
                                                     <div class="empty-state">
-                                                        <div class="empty-state-icon">
+                                                        <div
+                                                            class="empty-state-icon">
                                                             📁
                                                         </div>
-                                                        <div class="empty-state-text">
-                                                            No recent projects yet
+                                                        <div
+                                                            class="empty-state-text">
+                                                            No recent projects
+                                                            yet
                                                         </div>
                                                     </div>
                                                 `}
